@@ -13,7 +13,7 @@ import { NewsCard, FeaturedNewsHero } from '@/components/NewsComponents';
 import { Award, Calendar, ArrowRight, ShieldCheck, Search, Newspaper, Bell } from 'lucide-react';
 import { startOfDay, endOfDay } from 'date-fns';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 async function getHomepageData() {
   try {

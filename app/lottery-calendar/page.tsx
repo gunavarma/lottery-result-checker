@@ -7,7 +7,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Calendar, Clock, Award, ShieldCheck, ChevronRight } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 
-export const revalidate = 300;
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Kerala Lottery Calendar 2026 | Weekly & Bumper Draw Timetable',

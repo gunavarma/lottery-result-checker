@@ -13,56 +13,67 @@ import { NewsCard } from '@/components/NewsComponents';
 import { Award, Calendar, Clock, Ticket, ShieldCheck, ChevronRight, FileText, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
-  const lottery = await prisma.lottery.findUnique({
-    where: { slug },
-  });
+  try {
+    const { slug } = await params;
+    const lottery = await prisma.lottery.findUnique({
+      where: { slug },
+    });
 
-  if (!lottery) {
+    if (!lottery) {
+      return {
+        title: 'Kerala Lottery Scheme Not Found',
+      };
+    }
+
     return {
-      title: 'Kerala Lottery Scheme Not Found',
+      title: `${lottery.name} Result Today | Kerala Lottery Result ${lottery.code}`,
+      description: `Get official ${lottery.name} (${lottery.code}) Kerala lottery results, draw schedule (${lottery.drawDay}), winning numbers and historical results archive.`,
+      openGraph: {
+        title: `${lottery.name} Result Today | Kerala Lottery Result`,
+        description: `Official ${lottery.name} (${lottery.code}) results, prize structure, and winning numbers.`,
+      },
+    };
+  } catch (error) {
+    return {
+      title: 'Kerala Lottery Scheme',
     };
   }
-
-  return {
-    title: `${lottery.name} Result Today | Kerala Lottery Result ${lottery.code}`,
-    description: `Get official ${lottery.name} (${lottery.code}) Kerala lottery results, draw schedule (${lottery.drawDay}), winning numbers and historical results archive.`,
-    openGraph: {
-      title: `${lottery.name} Result Today | Kerala Lottery Result`,
-      description: `Official ${lottery.name} (${lottery.code}) results, prize structure, and winning numbers.`,
-    },
-  };
 }
 
 async function getLotterySchemeData(slug: string) {
-  const lottery = await prisma.lottery.findUnique({
-    where: { slug },
-    include: {
-      draws: {
-        where: { status: 'PUBLISHED' },
-        orderBy: { drawDate: 'desc' },
-        take: 10,
-        include: {
-          lottery: true,
-          prizes: {
-            orderBy: { orderIndex: 'asc' },
-            include: {
-              winningNumbers: true,
+  try {
+    const lottery = await prisma.lottery.findUnique({
+      where: { slug },
+      include: {
+        draws: {
+          where: { status: 'PUBLISHED' },
+          orderBy: { drawDate: 'desc' },
+          take: 10,
+          include: {
+            lottery: true,
+            prizes: {
+              orderBy: { orderIndex: 'asc' },
+              include: {
+                winningNumbers: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
 
-  return lottery ? serializeData(lottery) : null;
+    return lottery ? serializeData(lottery) : null;
+  } catch (error) {
+    console.error('Error in getLotterySchemeData:', error);
+    return null;
+  }
 }
 
 export default async function LotterySchemePage({

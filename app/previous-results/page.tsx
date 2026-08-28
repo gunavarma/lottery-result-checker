@@ -7,7 +7,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { startOfMonth, endOfMonth, startOfYear, endOfYear, parse, isValid } from 'date-fns';
 import { Filter, Search, Calendar, ChevronLeft, ChevronRight, Award, FileText, ArrowRight } from 'lucide-react';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Kerala Lottery Results Archive | Search Historical Draws',
@@ -73,51 +73,74 @@ async function getPreviousResultsData(searchParams: {
     };
   }
 
-  const [lotteries, total, draws] = await Promise.all([
-    prisma.lottery.findMany({
-      where: { active: true },
-      orderBy: { name: 'asc' },
-    }),
-    prisma.draw.count({ where }),
-    prisma.draw.findMany({
-      where,
-      orderBy: { drawDate: 'desc' },
-      skip,
-      take: limit,
-      include: {
-        lottery: true,
-        prizes: {
-          orderBy: { orderIndex: 'asc' },
-          take: 3,
-          include: {
-            winningNumbers: { take: 3 },
+  try {
+    const [lotteries, total, draws] = await Promise.all([
+      prisma.lottery.findMany({
+        where: { active: true },
+        orderBy: { name: 'asc' },
+      }),
+      prisma.draw.count({ where }),
+      prisma.draw.findMany({
+        where,
+        orderBy: { drawDate: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          lottery: true,
+          prizes: {
+            orderBy: { orderIndex: 'asc' },
+            take: 3,
+            include: {
+              winningNumbers: { take: 3 },
+            },
           },
         },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    return serializeData({
+      lotteries,
+      draws,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
       },
-    }),
-  ]);
-
-  const totalPages = Math.ceil(total / limit);
-
-  return serializeData({
-    lotteries,
-    draws,
-    pagination: {
-      total,
-      page,
-      limit,
-      totalPages,
-      hasNextPage: page < totalPages,
-      hasPrevPage: page > 1,
-    },
-    filters: {
-      lottery: lotterySlug || 'all',
-      year: year || 'all',
-      month: month || 'all',
-      date: date || '',
-      search: search || '',
-    },
-  });
+      filters: {
+        lottery: lotterySlug || 'all',
+        year: year || 'all',
+        month: month || 'all',
+        date: date || '',
+        search: search || '',
+      },
+    });
+  } catch (error) {
+    console.error('Error in getPreviousResultsData:', error);
+    return {
+      lotteries: [],
+      draws: [],
+      pagination: {
+        total: 0,
+        page: 1,
+        limit,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPrevPage: false,
+      },
+      filters: {
+        lottery: lotterySlug || 'all',
+        year: year || 'all',
+        month: month || 'all',
+        date: date || '',
+        search: search || '',
+      },
+    };
+  }
 }
 
 export default async function PreviousResultsPage({

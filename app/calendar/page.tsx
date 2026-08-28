@@ -1,5 +1,5 @@
 import LotteryCalendarPage, { metadata } from '../lottery-calendar/page';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 export { metadata };
 export default LotteryCalendarPage;

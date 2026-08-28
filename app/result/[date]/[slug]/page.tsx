@@ -25,40 +25,47 @@ import {
   ExternalLink
 } from 'lucide-react';
 
-export const revalidate = 300;
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ date: string; slug: string }>;
 }): Promise<Metadata> {
-  const { date, slug } = await params;
+  try {
+    const { date, slug } = await params;
 
-  let parsedDate = parse(date, 'yyyy-MM-dd', new Date());
-  if (!isValid(parsedDate)) {
-    parsedDate = new Date();
+    let parsedDate = parse(date, 'yyyy-MM-dd', new Date());
+    if (!isValid(parsedDate)) {
+      parsedDate = new Date();
+    }
+    const dateFormatted = format(parsedDate, 'dd MMMM yyyy');
+
+    const lottery = await prisma.lottery.findUnique({
+      where: { slug },
+    });
+
+    const lotteryName = lottery?.name || 'Kerala Lottery';
+
+    return {
+      title: `${lotteryName} Result ${dateFormatted} | Official Winning Numbers`,
+      description: `Official Kerala State Lottery result for ${lotteryName} held on ${dateFormatted}. View 1st prize winning ticket number, consolation series, and prize table synchronized from LOTIS.`,
+      openGraph: {
+        title: `${lotteryName} Result ${dateFormatted} | Kerala Lottery`,
+        description: `Official ${lotteryName} winning numbers and complete prize structure for ${dateFormatted}.`,
+      },
+    };
+  } catch (error) {
+    return {
+      title: 'Kerala Lottery Result',
+    };
   }
-  const dateFormatted = format(parsedDate, 'dd MMMM yyyy');
-
-  const lottery = await prisma.lottery.findUnique({
-    where: { slug },
-  });
-
-  const lotteryName = lottery?.name || 'Kerala Lottery';
-
-  return {
-    title: `${lotteryName} Result ${dateFormatted} | Official Winning Numbers`,
-    description: `Official Kerala State Lottery result for ${lotteryName} held on ${dateFormatted}. View 1st prize winning ticket number, consolation series, and prize table synchronized from LOTIS.`,
-    openGraph: {
-      title: `${lotteryName} Result ${dateFormatted} | Kerala Lottery`,
-      description: `Official ${lotteryName} winning numbers and complete prize structure for ${dateFormatted}.`,
-    },
-  };
 }
 
 async function getDrawData(date: string, slug: string) {
-  const parsedDate = parse(date, 'yyyy-MM-dd', new Date());
-  if (!isValid(parsedDate)) return null;
+  try {
+    const parsedDate = parse(date, 'yyyy-MM-dd', new Date());
+    if (!isValid(parsedDate)) return null;
 
   const nextDay = new Date(parsedDate);
   nextDay.setDate(nextDay.getDate() + 1);
@@ -110,7 +117,11 @@ async function getDrawData(date: string, slug: string) {
     });
   }
 
-  return draw ? serializeData(draw) : null;
+    return draw ? serializeData(draw) : null;
+  } catch (error) {
+    console.error('Error in getDrawData:', error);
+    return null;
+  }
 }
 
 export default async function IndividualDrawResultPage({

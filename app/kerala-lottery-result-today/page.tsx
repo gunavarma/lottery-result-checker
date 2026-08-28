@@ -10,7 +10,7 @@ import { NotificationBanner } from '@/components/NotificationBanner';
 import { startOfDay, endOfDay, format } from 'date-fns';
 import { Award, Clock, CheckCircle2, Search, MapPin, Ticket, ShieldCheck, FileText, ExternalLink } from 'lucide-react';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   const now = new Date();
@@ -27,36 +27,18 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function getTodayResultData() {
-  const now = new Date();
-  const todayStart = startOfDay(now);
-  const todayEnd = endOfDay(now);
+  try {
+    const now = new Date();
+    const todayStart = startOfDay(now);
+    const todayEnd = endOfDay(now);
 
-  let draw = await prisma.draw.findFirst({
-    where: {
-      drawDate: {
-        gte: todayStart,
-        lte: todayEnd,
-      },
-    },
-    include: {
-      lottery: true,
-      prizes: {
-        orderBy: { orderIndex: 'asc' },
-        include: {
-          winningNumbers: {
-            orderBy: { id: 'asc' },
-          },
+    let draw = await prisma.draw.findFirst({
+      where: {
+        drawDate: {
+          gte: todayStart,
+          lte: todayEnd,
         },
       },
-    },
-  });
-
-  let isFromToday = true;
-  if (!draw) {
-    isFromToday = false;
-    draw = await prisma.draw.findFirst({
-      where: { status: 'PUBLISHED' },
-      orderBy: { drawDate: 'desc' },
       include: {
         lottery: true,
         prizes: {
@@ -69,12 +51,40 @@ async function getTodayResultData() {
         },
       },
     });
-  }
 
-  return {
-    isFromToday,
-    draw: draw ? serializeData(draw) : null,
-  };
+    let isFromToday = true;
+    if (!draw) {
+      isFromToday = false;
+      draw = await prisma.draw.findFirst({
+        where: { status: 'PUBLISHED' },
+        orderBy: { drawDate: 'desc' },
+        include: {
+          lottery: true,
+          prizes: {
+            orderBy: { orderIndex: 'asc' },
+            include: {
+              winningNumbers: {
+                orderBy: { id: 'asc' },
+              },
+            },
+          },
+        },
+      });
+    }
+
+    return {
+      isFromToday,
+      draw: draw ? serializeData(draw) : null,
+      dateFormatted: format(now, 'dd MMMM yyyy (EEEE)'),
+    };
+  } catch (error) {
+    console.error('Error in getTodayResultData:', error);
+    return {
+      isFromToday: false,
+      draw: null,
+      dateFormatted: format(new Date(), 'dd MMMM yyyy (EEEE)'),
+    };
+  }
 }
 
 export default async function TodayResultPage() {

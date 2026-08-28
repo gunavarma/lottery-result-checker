@@ -5,7 +5,7 @@ import { prisma, serializeData, formatINR, formatINRExact } from '@/lib/prisma';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Award, ShieldCheck, Ticket, Info, CheckCircle2 } from 'lucide-react';
 
-export const revalidate = 300;
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Kerala Lottery Prize Structure 2026 | Weekly & Bumper Prize Breakdown',
@@ -14,30 +14,35 @@ export const metadata: Metadata = {
 };
 
 async function getPrizeStructureData() {
-  const lotteries = await prisma.lottery.findMany({
-    where: { active: true },
-    orderBy: [
-      { isBumper: 'asc' },
-      { name: 'asc' },
-    ],
-    include: {
-      draws: {
-        where: { status: 'PUBLISHED' },
-        orderBy: { drawDate: 'desc' },
-        take: 1,
-        include: {
-          prizes: {
-            orderBy: { orderIndex: 'asc' },
-            include: {
-              winningNumbers: true,
+  try {
+    const lotteries = await prisma.lottery.findMany({
+      where: { active: true },
+      orderBy: [
+        { isBumper: 'asc' },
+        { name: 'asc' },
+      ],
+      include: {
+        draws: {
+          where: { status: 'PUBLISHED' },
+          orderBy: { drawDate: 'desc' },
+          take: 1,
+          include: {
+            prizes: {
+              orderBy: { orderIndex: 'asc' },
+              include: {
+                winningNumbers: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
 
-  return serializeData(lotteries);
+    return serializeData(lotteries);
+  } catch (error) {
+    console.error('Error in getPrizeStructureData:', error);
+    return [];
+  }
 }
 
 export default async function PrizeStructurePage({
