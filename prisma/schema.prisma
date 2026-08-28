@@ -1,0 +1,167 @@
+// Prisma schema for Kerala Lottery Results Platform (Phase 1 & Phase 2 FCM)
+// Authoritative Official Data Source: LOTIS (Directorate of Kerala State Lotteries)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Lottery {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  code        String   @unique
+  description String?
+  drawDay     String   // e.g. "Monday", "Tuesday", "Seasonal Bumper"
+  drawTime    String   @default("3:00 PM")
+  ticketPrice Int      @default(40) // in INR
+  active      Boolean  @default(true)
+  isBumper    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  draws               Draw[]
+  favoriteByUsers     FavoriteLottery[]
+  pushSubscriptions   PushSubscriptionLottery[]
+
+  @@index([slug])
+  @@index([code])
+}
+
+model Draw {
+  id                String         @id @default(cuid())
+  lotteryId         String
+  drawNumber        String         // e.g. "KN-638", "SS-534", "SK-67"
+  drawDate          DateTime       // Official draw date
+  drawTime          String         @default("3:00 PM")
+  status            String         @default("PUBLISHED") // SCHEDULED, CHECKING, RESULT_PENDING, PUBLISHED, SOURCE_UNAVAILABLE, SYNC_ERROR
+  sourceUrl         String         // Official public URL e.g. https://www.lotteryagent.kerala.gov.in/result/public/
+  sourceDocumentUrl String?        // Direct official PDF e.g. https://www.lotteryagent.kerala.gov.in/results/<itemId>
+  sourceItemId      String?        // LOTIS UUID
+  rawText           String?        // Audit text
+  publishedAt       DateTime?
+  lastCheckedAt     DateTime       @default(now())
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  lottery           Lottery        @relation(fields: [lotteryId], references: [id], onDelete: Cascade)
+  prizes            Prize[]
+
+  @@unique([lotteryId, drawNumber])
+  @@unique([lotteryId, drawDate])
+  @@index([drawDate])
+  @@index([drawNumber])
+  @@index([status])
+}
+
+model Prize {
+  id             String          @id @default(cuid())
+  drawId         String
+  category       String          // e.g. "1st Prize", "Consolation Prize", "2nd Prize", "3rd Prize", "4th Prize", etc.
+  description    String?         // e.g. "FOR TICKETS ENDING WITH THE FOLLOWING NUMBERS"
+  amount         BigInt          // Prize monetary amount in INR
+  orderIndex     Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  draw           Draw            @relation(fields: [drawId], references: [id], onDelete: Cascade)
+  winningNumbers WinningNumber[]
+
+  @@index([drawId])
+  @@index([orderIndex])
+}
+
+model WinningNumber {
+  id            String   @id @default(cuid())
+  prizeId       String
+  series        String?  // e.g. "PS", "PN", null if ending-only
+  number        String   // 6-digit or 4-digit ticket number
+  displayNumber String   // e.g. "PS 320327" or "0266"
+  location      String?  // Winning agent district/location if declared in official results
+  createdAt     DateTime @default(now())
+
+  prize         Prize    @relation(fields: [prizeId], references: [id], onDelete: Cascade)
+
+  @@index([prizeId])
+  @@index([number])
+  @@index([displayNumber])
+}
+
+model SyncLog {
+  id            String    @id @default(cuid())
+  source        String    @default("LOTIS")
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+  status        String    // SUCCESS, FAILED, RUNNING, NO_NEW_DATA
+  recordsFound  Int       @default(0)
+  newDrawsCount Int       @default(0)
+  errorMessage  String?
+  createdAt     DateTime  @default(now())
+
+  @@index([startedAt])
+  @@index([status])
+}
+
+// Phase 2: Firebase Cloud Messaging (FCM) Web Push Notification Models
+
+model PushSubscription {
+  id              String                   @id @default(cuid())
+  fcmToken        String                   @unique
+  anonymousUserId String?
+  status          String                   @default("ACTIVE") // "ACTIVE", "INACTIVE"
+  lastUsedAt      DateTime?                @default(now())
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  lotterySubscriptions PushSubscriptionLottery[]
+  deliveries           NotificationDelivery[]
+
+  @@index([status])
+  @@index([fcmToken])
+}
+
+model PushSubscriptionLottery {
+  id                 String           @id @default(cuid())
+  pushSubscriptionId String
+  lotteryId          String
+  createdAt          DateTime         @default(now())
+
+  pushSubscription   PushSubscription @relation(fields: [pushSubscriptionId], references: [id], onDelete: Cascade)
+  lottery            Lottery          @relation(fields: [lotteryId], references: [id], onDelete: Cascade)
+
+  @@unique([pushSubscriptionId, lotteryId])
+  @@index([lotteryId])
+  @@index([pushSubscriptionId])
+}
+
+model NotificationDelivery {
+  id                 String           @id @default(cuid())
+  resultId           String           // Reference to Draw ID
+  pushSubscriptionId String
+  status             String           @default("PENDING") // "SENT", "FAILED", "PENDING"
+  sentAt             DateTime?
+  errorMessage       String?
+  createdAt          DateTime         @default(now())
+
+  pushSubscription   PushSubscription @relation(fields: [pushSubscriptionId], references: [id], onDelete: Cascade)
+
+  @@unique([resultId, pushSubscriptionId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model FavoriteLottery {
+  id              String   @id @default(cuid())
+  anonymousUserId String   // Client device unique token/UUID
+  lotteryId       String
+  createdAt       DateTime @default(now())
+
+  lottery         Lottery  @relation(fields: [lotteryId], references: [id], onDelete: Cascade)
+
+  @@unique([anonymousUserId, lotteryId])
+  @@index([anonymousUserId])
+}
