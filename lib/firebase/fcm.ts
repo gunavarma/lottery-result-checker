@@ -110,7 +110,7 @@ export async function sendResultPublishedPushNotification(
       const payload = {
         tokens,
         notification: {
-          title: '🟢 Kerala Lottery Result',
+          title: 'Kerala Lottery Result',
           body: `${event.lotteryName} ${event.drawNumber} result has been published. 1st Prize: ${event.firstPrizeAmountFormatted}.`,
         },
         data: {

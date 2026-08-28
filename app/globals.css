@@ -1,44 +1,94 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --primary: #059669;
-  --primary-hover: #047857;
-  --primary-light: #ecfdf5;
-  --card-bg: #ffffff;
-  --border-color: #e2e8f0;
+@layer base {
+  :root {
+    --brand-primary: #0B3B32;
+    --brand-dark: #10201D;
+    --brand-bg: #F7F7F4;
+    --brand-surface: #FFFFFF;
+    --brand-text: #17201D;
+    --brand-muted: #68736E;
+    --brand-border: #E2E7E3;
+    --brand-gold: #C8A45D;
+    --brand-gold-muted: #FAF5EB;
+    --brand-success: #16845B;
+    --brand-warning: #A66A00;
+    --brand-error: #B54747;
+
+    /* Spacing tokens */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-12: 48px;
+    --space-16: 64px;
+    --space-20: 80px;
+    --space-24: 96px;
+
+    /* Max Widths */
+    --container-max: 1280px;
+    --article-max: 760px;
+  }
+
+  body {
+    background-color: var(--brand-bg);
+    color: var(--brand-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Tabular numbers for lottery winning numbers and amounts */
+.font-tabular {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
 }
 
-/* Custom scrollbar for prize numbers grid */
+/* Subtle editorial serif headline utility */
+.font-editorial {
+  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+/* Custom scrollbars */
 .custom-scrollbar::-webkit-scrollbar {
   height: 6px;
   width: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #F1F4F2;
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #CBD5CE;
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #A3B5AA;
 }
 
-/* Print view optimization */
+/* Animations for search overlay & toasts */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Print optimizations */
 @media print {
   header, footer, nav, .no-print {
     display: none !important;
@@ -49,5 +99,15 @@ body {
   }
   .print-only {
     display: block !important;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

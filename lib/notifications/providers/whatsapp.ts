@@ -33,7 +33,7 @@ export class WhatsAppProvider implements NotificationProvider {
           type: 'text',
           text: {
             preview_url: true,
-            body: `🟢 *Kerala Lottery Result Published*\n\n*${event.lotteryName} (${event.drawNumber})*\nDraw Date: ${event.drawDate}\n1st Prize: ${event.firstPrizeAmountFormatted}\n\nView official result:\n${event.resultUrl}`,
+            body: `*Kerala Lottery Result Published*\n\n*${event.lotteryName} (${event.drawNumber})*\nDraw Date: ${event.drawDate}\n1st Prize: ${event.firstPrizeAmountFormatted}\n\nView official result:\n${event.resultUrl}`,
           },
         }),
       });

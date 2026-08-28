@@ -1,96 +1,84 @@
 import React from 'react';
 import Link from 'next/link';
-import { format } from 'date-fns';
-import { Award, Calendar, ArrowRight, FileText, CheckCircle2 } from 'lucide-react';
+import { Award, Calendar, ArrowRight, CheckCircle2, ShieldCheck, MapPin } from 'lucide-react';
 import { formatINR } from '@/lib/prisma';
+import { format } from 'date-fns';
 
 interface ResultCardProps {
   draw: any;
 }
 
 export function ResultCard({ draw }: ResultCardProps) {
-  const lottery = draw.lottery || {};
-  const drawDateObj = draw.drawDate ? new Date(draw.drawDate) : new Date();
-  const dateFormatted = format(drawDateObj, 'dd MMM yyyy');
-  const dateSlug = format(drawDateObj, 'yyyy-MM-dd');
-  const lotterySlug = lottery.slug || 'kerala-lottery';
-
   const firstPrize = draw.prizes?.find((p: any) => p.tierNumber === 1 || p.orderIndex === 0);
   const firstPrizeWinner = firstPrize?.winningNumbers?.[0];
 
+  const drawDateFormatted = draw.drawDate
+    ? format(new Date(draw.drawDate), 'dd MMMM yyyy')
+    : '';
+  const drawDateSlug = draw.drawDate
+    ? format(new Date(draw.drawDate), 'yyyy-MM-dd')
+    : '';
+
   return (
-    <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-2xs hover:shadow-md hover:border-emerald-300 transition-all flex flex-col justify-between group">
-      <div className="space-y-3">
-        {/* Top Header */}
-        <div className="flex items-start justify-between gap-2">
+    <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#E2E7E3] hover:border-[#0B3B32]/40 hover:shadow-md transition-all flex flex-col justify-between group">
+      <div className="space-y-4">
+        {/* Card Header */}
+        <div className="flex items-start justify-between gap-3 border-b border-[#E2E7E3] pb-3">
           <div>
-            <Link
-              href={`/lottery/${lotterySlug}`}
-              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 uppercase tracking-wider block"
-            >
-              {lottery.name || 'Kerala State Lottery'}
-            </Link>
-            <h4 className="text-xl font-extrabold text-slate-900 mt-0.5 tracking-tight">
+            <span className="text-[10px] font-mono font-bold bg-[#F1F4F2] text-[#0B3B32] px-2 py-0.5 rounded border border-[#E2E7E3]">
               {draw.drawNumber}
-            </h4>
+            </span>
+            <h3 className="text-lg font-extrabold text-[#17201D] mt-1 group-hover:text-[#0B3B32] transition-colors leading-tight">
+              <Link href={`/result/${drawDateSlug}/${draw.lottery?.slug}`}>
+                {draw.lottery?.name}
+              </Link>
+            </h3>
           </div>
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full border border-emerald-200 shrink-0">
-            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#16845B] bg-[#16845B]/10 px-2 py-0.5 rounded-full font-tabular">
+            <CheckCircle2 className="w-3 h-3" />
             <span>Published</span>
           </span>
         </div>
 
-        {/* Date & Time */}
-        <div className="flex items-center gap-3 text-xs text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-          <div className="flex items-center gap-1.5 font-medium">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <span>{dateFormatted}</span>
-          </div>
-          <span>•</span>
-          <span>{draw.drawTime || '3:00 PM'}</span>
+        {/* Date & Draw Info */}
+        <div className="flex items-center justify-between text-xs text-[#68736E]">
+          <span className="flex items-center gap-1 font-tabular">
+            <Calendar className="w-3.5 h-3.5 text-[#68736E]" />
+            <span>{drawDateFormatted}</span>
+          </span>
+          <span className="font-tabular font-medium">{draw.drawTime || '3:00 PM'}</span>
         </div>
 
-        {/* 1st Prize Highlight */}
-        <div className="bg-gradient-to-r from-amber-50/80 to-amber-100/40 p-3.5 rounded-xl border border-amber-200">
-          <div className="flex items-center justify-between text-xs font-semibold text-amber-900">
-            <span>1st Prize</span>
-            <span className="text-amber-700 font-bold">
-              {firstPrize ? formatINR(firstPrize.amount) : '₹1 Crore'}
-            </span>
-          </div>
-          <div className="mt-1 flex items-baseline justify-between">
-            <span className="text-lg font-black text-slate-900 font-mono tracking-wider">
-              {firstPrizeWinner ? firstPrizeWinner.displayNumber : '—'}
+        {/* 1st Prize Box */}
+        <div className="bg-[#F7F7F4] border border-[#E2E7E3] rounded-xl p-3.5 space-y-1">
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="font-bold text-[#0B3B32] uppercase tracking-wide font-tabular">
+              1st Prize ({firstPrize ? formatINR(firstPrize.amount) : '₹1 Crore'})
             </span>
             {firstPrizeWinner?.location && (
-              <span className="text-[10px] text-amber-800 font-medium bg-white/80 px-2 py-0.5 rounded shadow-2xs">
-                {firstPrizeWinner.location}
+              <span className="text-[10px] text-[#68736E] font-medium flex items-center gap-0.5">
+                <MapPin className="w-2.5 h-2.5 text-[#C8A45D]" />
+                <span>{firstPrizeWinner.location}</span>
               </span>
             )}
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-[#17201D] font-mono tracking-wider font-tabular">
+            {firstPrizeWinner ? firstPrizeWinner.displayNumber : '—'}
           </div>
         </div>
       </div>
 
-      {/* Card Action Links */}
-      <div className="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+      {/* Footer CTA */}
+      <div className="pt-4 mt-4 border-t border-[#E2E7E3] flex items-center justify-between text-xs">
+        <span className="text-[11px] text-[#68736E]">Official LOTIS Record</span>
         <Link
-          href={`/result/${dateSlug}/${lotterySlug}`}
-          className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
+          href={`/result/${drawDateSlug}/${draw.lottery?.slug}`}
+          className="font-bold text-[#0B3B32] group-hover:text-[#16845B] inline-flex items-center gap-1 transition-colors"
         >
-          <span>View Complete Result</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <span>Complete Result</span>
+          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </Link>
-        {draw.sourceUrl && (
-          <a
-            href={draw.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[11px] text-slate-400 hover:text-slate-600 flex items-center gap-1"
-          >
-            <FileText className="w-3 h-3" />
-            <span>Official PDF</span>
-          </a>
-        )}
       </div>
     </div>
   );

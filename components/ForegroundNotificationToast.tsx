@@ -15,7 +15,7 @@ export function ForegroundNotificationToast() {
   useEffect(() => {
     const unsubscribe = onForegroundFcmMessage((payload) => {
       console.log('[Foreground FCM Message Received]:', payload);
-      const title = payload.notification?.title || payload.data?.title || '🟢 Result Published';
+      const title = payload.notification?.title || payload.data?.title || 'Result Published';
       const body = payload.notification?.body || payload.data?.body || 'Official Kerala Lottery winning numbers are now available.';
       const url = payload.data?.url || '/live';
 
@@ -31,14 +31,14 @@ export function ForegroundNotificationToast() {
 
   return (
     <div className="fixed top-20 right-4 sm:right-6 max-w-md z-50 animate-slideDown">
-      <div className="bg-slate-900 text-white rounded-3xl p-5 shadow-2xl border border-emerald-500/40 space-y-3">
+      <div className="bg-[#10201D] text-white rounded-3xl p-5 shadow-2xl border border-[#0B3B32]/60 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-[#0B3B32] flex items-center justify-center text-[#C8A45D] shrink-0 border border-[#C8A45D]/30">
               <Award className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">
+              <span className="text-[10px] font-bold text-[#C8A45D] uppercase tracking-wider block font-tabular">
                 Official Result Alert
               </span>
               <h4 className="font-extrabold text-sm text-white leading-tight">
@@ -59,11 +59,11 @@ export function ForegroundNotificationToast() {
           {notification.body}
         </p>
 
-        <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-800">
+        <div className="flex items-center justify-end gap-2 pt-1 border-t border-white/10">
           <Link
             href={notification.url}
             onClick={() => setNotification(null)}
-            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 transition-colors shadow-xs"
+            className="px-4 py-2 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white font-bold text-xs flex items-center gap-1.5 transition-colors shadow-xs font-tabular"
           >
             <span>View Result</span>
             <ArrowRight className="w-3.5 h-3.5" />

@@ -9,13 +9,13 @@ import {
   CheckCircle2,
   XCircle,
   Award,
-  Sparkles,
   ArrowRight,
-  ExternalLink,
   ShieldCheck,
   AlertCircle,
   Copy,
   Check,
+  MapPin,
+  Loader2
 } from 'lucide-react';
 
 export default function CheckTicketPage() {
@@ -120,34 +120,39 @@ export default function CheckTicketPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8">
-      <Breadcrumbs items={[{ label: 'Ticket Checker' }]} />
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Check Ticket' },
+        ]}
+      />
 
       {/* Header */}
-      <div className="border-b border-slate-200 pb-6 space-y-2">
+      <div className="border-b border-[#E2E7E3] pb-6 space-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block">
+          <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
             Official Winning Number Verification
           </span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#17201D] tracking-tight">
           Check Your Kerala Lottery Ticket
         </h1>
-        <p className="text-sm text-slate-600">
+        <p className="text-xs sm:text-sm text-[#68736E]">
           Verify your ticket number against verified official LOTIS results from the Directorate of Kerala State Lotteries.
         </p>
       </div>
 
       {/* Form Card */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-10 border border-[#E2E7E3] shadow-sm space-y-6">
         {/* Mode Toggle */}
-        <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl w-fit">
+        <div className="flex items-center gap-2 p-1 bg-[#F7F7F4] rounded-2xl w-fit border border-[#E2E7E3]">
           <button
             type="button"
             onClick={() => setMode('single')}
             className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
               mode === 'single'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white text-[#0B3B32] shadow-xs'
+                : 'text-[#68736E] hover:text-[#17201D]'
             }`}
           >
             Single Ticket
@@ -157,8 +162,8 @@ export default function CheckTicketPage() {
             onClick={() => setMode('bulk')}
             className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
               mode === 'bulk'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white text-[#0B3B32] shadow-xs'
+                : 'text-[#68736E] hover:text-[#17201D]'
             }`}
           >
             Multiple Tickets (Bulk)
@@ -168,14 +173,14 @@ export default function CheckTicketPage() {
         <form onSubmit={handleCheckTickets} className="space-y-6">
           {/* Scheme & Draw Filters */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-[#17201D] uppercase tracking-wide">
                 Lottery Scheme (Optional)
               </label>
               <select
                 value={selectedLottery}
                 onChange={(e) => setSelectedLottery(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl border border-slate-300 bg-slate-50 text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] text-xs font-bold text-[#17201D] focus:bg-white focus:ring-2 focus:ring-[#0B3B32] focus:outline-none"
               >
                 <option value="">All Schemes (Auto-Detect)</option>
                 {lotteries.map((lot) => (
@@ -186,8 +191,8 @@ export default function CheckTicketPage() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-[#17201D] uppercase tracking-wide">
                 Draw Number (e.g. KN-638, SS-534)
               </label>
               <input
@@ -195,7 +200,7 @@ export default function CheckTicketPage() {
                 value={drawNumber}
                 onChange={(e) => setDrawNumber(e.target.value)}
                 placeholder="Optional: e.g. KN-638"
-                className="w-full px-4 py-3 rounded-2xl border border-slate-300 bg-slate-50 text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] text-xs font-bold text-[#17201D] focus:bg-white focus:ring-2 focus:ring-[#0B3B32] focus:outline-none"
               />
             </div>
           </div>
@@ -203,8 +208,8 @@ export default function CheckTicketPage() {
           {/* Ticket Input Fields */}
           {mode === 'single' ? (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-[#17201D] uppercase tracking-wide">
                   Series (e.g. PS, PN)
                 </label>
                 <input
@@ -213,11 +218,11 @@ export default function CheckTicketPage() {
                   value={series}
                   onChange={(e) => setSeries(e.target.value.toUpperCase())}
                   placeholder="e.g. PS"
-                  className="w-full px-4 py-3 rounded-2xl border border-slate-300 bg-slate-50 font-mono font-bold text-base text-slate-900 uppercase focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] font-mono font-bold text-sm text-[#17201D] uppercase focus:bg-white focus:ring-2 focus:ring-[#0B3B32] focus:outline-none font-tabular"
                 />
               </div>
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
+              <div className="sm:col-span-2 space-y-1.5">
+                <label className="block text-xs font-bold text-[#17201D] uppercase tracking-wide">
                   Ticket Number (6 Digits or 4 Ending Digits)
                 </label>
                 <input
@@ -226,32 +231,32 @@ export default function CheckTicketPage() {
                   value={ticketNumber}
                   onChange={(e) => setTicketNumber(e.target.value.replace(/\D/g, ''))}
                   placeholder="e.g. 320327 or 0266"
-                  className="w-full px-4 py-3 rounded-2xl border border-slate-300 bg-slate-50 font-mono font-bold text-base text-slate-900 tracking-wider focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] font-mono font-bold text-sm text-[#17201D] tracking-wider focus:bg-white focus:ring-2 focus:ring-[#0B3B32] focus:outline-none font-tabular"
                   required
                 />
               </div>
             </div>
           ) : (
-            <div>
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide">
+                <label className="block text-xs font-bold text-[#17201D] uppercase tracking-wide">
                   Paste Multiple Tickets (One per line)
                 </label>
-                <span className="text-xs text-slate-400">Up to 25 tickets</span>
+                <span className="text-xs text-[#68736E]">Up to 25 tickets</span>
               </div>
               <textarea
                 rows={5}
                 value={bulkTickets}
                 onChange={(e) => setBulkTickets(e.target.value)}
                 placeholder={"PS 320327\nPN 320327\n0266\n0933\n5676"}
-                className="w-full p-4 rounded-2xl border border-slate-300 bg-slate-50 font-mono text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                className="w-full p-4 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] font-mono text-xs text-[#17201D] focus:bg-white focus:ring-2 focus:ring-[#0B3B32] focus:outline-none font-tabular"
               />
             </div>
           )}
 
           {errorMsg && (
-            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-800 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <div className="p-4 rounded-2xl bg-[#B54747]/10 border border-[#B54747]/30 text-xs font-semibold text-[#B54747] flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
@@ -259,13 +264,16 @@ export default function CheckTicketPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white font-bold text-xs shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 font-tabular"
           >
             {loading ? (
-              <span>Verifying Against Official LOTIS Database...</span>
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Verifying Against Official LOTIS Database...</span>
+              </>
             ) : (
               <>
-                <Ticket className="w-4 h-4" />
+                <Ticket className="w-4 h-4 text-[#C8A45D]" />
                 <span>Check Ticket{mode === 'bulk' ? 's' : ''}</span>
               </>
             )}
@@ -277,13 +285,13 @@ export default function CheckTicketPage() {
       {checkResults && (
         <div className="space-y-6 animate-fadeIn">
           {/* Summary Banner */}
-          <div className="flex items-center justify-between bg-slate-900 text-white p-6 rounded-3xl">
+          <div className="flex items-center justify-between bg-[#10201D] text-white p-6 rounded-3xl border border-[#0B3B32]/40">
             <div>
-              <span className="text-xs uppercase tracking-wider text-emerald-400 font-bold block">
+              <span className="text-[10px] uppercase tracking-wider text-[#C8A45D] font-bold block font-tabular">
                 Verification Summary
               </span>
-              <h2 className="text-2xl font-black mt-0.5">
-                {matchCount > 0 ? `🎉 ${matchCount} Prize Match Found!` : '⚪ No Match Found'}
+              <h2 className="text-xl sm:text-2xl font-extrabold mt-0.5">
+                {matchCount > 0 ? `${matchCount} Prize Match Found` : 'No Matching Prize Found'}
               </h2>
             </div>
             <div className="text-right text-xs text-slate-300">
@@ -296,78 +304,81 @@ export default function CheckTicketPage() {
             {checkResults.map((result, idx) => (
               <div
                 key={idx}
-                className={`p-6 rounded-3xl border transition-all ${
+                className={`p-6 rounded-2xl border transition-all ${
                   result.isMatch
-                    ? 'bg-gradient-to-br from-emerald-50 via-white to-white border-emerald-300 shadow-md'
-                    : 'bg-white border-slate-200 shadow-2xs'
+                    ? 'bg-white border-[#16845B]/50 shadow-md'
+                    : 'bg-white border-[#E2E7E3]'
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       {result.isMatch ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-bold bg-emerald-100 text-emerald-900 px-2.5 py-0.5 rounded-full border border-emerald-300">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-[#16845B]/10 text-[#16845B] px-2.5 py-0.5 rounded font-tabular">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>PRIZE MATCH</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full">
-                          <XCircle className="w-3.5 h-3.5 text-slate-400" />
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-[#F7F7F4] text-[#68736E] px-2.5 py-0.5 rounded font-tabular">
+                          <XCircle className="w-3.5 h-3.5" />
                           <span>NO MATCH</span>
                         </span>
                       )}
 
-                      <span className="font-mono text-xs font-bold text-slate-500">
+                      <span className="font-mono text-xs font-bold text-[#68736E]">
                         Input: {result.inputTicket}
                       </span>
                     </div>
 
                     <div className="pt-2">
-                      <span className="text-2xl font-black font-mono text-slate-900">
+                      <span className="text-2xl font-black font-mono text-[#17201D] font-tabular">
                         {result.normalizedDisplay || result.inputTicket}
                       </span>
                     </div>
                   </div>
 
                   {result.isMatch ? (
-                    <div className="bg-emerald-600 text-white p-4 rounded-2xl text-center sm:text-right shrink-0 min-w-[200px] shadow-sm">
-                      <span className="text-xs uppercase font-bold text-emerald-100 block">
+                    <div className="bg-[#0B3B32] text-white p-4 rounded-xl text-center sm:text-right shrink-0 min-w-[200px] shadow-sm">
+                      <span className="text-[10px] uppercase font-bold text-[#C8A45D] block font-tabular">
                         {result.prizeCategory}
                       </span>
-                      <span className="text-2xl sm:text-3xl font-black block mt-0.5">
+                      <span className="text-2xl font-black block mt-0.5 font-tabular text-[#16845B]">
                         {result.prizeAmountFormatted}
                       </span>
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500 max-w-xs">
+                    <p className="text-xs text-[#68736E] max-w-xs">
                       {result.message}
                     </p>
                   )}
                 </div>
 
                 {result.isMatch && (
-                  <div className="mt-4 pt-4 border-t border-emerald-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                    <div className="text-slate-600 space-y-0.5">
+                  <div className="mt-4 pt-4 border-t border-[#E2E7E3] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div className="text-[#68736E] space-y-0.5">
                       <p>
                         Lottery: <strong>{result.lotteryName}</strong> ({result.drawNumber}) • Draw Date: <strong>{result.drawDate}</strong>
                       </p>
                       {result.location && (
-                        <p>Winning Location: <strong>📍 {result.location}</strong></p>
+                        <p className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-[#C8A45D]" />
+                          <span>Winning District: <strong>{result.location}</strong></span>
+                        </p>
                       )}
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
                       <button
                         onClick={() => handleCopy(result.normalizedDisplay, idx)}
-                        className="text-slate-600 hover:text-emerald-700 font-semibold flex items-center gap-1"
+                        className="text-[#68736E] hover:text-[#0B3B32] font-semibold flex items-center gap-1"
                       >
-                        {copiedIndex === idx ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                        <span>{copiedIndex === idx ? 'Copied' : 'Copy'}</span>
+                        {copiedIndex === idx ? <Check className="w-3.5 h-3.5 text-[#16845B]" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedIndex === idx ? 'Copied' : 'Copy Number'}</span>
                       </button>
 
                       <Link
                         href={result.resultUrl}
-                        className="px-4 py-2 rounded-xl bg-emerald-700 text-white font-bold hover:bg-emerald-800 transition-colors flex items-center gap-1 shadow-2xs"
+                        className="px-4 py-2 rounded-xl bg-[#0B3B32] text-white font-bold hover:bg-[#16845B] transition-colors flex items-center gap-1 shadow-xs"
                       >
                         <span>View Draw Result</span>
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -380,8 +391,8 @@ export default function CheckTicketPage() {
           </div>
 
           {/* Legal Disclaimer Box */}
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-500 space-y-1">
-            <p className="font-semibold text-slate-700">Important Prize Verification Notice:</p>
+          <div className="p-4 rounded-2xl bg-white border border-[#E2E7E3] text-xs text-[#68736E] space-y-1">
+            <p className="font-bold text-[#17201D]">Important Prize Verification Notice:</p>
             <p>
               Winning-number match indication is provided for informational convenience only. Final prize eligibility and claims are subject to official verification of the physical ticket by the Directorate of Kerala State Lotteries within 90 days.
             </p>

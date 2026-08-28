@@ -7,13 +7,13 @@ import {
   Award,
   Calendar,
   Clock,
-  Sparkles,
   ArrowRight,
   RefreshCw,
   CheckCircle2,
   AlertCircle,
   ShieldCheck,
-  Search,
+  MapPin,
+  FileText
 } from 'lucide-react';
 import { formatINR } from '@/lib/prisma';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -49,7 +49,7 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
       } finally {
         setLoading(false);
       }
-    }, 45000); // Poll every 45s
+    }, 45000);
 
     return () => clearInterval(interval);
   }, [liveStatus]);
@@ -59,143 +59,149 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
   const secondPrize = draw?.prizes?.find((p: any) => p.tierNumber === 2 || p.orderIndex === 2);
   const consolationPrize = draw?.prizes?.find((p: any) => p.category?.toLowerCase().includes('cons'));
 
-  const drawDateFormatted = draw?.drawDate ? format(new Date(draw.drawDate), 'dd MMMM yyyy') : format(new Date(), 'dd MMMM yyyy');
+  const drawDateFormatted = draw?.drawDate
+    ? format(new Date(draw.drawDate), 'dd MMMM yyyy')
+    : format(new Date(), 'dd MMMM yyyy');
   const drawDateSlug = draw?.drawDate ? format(new Date(draw.drawDate), 'yyyy-MM-dd') : '';
 
   const getStatusBadge = () => {
     switch (liveStatus) {
       case 'PUBLISHED':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>OFFICIAL RESULT PUBLISHED</span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#16845B]/15 text-[#16845B] border border-[#16845B]/30 font-tabular">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>RESULT PUBLISHED</span>
           </span>
         );
       case 'CHECKING':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300 animate-pulse">
-            <RefreshCw className="w-3.5 h-3.5 text-amber-600 animate-spin" />
-            <span>CHECKING OFFICIAL SOURCE...</span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#A66A00]/15 text-[#C8A45D] border border-[#A66A00]/30 font-tabular">
+            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            <span>UPDATING RESULT</span>
           </span>
         );
       case 'FAILED':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-300">
-            <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#B54747]/15 text-rose-300 border border-[#B54747]/30 font-tabular">
+            <AlertCircle className="w-3.5 h-3.5" />
             <span>TEMPORARILY UNAVAILABLE</span>
           </span>
         );
       case 'WAITING':
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 border border-sky-300">
-            <Clock className="w-3.5 h-3.5 text-sky-600" />
-            <span>WAITING FOR OFFICIAL RESULT (3:00 PM)</span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-slate-300 border border-white/15 font-tabular">
+            <Clock className="w-3.5 h-3.5 text-[#C8A45D]" />
+            <span>AWAITING OFFICIAL RESULT (3:00 PM)</span>
           </span>
         );
     }
   };
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white p-6 sm:p-8 lg:p-10 shadow-2xl border border-slate-700/60">
-      {/* Background Subtle Highlights */}
-      <div className="absolute top-0 right-0 -mt-16 -mr-16 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="relative overflow-hidden rounded-3xl bg-[#0B3B32] text-white p-6 sm:p-8 lg:p-10 border border-[#0B3B32] shadow-xl">
       <div className="relative z-10 space-y-6">
         {/* Top Header & Status */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-700/80 pb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-emerald-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5" /> Latest Official Draw
-              </span>
-            </div>
+            <span className="text-[11px] font-bold text-[#C8A45D] uppercase tracking-wider block font-tabular">
+              {isTodayAvailable ? "Today's Verified Draw" : 'Latest Published Draw'}
+            </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Kerala Lottery Results Today
+              {draw?.lottery?.name || 'Kerala State Lottery'}
             </h2>
             <p className="text-xs text-slate-300">
-              Latest Kerala State Lottery results, draw numbers, winning numbers and prize details.
+              Synchronized directly from the Directorate of Kerala State Lotteries gazette notifications.
             </p>
           </div>
 
-          <div className="flex flex-col sm:items-end gap-2">
+          <div className="flex flex-col sm:items-end gap-1.5">
             {getStatusBadge()}
-            <span className="text-[11px] text-slate-400">
-              Last checked: {formatDistanceToNow(lastChecked, { addSuffix: true })}
+            <span className="text-[11px] text-slate-300/80 font-tabular">
+              Last synchronized {formatDistanceToNow(lastChecked, { addSuffix: true })}
             </span>
           </div>
         </div>
 
-        {/* If no today's draw published yet and showing waiting message */}
+        {/* Informational callout if today's draw is awaiting */}
         {!isTodayAvailable && liveStatus === 'WAITING' && (
-          <div className="bg-slate-800/80 border border-slate-700 rounded-2xl p-4 text-xs text-slate-300 flex items-center gap-3">
-            <Clock className="w-5 h-5 text-amber-400 shrink-0" />
+          <div className="bg-black/20 border border-white/10 rounded-2xl p-4 text-xs text-slate-200 flex items-start gap-3">
+            <Clock className="w-4 h-4 text-[#C8A45D] shrink-0 mt-0.5" />
             <span>
-              Today's result will appear here after the official result is published by the Directorate of Kerala State Lotteries (Draw time: 3:00 PM IST). Showing the most recent verified result below.
+              Today’s result will appear here immediately after official release at 3:00 PM IST. Displaying verified winning numbers from the most recent completed draw below.
             </span>
           </div>
         )}
 
-        {/* Main Result Card Content */}
+        {/* Main Result Showcase */}
         {draw ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            {/* Left Col: Lottery Name & Draw Info */}
+            {/* Left: Draw Identification */}
             <div className="lg:col-span-5 space-y-4">
               <div className="flex items-start gap-4">
-                <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-emerald-950/60 bg-emerald-950 shrink-0 border border-emerald-500/20 p-1 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-2xl bg-white/10 p-2 flex items-center justify-center shrink-0 border border-white/10">
                   <Image
                     src="/logo.svg"
-                    alt="Kerala Lottery Logo"
-                    width={56}
-                    height={56}
+                    alt="Kerala Lottery"
+                    width={40}
+                    height={40}
                     className="w-full h-full object-contain"
                   />
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-emerald-400 tracking-wider uppercase block">
-                    {draw.lottery?.name || 'Kerala State Lottery'}
+                  <span className="text-xs font-bold text-[#C8A45D] tracking-wider uppercase block font-tabular">
+                    Draw Code
                   </span>
-                  <h3 className="text-2xl sm:text-3xl font-black text-white mt-0.5 tracking-tight">
+                  <h3 className="text-2xl sm:text-3xl font-black text-white mt-0.5 tracking-tight font-tabular">
                     {draw.drawNumber}
                   </h3>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="bg-slate-800/60 border border-slate-700/80 rounded-xl p-3">
-                  <span className="text-slate-400 block text-[11px] uppercase font-semibold">Draw Date</span>
-                  <span className="font-bold text-white text-sm mt-0.5 block">{drawDateFormatted}</span>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+                  <span className="text-slate-300 block text-[10px] uppercase font-bold tracking-wide">
+                    Draw Date
+                  </span>
+                  <span className="font-bold text-white text-sm mt-0.5 block font-tabular">
+                    {drawDateFormatted}
+                  </span>
                 </div>
-                <div className="bg-slate-800/60 border border-slate-700/80 rounded-xl p-3">
-                  <span className="text-slate-400 block text-[11px] uppercase font-semibold">Draw Time</span>
-                  <span className="font-bold text-white text-sm mt-0.5 block">{draw.drawTime || '3:00 PM'}</span>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+                  <span className="text-slate-300 block text-[10px] uppercase font-bold tracking-wide">
+                    Draw Time
+                  </span>
+                  <span className="font-bold text-white text-sm mt-0.5 block font-tabular">
+                    {draw.drawTime || '3:00 PM IST'}
+                  </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Source: Kerala State Lotteries, Government of Kerala</span>
+              <div className="flex items-center gap-2 text-xs text-slate-300">
+                <ShieldCheck className="w-4 h-4 text-[#16845B] shrink-0" />
+                <span>Directorate of Kerala State Lotteries</span>
               </div>
             </div>
 
-            {/* Right Col: Top Winning Numbers Card */}
-            <div className="lg:col-span-7 bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 backdrop-blur-xs space-y-4">
-              {/* 1st Prize Showcase */}
+            {/* Right: 1st Prize Showcase & Subordinate Prizes */}
+            <div className="lg:col-span-7 bg-[#10201D] border border-white/10 rounded-2xl p-5 sm:p-6 space-y-4">
+              {/* 1st Prize Centerpiece */}
               <div className="border-b border-white/10 pb-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <Award className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-bold text-[#C8A45D] uppercase tracking-wider flex items-center gap-1.5 font-tabular">
+                    <Award className="w-4 h-4 text-[#C8A45D]" />
                     1st Prize ({firstPrize ? formatINR(firstPrize.amount) : '₹1 Crore'})
                   </span>
                   {firstPrizeWinner?.location && (
-                    <span className="text-[11px] bg-amber-400/20 text-amber-200 px-2 py-0.5 rounded-md font-medium">
-                      {firstPrizeWinner.location}
+                    <span className="text-[11px] bg-white/10 text-slate-200 px-2.5 py-0.5 rounded-md font-medium flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-[#C8A45D]" />
+                      <span>{firstPrizeWinner.location}</span>
                     </span>
                   )}
                 </div>
-                <div className="mt-2 flex items-baseline gap-3">
-                  <span className="text-2xl sm:text-4xl font-black text-amber-400 tracking-wider font-mono bg-slate-900/80 px-4 py-2 rounded-xl border border-amber-500/40 inline-block shadow-inner">
+
+                <div className="mt-2.5">
+                  <span className="text-3xl sm:text-5xl font-black text-[#C8A45D] font-mono tracking-wider bg-black/40 px-4 py-2.5 rounded-xl border border-[#C8A45D]/30 inline-block font-tabular shadow-inner">
                     {firstPrizeWinner ? firstPrizeWinner.displayNumber : 'Checking...'}
                   </span>
                 </div>
@@ -204,22 +210,22 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
               {/* 2nd Prize & Consolation Preview */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 {secondPrize && (
-                  <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-700/60">
-                    <span className="text-slate-400 block text-[11px]">
+                  <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wide">
                       2nd Prize ({formatINR(secondPrize.amount)})
                     </span>
-                    <span className="font-mono font-bold text-white text-base mt-1 block">
+                    <span className="font-mono font-bold text-white text-base mt-1 block font-tabular">
                       {secondPrize.winningNumbers?.[0]?.displayNumber || '—'}
                     </span>
                   </div>
                 )}
 
                 {consolationPrize && (
-                  <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-700/60">
-                    <span className="text-slate-400 block text-[11px]">
-                      Consolation Prize ({formatINR(consolationPrize.amount)})
+                  <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wide">
+                      Consolation ({formatINR(consolationPrize.amount)})
                     </span>
-                    <span className="font-semibold text-emerald-400 text-xs mt-1 block">
+                    <span className="font-semibold text-slate-200 text-xs mt-1 block font-tabular">
                       {consolationPrize.winningNumbers?.length || 0} Winning Tickets
                     </span>
                   </div>
@@ -230,26 +236,27 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
               <div className="pt-2 flex flex-col sm:flex-row gap-3">
                 <Link
                   href={`/result/${drawDateSlug}/${draw.lottery?.slug || 'kerala-lottery'}`}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-700/30 transition-all group"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#16845B] hover:bg-[#16845B]/90 text-white font-bold text-xs transition-colors group shadow-sm"
                 >
-                  <span>View Full Prize Table & Numbers</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <span>View Complete Prize Table</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
                 {draw.sourceUrl && (
                   <a
                     href={draw.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 font-semibold text-xs transition-colors"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 border border-white/15 font-semibold text-xs transition-colors"
                   >
-                    <span>Official PDF</span>
+                    <FileText className="w-3.5 h-3.5 text-[#C8A45D]" />
+                    <span>Official Gazette</span>
                   </a>
                 )}
               </div>
             </div>
           </div>
         ) : (
-          <div className="text-center py-8 text-slate-400 text-sm">
+          <div className="text-center py-8 text-slate-300 text-sm">
             <p>Loading latest official results from database...</p>
           </div>
         )}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Award, Copy, Check, Printer, FileText } from 'lucide-react';
+import { Award, Copy, Check, Printer, FileText, MapPin } from 'lucide-react';
 import { formatINR, formatINRExact } from '@/lib/prisma';
 
 interface PrizeTableProps {
@@ -25,7 +25,7 @@ export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps)
 
   if (!prizes || prizes.length === 0) {
     return (
-      <div className="bg-white rounded-2xl p-8 border border-slate-200 text-center text-slate-500 text-sm">
+      <div className="bg-white rounded-2xl p-8 border border-[#E2E7E3] text-center text-[#68736E] text-xs">
         No prize data available for this draw.
       </div>
     );
@@ -34,16 +34,20 @@ export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps)
   return (
     <div className="space-y-6">
       {/* Table Header Action Bar */}
-      <div className="flex items-center justify-between no-print">
-        <h3 className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-          <Award className="w-5 h-5 text-emerald-600" />
-          <span>Official Prize Breakdown & Winning Numbers</span>
-        </h3>
+      <div className="flex items-center justify-between no-print border-b border-[#E2E7E3] pb-3">
+        <div>
+          <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
+            Full Gazette Breakdown
+          </span>
+          <h3 className="text-xl font-extrabold text-[#17201D] tracking-tight">
+            Official Prize Tiers & Winning Numbers
+          </h3>
+        </div>
         <button
           onClick={handlePrint}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors shadow-2xs"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F7F7F4] hover:bg-[#F1F4F2] text-[#17201D] font-bold text-xs transition-colors border border-[#E2E7E3]"
         >
-          <Printer className="w-4 h-4" />
+          <Printer className="w-3.5 h-3.5 text-[#68736E]" />
           <span>Print Result</span>
         </button>
       </div>
@@ -51,44 +55,44 @@ export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps)
       {/* Prize Cards Stream */}
       <div className="space-y-4">
         {prizes.map((prize, pIdx) => {
-          const isTopTier = prize.tierNumber === 1 || prize.tierNumber === 2 || prize.tierNumber === 3;
+          const isTopTier = prize.tierNumber === 1 || prize.tierNumber === 2 || prize.tierNumber === 3 || prize.orderIndex === 0;
           const isConsolation = prize.category.toLowerCase().includes('cons');
 
           return (
             <div
               key={prize.id || pIdx}
               className={`rounded-2xl border overflow-hidden transition-shadow ${
-                prize.tierNumber === 1
-                  ? 'bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-white border-amber-300 shadow-sm'
+                prize.tierNumber === 1 || prize.orderIndex === 0
+                  ? 'bg-white border-[#C8A45D]/60 shadow-sm'
                   : isTopTier
-                  ? 'bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-white border-emerald-300 shadow-2xs'
+                  ? 'bg-white border-[#0B3B32]/30 shadow-xs'
                   : isConsolation
-                  ? 'bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-white border-purple-200'
-                  : 'bg-white border-slate-200'
+                  ? 'bg-white border-[#E2E7E3]'
+                  : 'bg-white border-[#E2E7E3]'
               }`}
             >
               {/* Prize Tier Header */}
-              <div className="px-5 py-3.5 sm:px-6 sm:py-4 border-b border-inherit flex flex-wrap items-center justify-between gap-3 bg-inherit">
+              <div className="px-5 py-3.5 sm:px-6 sm:py-4 border-b border-[#E2E7E3] flex flex-wrap items-center justify-between gap-3 bg-[#F7F7F4]">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs ${
-                      prize.tierNumber === 1
-                        ? 'bg-amber-500 text-white shadow-xs shadow-amber-500/30'
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center font-black text-xs font-tabular ${
+                      prize.tierNumber === 1 || prize.orderIndex === 0
+                        ? 'bg-[#C8A45D] text-[#10201D]'
                         : isTopTier
-                        ? 'bg-emerald-600 text-white'
+                        ? 'bg-[#0B3B32] text-white'
                         : isConsolation
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-slate-200 text-slate-700'
+                        ? 'bg-[#68736E] text-white'
+                        : 'bg-[#E2E7E3] text-[#17201D]'
                     }`}
                   >
                     {prize.tierNumber ? `${prize.tierNumber}` : 'C'}
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-slate-900 text-base sm:text-lg">
+                    <h4 className="font-extrabold text-[#17201D] text-base">
                       {prize.category}
                     </h4>
                     {prize.description && (
-                      <span className="text-[11px] text-slate-500 block uppercase font-medium">
+                      <span className="text-[10px] text-[#68736E] block uppercase font-bold tracking-wide">
                         {prize.description}
                       </span>
                     )}
@@ -96,16 +100,16 @@ export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps)
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[11px] text-slate-500 block uppercase font-semibold">
+                  <span className="text-[10px] text-[#68736E] block uppercase font-bold tracking-wide">
                     Prize Amount
                   </span>
                   <span
-                    className={`text-lg sm:text-xl font-black ${
-                      prize.tierNumber === 1
-                        ? 'text-amber-600'
+                    className={`text-base sm:text-lg font-black font-tabular ${
+                      prize.tierNumber === 1 || prize.orderIndex === 0
+                        ? 'text-[#C8A45D]'
                         : isTopTier
-                        ? 'text-emerald-700'
-                        : 'text-slate-900'
+                        ? 'text-[#16845B]'
+                        : 'text-[#17201D]'
                     }`}
                   >
                     {formatINRExact(prize.amount)}
@@ -116,33 +120,34 @@ export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps)
               {/* Winning Numbers Body */}
               <div className="p-5 sm:p-6">
                 {isTopTier ? (
-                  /* 1st, 2nd, 3rd Prize High-Impact Cards */
+                  /* Top Tiers: High-Impact Cards */
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {prize.winningNumbers?.map((w: any, wIdx: number) => (
                       <div
                         key={w.id || wIdx}
-                        className="bg-white rounded-xl p-4 border border-slate-200 shadow-2xs flex items-center justify-between group hover:border-emerald-500 transition-colors"
+                        className="bg-[#F7F7F4] rounded-xl p-4 border border-[#E2E7E3] flex items-center justify-between group hover:border-[#0B3B32]/40 transition-colors"
                       >
                         <div>
-                          <span className="text-[11px] text-slate-400 block font-medium">
+                          <span className="text-[10px] text-[#68736E] block font-bold uppercase tracking-wide">
                             Winning Ticket
                           </span>
-                          <span className="text-2xl font-black text-slate-900 font-mono tracking-wider">
+                          <span className="text-2xl font-black text-[#17201D] font-mono tracking-wider font-tabular">
                             {w.displayNumber}
                           </span>
                           {w.location && (
-                            <span className="inline-block mt-1 text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-semibold">
-                              📍 {w.location}
+                            <span className="inline-flex items-center gap-1 mt-1 text-xs bg-white text-[#17201D] px-2 py-0.5 rounded border border-[#E2E7E3] font-semibold">
+                              <MapPin className="w-3 h-3 text-[#C8A45D]" />
+                              <span>{w.location}</span>
                             </span>
                           )}
                         </div>
                         <button
                           onClick={() => handleCopyNumber(w.displayNumber, `${prize.category}-${wIdx}`)}
                           aria-label="Copy ticket number"
-                          className="p-2 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500 group-hover:text-emerald-600 transition-colors"
+                          className="p-2 rounded-lg bg-white hover:bg-[#F1F4F2] text-[#68736E] group-hover:text-[#0B3B32] transition-colors border border-[#E2E7E3]"
                         >
                           {copiedId === `${prize.category}-${wIdx}` ? (
-                            <Check className="w-4 h-4 text-emerald-600" />
+                            <Check className="w-4 h-4 text-[#16845B]" />
                           ) : (
                             <Copy className="w-4 h-4" />
                           )}
@@ -151,34 +156,34 @@ export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps)
                     ))}
                   </div>
                 ) : isConsolation ? (
-                  /* Consolation Prize Series Grid */
+                  /* Consolation Series Grid */
                   <div className="space-y-2">
-                    <p className="text-xs text-slate-500 font-medium">
-                      Consolation prize tickets matching all remaining series ({prize.winningNumbers?.length || 0} tickets):
+                    <p className="text-xs text-[#68736E] font-medium">
+                      Consolation prize matching remaining series ({prize.winningNumbers?.length || 0} tickets):
                     </p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
                       {prize.winningNumbers?.map((w: any, wIdx: number) => (
                         <div
                           key={w.id || wIdx}
                           onClick={() => handleCopyNumber(w.displayNumber, `cons-${wIdx}`)}
-                          className="bg-purple-50/50 hover:bg-purple-100/60 cursor-pointer border border-purple-200/80 rounded-xl p-2.5 text-center transition-all group"
+                          className="bg-[#F7F7F4] hover:bg-[#F1F4F2] cursor-pointer border border-[#E2E7E3] rounded-xl p-2.5 text-center transition-all group"
                         >
-                          <span className="font-mono font-bold text-slate-900 text-sm block">
+                          <span className="font-mono font-bold text-[#17201D] text-sm block font-tabular">
                             {w.displayNumber}
                           </span>
-                          <span className="text-[10px] text-purple-700 font-semibold group-hover:underline">
-                            {copiedId === `cons-${wIdx}` ? 'Copied!' : 'Click to copy'}
+                          <span className="text-[10px] text-[#0B3B32] font-semibold group-hover:underline">
+                            {copiedId === `cons-${wIdx}` ? 'Copied' : 'Click to copy'}
                           </span>
                         </div>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  /* Lower Prize Ending Numbers Grid */
+                  /* Lower Ending Digits Grid */
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs text-slate-500">
-                      <span>Total Winning Numbers: <strong>{prize.winningNumbers?.length || 0}</strong></span>
-                      <span className="text-[11px] text-slate-400">Click any number to copy</span>
+                    <div className="flex items-center justify-between text-xs text-[#68736E]">
+                      <span>Total Winning Numbers: <strong className="text-[#17201D] font-tabular">{prize.winningNumbers?.length || 0}</strong></span>
+                      <span className="text-[11px] text-[#68736E]">Click any number to copy</span>
                     </div>
 
                     <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2">
@@ -186,10 +191,10 @@ export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps)
                         <button
                           key={w.id || wIdx}
                           onClick={() => handleCopyNumber(w.displayNumber, `${prize.category}-${wIdx}`)}
-                          className={`px-2 py-2 rounded-lg font-mono text-sm font-bold border transition-all text-center ${
+                          className={`px-2 py-2 rounded-lg font-mono text-sm font-bold border transition-all text-center font-tabular ${
                             copiedId === `${prize.category}-${wIdx}`
-                              ? 'bg-emerald-600 text-white border-emerald-600'
-                              : 'bg-slate-50 hover:bg-emerald-50 text-slate-800 border-slate-200 hover:border-emerald-300'
+                              ? 'bg-[#0B3B32] text-white border-[#0B3B32]'
+                              : 'bg-[#F7F7F4] hover:bg-[#F1F4F2] text-[#17201D] border-[#E2E7E3]'
                           }`}
                         >
                           {w.displayNumber}

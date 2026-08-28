@@ -78,7 +78,7 @@ self.addEventListener('fetch', (event) => {
 // 4. Push Notification Event: Receive and display official result alerts
 self.addEventListener('push', (event) => {
   let data = {
-    title: '🟢 Kerala Lottery Result Published',
+    title: 'Kerala Lottery Result Published',
     body: 'New official winning numbers are now available.',
     url: '/live',
   };

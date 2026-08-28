@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Bell, CheckCircle2, AlertCircle, ShieldCheck, Check, Trash2, ArrowLeft } from 'lucide-react';
+import { Bell, CheckCircle2, AlertCircle, ShieldCheck, Check, Trash2, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { requestFcmToken } from '@/lib/firebase/client';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 
 export default function NotificationSettingsPage() {
   const [allLotteries, setAllLotteries] = useState<any[]>([]);
@@ -84,7 +85,7 @@ export default function NotificationSettingsPage() {
       if (json.success) {
         setStatusMsg({
           type: 'success',
-          text: '🟢 Notification preferences saved successfully! You will receive push alerts for your selected lotteries.',
+          text: 'Notification preferences saved successfully! You will receive push alerts when official results are published.',
         });
       } else {
         setStatusMsg({
@@ -131,52 +132,50 @@ export default function NotificationSettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 animate-fadeIn">
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Notification Preferences' },
+        ]}
+      />
+
       {/* Header */}
-      <div className="space-y-3">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-emerald-700 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Home</span>
-        </Link>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block">
-            User Preferences
-          </span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-          🔔 Notification Settings
+      <div className="space-y-2 border-b border-[#E2E7E3] pb-6">
+        <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
+          Alert Preferences
+        </span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#17201D] tracking-tight">
+          Kerala Lottery Notification Settings
         </h1>
-        <p className="text-sm text-slate-600 max-w-2xl">
-          Manage your browser push notification preferences for official Kerala State Lottery results.
+        <p className="text-xs sm:text-sm text-[#68736E] max-w-2xl">
+          Receive instantaneous browser push notifications when selected Kerala State Lottery results are officially published.
         </p>
       </div>
 
       {/* Main Settings Card */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2E7E3] shadow-sm space-y-6">
         {/* Status Indicator */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-[#F7F7F4] border border-[#E2E7E3]">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              Browser Push Status
+            <span className="text-[10px] font-bold text-[#68736E] uppercase tracking-wider block">
+              Browser Push Delivery Status
             </span>
-            <div className="flex items-center gap-2 font-extrabold text-base">
+            <div className="flex items-center gap-2 font-extrabold text-sm sm:text-base">
               {permissionState === 'granted' && fcmToken ? (
-                <>
-                  <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-emerald-700">🟢 Notifications Enabled</span>
-                </>
+                <div className="flex items-center gap-2 text-[#16845B]">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#16845B]" />
+                  <span>Notifications Active</span>
+                </div>
               ) : permissionState === 'denied' ? (
-                <>
-                  <span className="w-3 h-3 rounded-full bg-rose-500" />
-                  <span className="text-rose-700">🔴 Notifications Blocked in Browser</span>
-                </>
+                <div className="flex items-center gap-2 text-[#B54747]">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#B54747]" />
+                  <span>Notifications Blocked in Browser</span>
+                </div>
               ) : (
-                <>
-                  <span className="w-3 h-3 rounded-full bg-slate-400" />
-                  <span className="text-slate-600">⚪ Not Configured</span>
-                </>
+                <div className="flex items-center gap-2 text-[#68736E]">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#CBD5CE]" />
+                  <span>Not Yet Configured</span>
+                </div>
               )}
             </div>
           </div>
@@ -185,22 +184,22 @@ export default function NotificationSettingsPage() {
             <button
               onClick={handleDisableNotifications}
               disabled={loading}
-              className="px-4 py-2 rounded-xl bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold transition-colors flex items-center gap-1.5 self-start sm:self-auto"
+              className="px-4 py-2 rounded-xl bg-white hover:bg-rose-50 text-[#B54747] border border-[#B54747]/30 text-xs font-bold transition-colors flex items-center gap-1.5 self-start sm:self-auto"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span>Disable Notifications</span>
+              <span>Disable Alerts</span>
             </button>
           )}
         </div>
 
         {permissionState === 'denied' && (
-          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1">
-            <h4 className="font-bold flex items-center gap-1.5 text-amber-800">
-              <AlertCircle className="w-4 h-4 text-amber-600" />
+          <div className="p-4 rounded-2xl bg-[#A66A00]/10 border border-[#A66A00]/30 text-xs text-[#A66A00] space-y-1">
+            <h4 className="font-bold flex items-center gap-1.5">
+              <AlertCircle className="w-4 h-4" />
               <span>How to unblock notifications:</span>
             </h4>
             <p>
-              Click the lock/tune icon near your browser URL bar, set <strong>Notifications</strong> to <strong>Allow</strong>, and reload this page.
+              Click the lock icon in your browser URL bar, set <strong>Notifications</strong> to <strong>Allow</strong>, and refresh the page.
             </p>
           </div>
         )}
@@ -208,13 +207,13 @@ export default function NotificationSettingsPage() {
         {/* Lottery Selection Grid */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wide">
-              Subscribed Kerala Lotteries
+            <h2 className="text-xs font-bold text-[#17201D] uppercase tracking-wide">
+              Subscribed Lottery Schemes
             </h2>
             <button
               type="button"
               onClick={handleSelectAllToggle}
-              className="text-xs font-bold text-emerald-700 hover:underline"
+              className="text-xs font-bold text-[#0B3B32] hover:text-[#16845B]"
             >
               {selectAll ? 'Deselect All' : 'Select All Lotteries'}
             </button>
@@ -230,17 +229,17 @@ export default function NotificationSettingsPage() {
                   onClick={() => toggleLottery(lot.id)}
                   className={`p-3.5 rounded-2xl text-left text-xs font-semibold flex items-center justify-between gap-3 border transition-all ${
                     checked
-                      ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-bold'
-                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                      ? 'bg-[#F1F4F2] border-[#0B3B32]/40 text-[#0B3B32] font-bold'
+                      : 'bg-white border-[#E2E7E3] text-[#17201D] hover:bg-[#F7F7F4]'
                   }`}
                 >
                   <div>
-                    <span className="block text-slate-900 font-bold">{lot.name}</span>
-                    <span className="text-[11px] text-slate-400 font-normal">{lot.drawDay} • 3:00 PM</span>
+                    <span className="block text-[#17201D] font-bold">{lot.name}</span>
+                    <span className="text-[11px] text-[#68736E] font-normal">{lot.drawDay} • 3:00 PM</span>
                   </div>
                   <div
                     className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 border ${
-                      checked ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-slate-300 bg-white'
+                      checked ? 'bg-[#0B3B32] border-[#0B3B32] text-white' : 'border-[#E2E7E3] bg-white'
                     }`}
                   >
                     {checked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -255,16 +254,16 @@ export default function NotificationSettingsPage() {
           <div
             className={`p-4 rounded-2xl border text-xs font-semibold flex items-center gap-2 ${
               statusMsg.type === 'success'
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                ? 'bg-[#16845B]/10 border-[#16845B]/30 text-[#16845B]'
                 : statusMsg.type === 'error'
-                ? 'bg-rose-50 border-rose-200 text-rose-900'
-                : 'bg-slate-100 border-slate-200 text-slate-800'
+                ? 'bg-[#B54747]/10 border-[#B54747]/30 text-[#B54747]'
+                : 'bg-[#F7F7F4] border-[#E2E7E3] text-[#17201D]'
             }`}
           >
             {statusMsg.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
             ) : (
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <AlertCircle className="w-4 h-4 shrink-0" />
             )}
             <span>{statusMsg.text}</span>
           </div>
@@ -275,22 +274,31 @@ export default function NotificationSettingsPage() {
             type="button"
             disabled={loading}
             onClick={handleSavePreferences}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-[#0B3B32] hover:bg-[#16845B] text-white font-bold text-xs shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 font-tabular"
           >
-            <Bell className="w-4 h-4" />
-            <span>{loading ? 'Saving Preferences...' : 'Save Notification Preferences'}</span>
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Saving Preferences...</span>
+              </>
+            ) : (
+              <>
+                <Bell className="w-4 h-4 text-[#C8A45D]" />
+                <span>Enable Notifications</span>
+              </>
+            )}
           </button>
         </div>
       </div>
 
-      {/* Transparency & Privacy Notice */}
-      <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200 text-xs text-slate-500 space-y-2">
-        <div className="flex items-center gap-2 font-bold text-slate-700">
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          <span>FCM Privacy Guarantee</span>
+      {/* Privacy Guarantee */}
+      <div className="bg-white rounded-3xl p-6 border border-[#E2E7E3] text-xs text-[#68736E] space-y-2">
+        <div className="flex items-center gap-2 font-bold text-[#17201D]">
+          <ShieldCheck className="w-4 h-4 text-[#16845B]" />
+          <span>FCM Privacy & Security Standard</span>
         </div>
-        <p>
-          Push notification registration uses Firebase Cloud Messaging (FCM) anonymous device identifiers. No personal identifying information, email addresses, phone numbers, or ticket queries are collected or associated with notification subscriptions.
+        <p className="leading-relaxed">
+          Push notification registration uses Firebase Cloud Messaging (FCM) anonymous device tokens. No personally identifiable information, telephone numbers, emails, or individual ticket queries are collected or associated with notification subscriptions.
         </p>
       </div>
     </div>

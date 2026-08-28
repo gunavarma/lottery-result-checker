@@ -27,6 +27,7 @@ model Lottery {
   draws               Draw[]
   favoriteByUsers     FavoriteLottery[]
   pushSubscriptions   PushSubscriptionLottery[]
+  watchedTickets      TicketWatchlist[]
 
   @@index([slug])
   @@index([code])
@@ -164,4 +165,23 @@ model FavoriteLottery {
 
   @@unique([anonymousUserId, lotteryId])
   @@index([anonymousUserId])
+}
+
+// Future Ticket Monitoring & Notification Architecture
+
+model TicketWatchlist {
+  id           String   @id @default(cuid())
+  userId       String?  // Anonymous device UUID or registered user ID
+  lotteryId    String
+  ticketNumber String   // 6-digit number or 4-digit suffix
+  series       String?  // Optional series code (e.g. "PS", "PN")
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  lottery      Lottery  @relation(fields: [lotteryId], references: [id], onDelete: Cascade)
+
+  @@index([lotteryId])
+  @@index([ticketNumber])
+  @@index([userId])
 }

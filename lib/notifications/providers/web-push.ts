@@ -34,7 +34,7 @@ export class WebPushProvider implements NotificationProvider {
       }
 
       const payload = JSON.stringify({
-        title: `🟢 ${event.lotteryName} (${event.drawNumber}) Result Published`,
+        title: `${event.lotteryName} (${event.drawNumber}) Result Published`,
         body: `Official Kerala State Lottery result for ${event.drawNumber} is out. 1st Prize: ${event.firstPrizeAmountFormatted}. Tap to view full winning numbers.`,
         icon: '/icon-192.png',
         badge: '/icon-192.png',

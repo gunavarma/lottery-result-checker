@@ -21,7 +21,7 @@ messaging.onBackgroundMessage((payload) => {
   const notificationTitle =
     payload.notification?.title ||
     payload.data?.title ||
-    '🟢 Kerala Lottery Result';
+    'Kerala Lottery Result';
 
   const notificationOptions = {
     body:

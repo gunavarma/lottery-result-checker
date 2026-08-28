@@ -2,13 +2,16 @@ import React from 'react';
 import Link from 'next/link';
 import { prisma, serializeData } from '@/lib/prisma';
 import { HeroTodayCard } from '@/components/HeroTodayCard';
+import { TicketChecker } from '@/components/TicketChecker';
+import { UpcomingDrawsTimeline } from '@/components/UpcomingDrawsTimeline';
+import { LotteryDirectoryList } from '@/components/LotteryDirectoryList';
 import { ResultCard } from '@/components/ResultCard';
-import { DrawScheduleTable } from '@/components/DrawScheduleTable';
-import { OfficialSourceBadge } from '@/components/OfficialSourceBadge';
-import { SeoContent } from '@/components/SeoContent';
+import { TrustSection } from '@/components/TrustSection';
 import { NotificationBanner } from '@/components/NotificationBanner';
-import { Award, Calendar, ArrowRight, ShieldCheck, Search, ChevronRight } from 'lucide-react';
-import { startOfDay, endOfDay, format } from 'date-fns';
+import { getAllNews, getFeaturedNews } from '@/lib/news';
+import { NewsCard, FeaturedNewsHero } from '@/components/NewsComponents';
+import { Award, Calendar, ArrowRight, ShieldCheck, Search, Newspaper, Bell } from 'lucide-react';
+import { startOfDay, endOfDay } from 'date-fns';
 
 export const revalidate = 60;
 
@@ -109,6 +112,9 @@ async function getHomepageData() {
 
 export default async function HomePage() {
   const data = await getHomepageData();
+  const allNews = getAllNews();
+  const featuredArticle = getFeaturedNews();
+  const secondaryNews = allNews.filter(a => a.id !== featuredArticle.id).slice(0, 3);
 
   const websiteSchema = {
     '@context': 'https://schema.org',
@@ -132,58 +138,104 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
       />
 
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 space-y-6">
-        <HeroTodayCard initialData={data} />
-        <NotificationBanner />
-      </section>
+      {/* Hero Editorial Header */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 space-y-8">
+        <div className="space-y-3 max-w-3xl">
+          <span className="text-xs font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
+            Kerala Lottery Results
+          </span>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#17201D] tracking-tight leading-tight">
+            Today's Kerala Lottery Results
+          </h1>
+          <p className="text-sm sm:text-base text-[#68736E] leading-relaxed">
+            Official lottery results, prize structures and ticket checking — updated as results are published by the Directorate of Kerala State Lotteries.
+          </p>
+        </div>
 
-      {/* Search Bar Callout */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-bold text-slate-900">
-              Search Kerala Lottery Results Database
-            </h2>
-            <p className="text-xs text-slate-500">
-              Search past draws, specific draw numbers (e.g. KN-638, SS-534) or check winning ticket numbers.
-            </p>
-          </div>
-          <Link
-            href="/search"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors shrink-0"
-          >
-            <Search className="w-4 h-4" />
-            <span>Open Result Search</span>
-          </Link>
+        {/* Level 1 Visual Priority: Today's Result Centerpiece + Ticket Checker */}
+        <div className="space-y-8">
+          <HeroTodayCard initialData={data} />
+          <TicketChecker />
         </div>
       </section>
 
-      {/* Official Source Transparency Badge */}
+      {/* Level 2 Visual Priority: Upcoming Draws Timeline */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <OfficialSourceBadge
-          sourceUrl={data.latestDraw?.sourceUrl}
-          drawNumber={data.latestDraw?.drawNumber}
-        />
+        <UpcomingDrawsTimeline />
       </section>
 
-      {/* Latest Draw Results Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
+      {/* Level 2 Visual Priority: Active Lottery Directory (Compact List Layout) */}
+      <section id="lotteries" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+        <div className="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
           <div>
-            <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block">
-              Recent Official Results
+            <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
+              Kerala State Schemes
             </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Latest Kerala Lottery Results
+            <h2 className="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
+              Active Kerala Lottery Schemes
+            </h2>
+          </div>
+          <Link
+            href="/prize-structure"
+            className="text-xs font-bold text-[#0B3B32] hover:text-[#16845B] inline-flex items-center gap-1 transition-colors"
+          >
+            <span>All Prize Structures</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <LotteryDirectoryList lotteries={data.popularLotteries || []} />
+      </section>
+
+      {/* Level 3 Visual Priority: Editorial News Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div className="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
+          <div>
+            <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
+              Editorial & Analysis
+            </span>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
+              Latest Lottery News & Reports
+            </h2>
+          </div>
+          <Link
+            href="/news"
+            className="text-xs font-bold text-[#0B3B32] hover:text-[#16845B] inline-flex items-center gap-1 transition-colors"
+          >
+            <span>View All News</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {/* 1 Featured + Secondary Articles Grid */}
+        <div className="space-y-6">
+          <FeaturedNewsHero article={featuredArticle} />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {secondaryNews.map((article) => (
+              <NewsCard key={article.id} article={article} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Level 3 Visual Priority: Previous Results Archive Preview */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E2E7E3] pb-3">
+          <div>
+            <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
+              Chronological Archive
+            </span>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
+              Recent Official Results
             </h2>
           </div>
           <Link
             href="/previous-results"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 rounded-xl transition-colors shrink-0"
+            className="inline-flex items-center gap-1 text-xs font-bold text-[#0B3B32] hover:text-[#16845B] transition-colors shrink-0"
           >
-            <span>View All Results</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>Explore Complete Results Archive</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -194,68 +246,20 @@ export default async function HomePage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl p-8 border border-slate-200 text-center text-slate-500 text-sm">
+          <div className="bg-white rounded-2xl p-8 border border-[#E2E7E3] text-center text-[#68736E] text-xs">
             Results are currently synchronizing with the official LOTIS server.
           </div>
         )}
       </section>
 
-      {/* Active Lotteries Scheme List */}
-      <section id="lotteries" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div className="border-b border-slate-200 pb-4">
-          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block">
-            Kerala State Schemes
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Active Kerala Lottery Schemes
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {data.popularLotteries?.map((lottery: any) => (
-            <Link
-              key={lottery.id}
-              href={`/lottery/${lottery.slug}`}
-              className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition-all group flex flex-col justify-between"
-            >
-              <div>
-                <span className="text-[11px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
-                  {lottery.code}
-                </span>
-                <h4 className="font-extrabold text-slate-900 text-base mt-2 group-hover:text-emerald-700 transition-colors">
-                  {lottery.name}
-                </h4>
-                <p className="text-xs text-slate-500 mt-1">
-                  Draw Day: <strong className="text-slate-700">{lottery.drawDay}</strong>
-                </p>
-              </div>
-
-              <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-emerald-700">
-                <span>View Results</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Draw Schedule Table */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div className="border-b border-slate-200 pb-4">
-          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block">
-            Timetable & Schedule
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Kerala State Lottery Calendar Preview
-          </h2>
-        </div>
-
-        <DrawScheduleTable />
-      </section>
-
-      {/* Informative SEO Content & FAQs */}
+      {/* Notification Opt-in Prompt */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SeoContent />
+        <NotificationBanner />
+      </section>
+
+      {/* Trust & Verification 4-Step Pipeline */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <TrustSection />
       </section>
     </div>
   );

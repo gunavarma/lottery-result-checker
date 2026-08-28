@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { Calendar, Clock, Award, CheckCircle, ChevronRight } from 'lucide-react';
-import { formatINR } from '@/lib/prisma';
 
 export const WEEKLY_SCHEDULE = [
   { day: 'Monday', name: 'Bhagya Thara', code: 'BT', slug: 'bhagya-thara', time: '3:00 PM', price: '₹40', firstPrize: '₹1 Crore' },
@@ -28,25 +27,25 @@ export function DrawScheduleTable() {
   return (
     <div className="space-y-8">
       {/* Weekly Schedule */}
-      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
-        <div className="px-6 py-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white rounded-3xl border border-[#E2E7E3] overflow-hidden shadow-sm">
+        <div className="px-6 py-5 bg-[#10201D] text-white flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-lg font-bold flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-emerald-400" />
+            <span className="text-[10px] font-bold text-[#C8A45D] uppercase tracking-wider block font-tabular">
+              Timetable
+            </span>
+            <h3 className="text-base sm:text-lg font-extrabold flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-[#C8A45D]" />
               <span>Official Kerala Lottery Weekly Draw Schedule</span>
             </h3>
-            <p className="text-xs text-slate-300 mt-0.5">
-              Draws are conducted every day at 3:00 PM at Gorky Bhavan, Thiruvananthapuram.
-            </p>
           </div>
-          <span className="text-xs font-semibold bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 px-3 py-1 rounded-full">
+          <span className="text-xs font-bold bg-white/10 text-[#C8A45D] border border-white/15 px-3 py-1 rounded-full font-tabular">
             Today is {todayDayName}
           </span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-slate-700 text-xs uppercase font-semibold border-b border-slate-200">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-[#F7F7F4] text-[#68736E] text-[11px] uppercase font-bold border-b border-[#E2E7E3]">
               <tr>
                 <th className="py-3.5 px-4 sm:px-6">Day</th>
                 <th className="py-3.5 px-4 sm:px-6">Lottery Scheme</th>
@@ -54,10 +53,10 @@ export function DrawScheduleTable() {
                 <th className="py-3.5 px-4 sm:px-6">Draw Time</th>
                 <th className="py-3.5 px-4 sm:px-6">Ticket Cost</th>
                 <th className="py-3.5 px-4 sm:px-6">1st Prize</th>
-                <th className="py-3.5 px-4 sm:px-6 text-right">View Scheme</th>
+                <th className="py-3.5 px-4 sm:px-6 text-right">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#E2E7E3]">
               {WEEKLY_SCHEDULE.map((item) => {
                 const isToday = item.day.toLowerCase() === todayDayName.toLowerCase();
                 return (
@@ -65,46 +64,46 @@ export function DrawScheduleTable() {
                     key={item.day}
                     className={`transition-colors ${
                       isToday
-                        ? 'bg-emerald-50/70 font-semibold'
-                        : 'hover:bg-slate-50/80'
+                        ? 'bg-[#F1F4F2] font-semibold'
+                        : 'hover:bg-[#F7F7F4]'
                     }`}
                   >
                     <td className="py-4 px-4 sm:px-6">
                       <div className="flex items-center gap-2">
                         {isToday && (
-                          <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                          <span className="w-2 h-2 rounded-full bg-[#16845B]" />
                         )}
-                        <span className={isToday ? 'text-emerald-900 font-bold' : 'text-slate-900'}>
+                        <span className={isToday ? 'text-[#0B3B32] font-extrabold' : 'text-[#17201D]'}>
                           {item.day}
                         </span>
                         {isToday && (
-                          <span className="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-bold">
+                          <span className="text-[10px] bg-[#0B3B32] text-white px-2 py-0.5 rounded font-bold font-tabular">
                             TODAY
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="py-4 px-4 sm:px-6 font-medium text-slate-900">
+                    <td className="py-4 px-4 sm:px-6 font-bold text-[#17201D]">
                       {item.name}
                     </td>
-                    <td className="py-4 px-4 sm:px-6 font-mono text-xs text-slate-600">
+                    <td className="py-4 px-4 sm:px-6 font-mono text-xs text-[#68736E]">
                       {item.code}
                     </td>
-                    <td className="py-4 px-4 sm:px-6 text-slate-600">
+                    <td className="py-4 px-4 sm:px-6 text-[#68736E] font-tabular">
                       {item.time}
                     </td>
-                    <td className="py-4 px-4 sm:px-6 text-slate-700 font-semibold">
+                    <td className="py-4 px-4 sm:px-6 text-[#17201D] font-bold font-tabular">
                       {item.price}
                     </td>
-                    <td className="py-4 px-4 sm:px-6 font-bold text-emerald-700">
+                    <td className="py-4 px-4 sm:px-6 font-extrabold text-[#16845B] font-tabular">
                       {item.firstPrize}
                     </td>
                     <td className="py-4 px-4 sm:px-6 text-right">
                       <Link
                         href={`/lottery/${item.slug}`}
-                        className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-900"
+                        className="inline-flex items-center gap-1 text-xs font-bold text-[#0B3B32] hover:text-[#16845B]"
                       >
-                        <span>Details</span>
+                        <span>View</span>
                         <ChevronRight className="w-3.5 h-3.5" />
                       </Link>
                     </td>
@@ -117,20 +116,20 @@ export function DrawScheduleTable() {
       </div>
 
       {/* Bumper Lotteries Schedule */}
-      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
-        <div className="px-6 py-5 bg-gradient-to-r from-amber-900 to-amber-950 text-white">
-          <h3 className="text-lg font-bold flex items-center gap-2">
-            <Award className="w-5 h-5 text-amber-400" />
+      <div className="bg-white rounded-3xl border border-[#E2E7E3] overflow-hidden shadow-sm">
+        <div className="px-6 py-5 bg-[#10201D] text-white">
+          <span className="text-[10px] font-bold text-[#C8A45D] uppercase tracking-wider block font-tabular">
+            Jackpot Series
+          </span>
+          <h3 className="text-base sm:text-lg font-extrabold flex items-center gap-2">
+            <Award className="w-4 h-4 text-[#C8A45D]" />
             <span>Kerala State Bumper Lotteries Schedule</span>
           </h3>
-          <p className="text-xs text-amber-200 mt-0.5">
-            Special high-value bumper draws conducted by the Directorate of Kerala State Lotteries.
-          </p>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-slate-700 text-xs uppercase font-semibold border-b border-slate-200">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-[#F7F7F4] text-[#68736E] text-[11px] uppercase font-bold border-b border-[#E2E7E3]">
               <tr>
                 <th className="py-3.5 px-4 sm:px-6">Bumper Scheme</th>
                 <th className="py-3.5 px-4 sm:px-6">Season</th>
@@ -140,28 +139,28 @@ export function DrawScheduleTable() {
                 <th className="py-3.5 px-4 sm:px-6 text-right">Prize Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#E2E7E3]">
               {BUMPER_SCHEDULE.map((item) => (
-                <tr key={item.name} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-4 px-4 sm:px-6 font-bold text-slate-900">
+                <tr key={item.name} className="hover:bg-[#F7F7F4] transition-colors">
+                  <td className="py-4 px-4 sm:px-6 font-bold text-[#17201D]">
                     {item.name}
                   </td>
-                  <td className="py-4 px-4 sm:px-6 text-slate-600">
+                  <td className="py-4 px-4 sm:px-6 text-[#68736E]">
                     {item.season}
                   </td>
-                  <td className="py-4 px-4 sm:px-6 font-mono text-xs text-slate-600">
+                  <td className="py-4 px-4 sm:px-6 font-mono text-xs text-[#68736E]">
                     {item.code}
                   </td>
-                  <td className="py-4 px-4 sm:px-6 text-slate-700 font-semibold">
+                  <td className="py-4 px-4 sm:px-6 text-[#17201D] font-bold font-tabular">
                     {item.price}
                   </td>
-                  <td className="py-4 px-4 sm:px-6 font-extrabold text-amber-600">
+                  <td className="py-4 px-4 sm:px-6 font-extrabold text-[#C8A45D] font-tabular">
                     {item.firstPrize}
                   </td>
                   <td className="py-4 px-4 sm:px-6 text-right">
                     <Link
                       href={`/lottery/${item.slug}`}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-900"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#0B3B32] hover:text-[#16845B]"
                     >
                       <span>View</span>
                       <ChevronRight className="w-3.5 h-3.5" />

@@ -43,90 +43,98 @@ export default async function LotteryCalendarPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8">
-      <Breadcrumbs items={[{ label: 'Lottery Calendar' }]} />
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Lottery Calendar 2026' },
+        ]}
+      />
 
-      <div className="border-b border-slate-200 pb-6 space-y-2">
-        <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block">
+      <div className="border-b border-[#E2E7E3] pb-6 space-y-2">
+        <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
           Official Draw Timetable
         </span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#17201D] tracking-tight">
           Kerala State Lottery Calendar 2026
         </h1>
-        <p className="text-sm text-slate-600">
+        <p className="text-xs sm:text-sm text-[#68736E]">
           Official weekly draw calendar and seasonal bumper dates conducted by the Directorate of Kerala State Lotteries at Gorky Bhavan, Thiruvananthapuram.
         </p>
       </div>
 
       {/* Upcoming 14-Day Calendar Schedule */}
-      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="p-6 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white rounded-3xl border border-[#E2E7E3] overflow-hidden shadow-sm">
+        <div className="p-6 bg-[#10201D] text-white flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Clock className="w-5 h-5 text-emerald-400" />
+            <span className="text-[10px] font-bold text-[#C8A45D] uppercase tracking-wider block font-tabular">
+              Chronological Schedule
+            </span>
+            <h2 className="text-lg sm:text-xl font-extrabold flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[#C8A45D]" />
               <span>Upcoming Kerala Lottery Draws (Next 14 Days)</span>
             </h2>
             <p className="text-xs text-slate-300 mt-1">
               Draws take place daily at 3:00 PM IST. Official LOTIS gazette published at ~4:30 PM.
             </p>
           </div>
-          <span className="text-xs bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 px-3.5 py-1.5 rounded-full font-semibold">
+          <span className="text-xs bg-white/10 text-[#C8A45D] border border-white/15 px-3.5 py-1.5 rounded-full font-bold font-tabular">
             Today is {format(today, 'dd MMMM yyyy')}
           </span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-slate-700 text-xs uppercase font-semibold border-b border-slate-200">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-[#F7F7F4] text-[#68736E] text-[11px] uppercase font-bold border-b border-[#E2E7E3]">
               <tr>
                 <th className="py-3.5 px-4 sm:px-6">Date & Day</th>
                 <th className="py-3.5 px-4 sm:px-6">Lottery Scheme</th>
                 <th className="py-3.5 px-4 sm:px-6">Code</th>
                 <th className="py-3.5 px-4 sm:px-6">Draw Time</th>
                 <th className="py-3.5 px-4 sm:px-6">1st Prize</th>
-                <th className="py-3.5 px-4 sm:px-6 text-right">Scheme Info</th>
+                <th className="py-3.5 px-4 sm:px-6 text-right">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#E2E7E3]">
               {upcomingDraws.map((item, idx) => (
                 <tr
                   key={idx}
                   className={`transition-colors ${
                     item.isToday
-                      ? 'bg-emerald-50/80 font-semibold'
-                      : 'hover:bg-slate-50/80'
+                      ? 'bg-[#F1F4F2] font-semibold'
+                      : 'hover:bg-[#F7F7F4]'
                   }`}
                 >
                   <td className="py-4 px-4 sm:px-6">
                     <div className="flex items-center gap-2">
                       {item.isToday && (
-                        <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                        <span className="w-2 h-2 rounded-full bg-[#16845B]" />
                       )}
-                      <span className={item.isToday ? 'text-emerald-950 font-bold' : 'text-slate-900'}>
+                      <span className={item.isToday ? 'text-[#0B3B32] font-black' : 'text-[#17201D]'}>
                         {item.dateFormatted}
                       </span>
                       {item.isToday && (
-                        <span className="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-bold">
-                          TODAY'S DRAW
+                        <span className="text-[10px] bg-[#0B3B32] text-white px-2 py-0.5 rounded font-bold font-tabular">
+                          TODAY
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="py-4 px-4 sm:px-6 font-bold text-slate-900">
+                  <td className="py-4 px-4 sm:px-6 font-bold text-[#17201D]">
                     {item.scheme.name}
                   </td>
-                  <td className="py-4 px-4 sm:px-6 font-mono text-xs text-slate-600">
+                  <td className="py-4 px-4 sm:px-6 font-mono text-xs text-[#68736E]">
                     {item.scheme.code}
                   </td>
-                  <td className="py-4 px-4 sm:px-6 text-slate-600">
+                  <td className="py-4 px-4 sm:px-6 text-[#68736E] font-tabular">
                     {item.scheme.time}
                   </td>
-                  <td className="py-4 px-4 sm:px-6 font-extrabold text-emerald-700">
+                  <td className="py-4 px-4 sm:px-6 font-extrabold text-[#16845B] font-tabular">
                     {item.scheme.firstPrize}
                   </td>
                   <td className="py-4 px-4 sm:px-6 text-right">
                     <Link
                       href={`/lottery/${item.scheme.slug}`}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-900"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#0B3B32] hover:text-[#16845B]"
                     >
                       <span>View Scheme</span>
                       <ChevronRight className="w-3.5 h-3.5" />

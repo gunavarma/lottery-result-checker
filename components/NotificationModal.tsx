@@ -1,20 +1,24 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Bell, CheckCircle2, AlertCircle, ShieldCheck, Check, Star } from 'lucide-react';
+import { X, Bell, CheckCircle2, AlertCircle, ShieldCheck, Check, Star, Lock } from 'lucide-react';
 import { requestFcmToken } from '@/lib/firebase/client';
 
 interface NotificationModalProps {
+  isOpen?: boolean;
   initialLotteryId?: string;
   lotteryName?: string;
   onClose: () => void;
 }
 
 export function NotificationModal({
+  isOpen = true,
   initialLotteryId,
   lotteryName,
   onClose,
 }: NotificationModalProps) {
+  if (!isOpen) return null;
+
   const [allLotteries, setAllLotteries] = useState<any[]>([]);
   const [selectedLotteryIds, setSelectedLotteryIds] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(true);
@@ -116,7 +120,7 @@ export function NotificationModal({
       if (json.success) {
         setStatusMsg({
           type: 'success',
-          text: '🟢 Notifications Enabled! You will receive an instant alert when official results are published.',
+          text: 'Notifications Enabled. You will receive an instant alert when official results are published.',
         });
       } else {
         setStatusMsg({
@@ -170,39 +174,39 @@ export function NotificationModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
-      <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-slate-200 shadow-2xl space-y-6 relative max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#10201D]/60 backdrop-blur-xs animate-fadeIn">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-[#E2E7E3] shadow-2xl space-y-6 relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           aria-label="Close modal"
-          className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+          className="absolute top-5 right-5 p-2 rounded-full text-[#68736E] hover:text-[#17201D] hover:bg-[#F7F7F4] transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Modal Header */}
         <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-emerald-700 text-xs font-bold uppercase tracking-wider">
-            <Bell className="w-4 h-4" />
+          <div className="flex items-center gap-1.5 text-[#0B3B32] text-xs font-bold uppercase tracking-wider font-tabular">
+            <Bell className="w-4 h-4 text-[#C8A45D]" />
             <span>FCM Web Push Notifications</span>
           </div>
-          <h3 className="text-2xl font-black text-slate-900">
+          <h3 className="text-2xl font-black text-[#17201D]">
             Get Kerala Lottery Result Alerts
           </h3>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-[#68736E] leading-relaxed">
             Allow browser notifications to receive an automatic alert the moment your selected Kerala State Lottery results are officially published by the Directorate of Kerala State Lotteries.
           </p>
         </div>
 
         {/* Permission Denied Notice */}
         {permissionState === 'denied' && (
-          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1.5">
-            <div className="flex items-center gap-1.5 font-bold text-amber-800">
-              <AlertCircle className="w-4 h-4 text-amber-600" />
+          <div className="p-4 rounded-2xl bg-[#A66A00]/10 border border-[#A66A00]/30 text-xs text-[#A66A00] space-y-1.5">
+            <div className="flex items-center gap-1.5 font-bold">
+              <AlertCircle className="w-4 h-4" />
               <span>Notifications are blocked in your browser</span>
             </div>
             <p>
-              To enable alerts, open your browser site settings (click the lock/tune icon near the URL bar), change <strong>Notifications</strong> to <strong>Allow</strong>, and reload this page.
+              To enable alerts, open your browser site settings (click the lock icon near the URL bar), change <strong>Notifications</strong> to <strong>Allow</strong>, and reload this page.
             </p>
           </div>
         )}
@@ -210,19 +214,19 @@ export function NotificationModal({
         {/* Lottery Selection List */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+            <span className="text-xs font-bold text-[#17201D] uppercase tracking-wide">
               Choose Lotteries:
             </span>
             <button
               type="button"
               onClick={handleSelectAllToggle}
-              className="text-xs font-bold text-emerald-700 hover:underline"
+              className="text-xs font-bold text-[#0B3B32] hover:underline"
             >
               {selectAll ? 'Deselect All' : 'Select All Lotteries'}
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1 border border-slate-200 rounded-2xl bg-slate-50">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1 border border-[#E2E7E3] rounded-2xl bg-[#F7F7F4]">
             {allLotteries.map((lot) => {
               const checked = selectAll || selectedLotteryIds.includes(lot.id);
               return (
@@ -232,14 +236,14 @@ export function NotificationModal({
                   onClick={() => toggleLottery(lot.id)}
                   className={`p-2.5 rounded-xl text-left text-xs font-semibold flex items-center justify-between gap-2 border transition-all ${
                     checked
-                      ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-bold'
-                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                      ? 'bg-[#F1F4F2] border-[#0B3B32]/40 text-[#0B3B32] font-bold'
+                      : 'bg-white border-[#E2E7E3] text-[#17201D] hover:bg-slate-100'
                   }`}
                 >
                   <span className="truncate">{lot.name}</span>
                   <div
                     className={`w-4 h-4 rounded flex items-center justify-center shrink-0 border ${
-                      checked ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-slate-300 bg-white'
+                      checked ? 'bg-[#0B3B32] border-[#0B3B32] text-white' : 'border-[#E2E7E3] bg-white'
                     }`}
                   >
                     {checked && <Check className="w-3 h-3 stroke-[3]" />}
@@ -255,16 +259,16 @@ export function NotificationModal({
           <div
             className={`p-4 rounded-2xl border text-xs font-semibold flex items-center gap-2 ${
               statusMsg.type === 'success'
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                ? 'bg-[#16845B]/10 border-[#16845B]/30 text-[#16845B]'
                 : statusMsg.type === 'error'
-                ? 'bg-rose-50 border-rose-200 text-rose-900'
-                : 'bg-slate-100 border-slate-200 text-slate-800'
+                ? 'bg-[#B54747]/10 border-[#B54747]/30 text-[#B54747]'
+                : 'bg-[#F7F7F4] border-[#E2E7E3] text-[#17201D]'
             }`}
           >
             {statusMsg.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
             ) : (
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <AlertCircle className="w-4 h-4 shrink-0" />
             )}
             <span>{statusMsg.text}</span>
           </div>
@@ -277,22 +281,22 @@ export function NotificationModal({
               type="button"
               disabled={loading}
               onClick={handleEnablePush}
-              className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-3.5 rounded-2xl bg-[#0B3B32] hover:bg-[#16845B] text-white font-bold text-xs shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 font-tabular"
             >
-              <Bell className="w-4 h-4" />
+              <Bell className="w-4 h-4 text-[#C8A45D]" />
               <span>{loading ? 'Registering FCM...' : fcmToken ? 'Update Notification Preferences' : 'Enable Notifications'}</span>
             </button>
           )}
 
           {fcmToken && (
             <div className="flex items-center justify-between text-xs pt-1">
-              <span className="text-emerald-700 font-bold flex items-center gap-1">
+              <span className="text-[#16845B] font-bold flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Notifications Active
               </span>
               <button
                 type="button"
                 onClick={handleUnsubscribe}
-                className="text-slate-400 hover:text-rose-600 underline font-medium"
+                className="text-[#68736E] hover:text-[#B54747] underline font-medium"
               >
                 Disable Notifications
               </button>
@@ -301,9 +305,10 @@ export function NotificationModal({
         </div>
 
         {/* Privacy Note */}
-        <div className="text-center pt-1 border-t border-slate-100">
-          <p className="text-[11px] text-slate-400">
-            🔒 Anonymous subscription using Firebase Cloud Messaging. No personal information or email required.
+        <div className="text-center pt-2 border-t border-[#E2E7E3]">
+          <p className="text-[11px] text-[#68736E] flex items-center justify-center gap-1">
+            <Lock className="w-3 h-3 text-[#68736E]" />
+            <span>Anonymous subscription using Firebase Cloud Messaging. No personal information or email required.</span>
           </p>
         </div>
       </div>

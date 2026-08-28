@@ -5,12 +5,12 @@ import { prisma, serializeData, formatINR } from '@/lib/prisma';
 import { ResultCard } from '@/components/ResultCard';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { startOfMonth, endOfMonth, startOfYear, endOfYear, parse, isValid } from 'date-fns';
-import { Filter, Search, Calendar, ChevronLeft, ChevronRight, Award, FileText } from 'lucide-react';
+import { Filter, Search, Calendar, ChevronLeft, ChevronRight, Award, FileText, ArrowRight } from 'lucide-react';
 
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: 'Previous Kerala Lottery Results Archive | Search Past Draws',
+  title: 'Kerala Lottery Results Archive | Search Historical Draws',
   description:
     'Search and browse official previous Kerala lottery results archive by lottery scheme, year, month, draw number or date. Synchronized with official LOTIS records.',
 };
@@ -155,35 +155,40 @@ export default async function PreviousResultsPage({
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8">
-      <Breadcrumbs items={[{ label: 'Previous Results' }]} />
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Results Archive' },
+        ]}
+      />
 
       {/* Header */}
-      <div className="border-b border-slate-200 pb-6 space-y-2">
-        <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block">
+      <div className="border-b border-[#E2E7E3] pb-6 space-y-2">
+        <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
           Official LOTIS Archives
         </span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-          Previous Kerala Lottery Results
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#17201D] tracking-tight">
+          Kerala Lottery Results Archive
         </h1>
-        <p className="text-sm text-slate-600">
+        <p className="text-xs sm:text-sm text-[#68736E]">
           Filter and search verified past draw numbers, winning tickets, and prize tiers across all Kerala State Lottery schemes.
         </p>
       </div>
 
       {/* Multi-Filter Form */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2E7E3] shadow-sm">
         <form method="GET" action="/previous-results" className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Scheme Filter */}
-            <div>
-              <label htmlFor="lottery" className="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+            <div className="space-y-1.5">
+              <label htmlFor="lottery" className="block text-xs font-bold text-[#17201D] uppercase">
                 Lottery Scheme
               </label>
               <select
                 id="lottery"
                 name="lottery"
                 defaultValue={data.filters.lottery}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-sm text-slate-900 font-medium"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] focus:bg-white text-xs font-bold text-[#17201D]"
               >
                 <option value="all">All Lottery Schemes</option>
                 {data.lotteries?.map((lot: any) => (
@@ -195,15 +200,15 @@ export default async function PreviousResultsPage({
             </div>
 
             {/* Year Filter */}
-            <div>
-              <label htmlFor="year" className="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+            <div className="space-y-1.5">
+              <label htmlFor="year" className="block text-xs font-bold text-[#17201D] uppercase">
                 Year
               </label>
               <select
                 id="year"
                 name="year"
                 defaultValue={data.filters.year}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-sm text-slate-900 font-medium"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] focus:bg-white text-xs font-bold text-[#17201D]"
               >
                 <option value="all">All Years</option>
                 {years.map((y) => (
@@ -215,15 +220,15 @@ export default async function PreviousResultsPage({
             </div>
 
             {/* Month Filter */}
-            <div>
-              <label htmlFor="month" className="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+            <div className="space-y-1.5">
+              <label htmlFor="month" className="block text-xs font-bold text-[#17201D] uppercase">
                 Month
               </label>
               <select
                 id="month"
                 name="month"
                 defaultValue={data.filters.month}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-sm text-slate-900 font-medium"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] focus:bg-white text-xs font-bold text-[#17201D]"
               >
                 <option value="all">All Months</option>
                 {months.map((m) => (
@@ -235,36 +240,35 @@ export default async function PreviousResultsPage({
             </div>
 
             {/* Search Input */}
-            <div>
-              <label htmlFor="search" className="block text-xs font-bold text-slate-700 uppercase mb-1.5">
-                Search Draw / Keyword
+            <div className="space-y-1.5">
+              <label htmlFor="search" className="block text-xs font-bold text-[#17201D] uppercase">
+                Draw Number / Keyword
               </label>
               <input
                 id="search"
                 type="text"
                 name="search"
                 defaultValue={data.filters.search}
-                placeholder="e.g. KN-638, SS-534"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-sm text-slate-900 font-medium"
-              >
-              </input>
+                placeholder="e.g. KN-638, SK-67"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] focus:bg-white text-xs font-bold text-[#17201D]"
+              />
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2">
-            <span className="text-xs text-slate-500">
-              Found <strong>{data.pagination.total}</strong> draw results
+          <div className="flex items-center justify-between pt-2 border-t border-[#E2E7E3] mt-2">
+            <span className="text-xs text-[#68736E]">
+              Found <strong className="text-[#17201D] font-tabular">{data.pagination.total}</strong> draw results
             </span>
             <div className="flex gap-2">
               <Link
                 href="/previous-results"
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                className="px-4 py-2 rounded-xl text-xs font-bold text-[#68736E] hover:bg-[#F7F7F4] transition-colors"
               >
-                Reset
+                Reset Filters
               </Link>
               <button
                 type="submit"
-                className="px-6 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors"
+                className="px-6 py-2 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white text-xs font-bold transition-colors font-tabular"
               >
                 Apply Filters
               </button>
@@ -288,32 +292,32 @@ export default async function PreviousResultsPage({
               {data.pagination.hasPrevPage ? (
                 <Link
                   href={`/previous-results?page=${data.pagination.page - 1}&lottery=${data.filters.lottery}&year=${data.filters.year}&month=${data.filters.month}&search=${encodeURIComponent(data.filters.search)}`}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-[#E2E7E3] text-[#17201D] font-bold text-xs hover:bg-[#F7F7F4]"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   <span>Previous</span>
                 </Link>
               ) : (
-                <span className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 text-slate-400 font-semibold text-xs cursor-not-allowed">
+                <span className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#F7F7F4] text-[#68736E] font-bold text-xs cursor-not-allowed border border-[#E2E7E3]">
                   <ChevronLeft className="w-4 h-4" />
                   <span>Previous</span>
                 </span>
               )}
 
-              <span className="text-xs font-medium text-slate-600 px-3">
-                Page <strong>{data.pagination.page}</strong> of <strong>{data.pagination.totalPages}</strong>
+              <span className="text-xs font-medium text-[#68736E] px-3 font-tabular">
+                Page <strong className="text-[#17201D]">{data.pagination.page}</strong> of <strong className="text-[#17201D]">{data.pagination.totalPages}</strong>
               </span>
 
               {data.pagination.hasNextPage ? (
                 <Link
                   href={`/previous-results?page=${data.pagination.page + 1}&lottery=${data.filters.lottery}&year=${data.filters.year}&month=${data.filters.month}&search=${encodeURIComponent(data.filters.search)}`}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-[#E2E7E3] text-[#17201D] font-bold text-xs hover:bg-[#F7F7F4]"
                 >
                   <span>Next</span>
                   <ChevronRight className="w-4 h-4" />
                 </Link>
               ) : (
-                <span className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 text-slate-400 font-semibold text-xs cursor-not-allowed">
+                <span className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#F7F7F4] text-[#68736E] font-bold text-xs cursor-not-allowed border border-[#E2E7E3]">
                   <span>Next</span>
                   <ChevronRight className="w-4 h-4" />
                 </span>
@@ -322,14 +326,14 @@ export default async function PreviousResultsPage({
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-3xl p-12 text-center text-slate-500 border border-slate-200 space-y-3">
-          <p className="text-base font-semibold text-slate-700">No results found matching your criteria.</p>
-          <p className="text-xs text-slate-500">Try changing or clearing your filter selection.</p>
+        <div className="bg-white rounded-3xl p-12 text-center text-[#68736E] border border-[#E2E7E3] space-y-3">
+          <p className="text-base font-bold text-[#17201D]">No results found matching your criteria.</p>
+          <p className="text-xs text-[#68736E]">Try changing or resetting your filter selection.</p>
           <Link
             href="/previous-results"
-            className="inline-block mt-2 px-5 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs"
+            className="inline-block mt-2 px-5 py-2.5 rounded-xl bg-[#0B3B32] text-white font-bold text-xs"
           >
-            Clear All Filters
+            Reset Filters
           </Link>
         </div>
       )}
