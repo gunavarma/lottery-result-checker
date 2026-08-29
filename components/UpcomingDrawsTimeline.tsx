@@ -103,13 +103,13 @@ export function UpcomingDrawsTimeline() {
                     </span>
                   </div>
 
-                  <h4
+                  <h3
                     className={`font-black text-sm sm:text-base mt-1 line-clamp-1 ${
                       item.isToday ? 'text-white' : 'text-[#17201D]'
                     }`}
                   >
                     {item.lotteryName}
-                  </h4>
+                  </h3>
                 </div>
 
                 <div

@@ -2,15 +2,18 @@
 
 @layer base {
   :root {
-    --brand-primary: #0B3B32;
+    --brand-primary: #0B5D45;
+    --brand-primary-hover: #084835;
     --brand-dark: #10201D;
-    --brand-bg: #F7F7F4;
+    --brand-forest: #0F3E32;
+    --brand-bg: #FAFAF7;
     --brand-surface: #FFFFFF;
+    --brand-subsurface: #F4F5F2;
     --brand-text: #17201D;
-    --brand-muted: #68736E;
+    --brand-muted: #5F6B66;
     --brand-border: #E2E7E3;
-    --brand-gold: #C8A45D;
-    --brand-gold-muted: #FAF5EB;
+    --brand-gold: #C69A3A;
+    --brand-gold-muted: #FAF6ED;
     --brand-success: #16845B;
     --brand-warning: #A66A00;
     --brand-error: #B54747;
@@ -24,11 +27,9 @@
     --space-8: 32px;
     --space-12: 48px;
     --space-16: 64px;
-    --space-20: 80px;
-    --space-24: 96px;
 
     /* Max Widths */
-    --container-max: 1280px;
+    --container-max: 1240px;
     --article-max: 760px;
   }
 

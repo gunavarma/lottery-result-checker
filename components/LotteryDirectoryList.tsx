@@ -77,11 +77,11 @@ export function LotteryDirectoryList({ lotteries }: LotteryDirectoryListProps) {
                       Draw Day: <strong className="text-[#17201D]">{lottery.drawDay}</strong>
                     </span>
                   </div>
-                  <h4 className="font-extrabold text-base sm:text-lg text-[#17201D] group-hover:text-[#0B3B32] transition-colors mt-0.5">
+                  <h3 className="font-extrabold text-base sm:text-lg text-[#17201D] group-hover:text-[#0B3B32] transition-colors mt-0.5">
                     <Link href={`/lotteries/${lottery.slug}`}>
                       {lottery.name}
                     </Link>
-                  </h4>
+                  </h3>
                 </div>
               </div>
 

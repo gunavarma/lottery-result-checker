@@ -39,9 +39,9 @@ export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps)
           <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
             Full Gazette Breakdown
           </span>
-          <h3 className="text-xl font-extrabold text-[#17201D] tracking-tight">
+          <h2 className="text-xl font-extrabold text-[#17201D] tracking-tight">
             Official Prize Tiers & Winning Numbers
-          </h3>
+          </h2>
         </div>
         <button
           onClick={handlePrint}
@@ -88,9 +88,9 @@ export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps)
                     {prize.tierNumber ? `${prize.tierNumber}` : 'C'}
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-[#17201D] text-base">
+                    <h3 className="font-extrabold text-[#17201D] text-base">
                       {prize.category}
-                    </h4>
+                    </h3>
                     {prize.description && (
                       <span className="text-[10px] text-[#68736E] block uppercase font-bold tracking-wide">
                         {prize.description}
