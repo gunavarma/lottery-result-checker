@@ -22,9 +22,13 @@ import {
   FileText,
   Check,
   Settings,
-  Layers
+  Layers,
+  TrendingUp,
+  Search,
+  BookOpen,
 } from 'lucide-react';
 import { getAllNews, NewsArticle } from '@/lib/news';
+import { getAllGuides } from '@/lib/guides';
 
 export default function AdminPage() {
   const [token, setToken] = useState('');
@@ -32,12 +36,13 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [testingNotification, setTestingNotification] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'sync' | 'results' | 'news' | 'notifications' | 'settings'>('overview');
-  
+  const [activeTab, setActiveTab] = useState<'overview' | 'sync' | 'news' | 'growth' | 'notifications'>('overview');
+
   const [syncLogs, setSyncLogs] = useState<any[]>([]);
   const [deliveries, setDeliveries] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [liveStatus, setLiveStatus] = useState<any>(null);
+  const [growthData, setGrowthData] = useState<any>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // News management local state
@@ -77,11 +82,22 @@ export default function AdminPage() {
         localStorage.setItem('kl_admin_token', authToken);
       }
 
-      // 2. Fetch Live Status Engine
-      const liveRes = await fetch('/api/live');
+      // 2. Fetch Live Status Engine & SEO Growth metrics
+      const [liveRes, growthRes] = await Promise.all([
+        fetch('/api/live'),
+        fetch('/api/admin/seo-growth'),
+      ]);
+
       if (liveRes.ok) {
         const liveJson = await liveRes.json();
         setLiveStatus(liveJson);
+      }
+
+      if (growthRes.ok) {
+        const growthJson = await growthRes.json();
+        if (growthJson.success) {
+          setGrowthData(growthJson.data);
+        }
       }
     } catch (error: any) {
       setMessage({ type: 'error', text: 'Failed to connect to server.' });
@@ -151,23 +167,26 @@ export default function AdminPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          lotteryName: 'Suvarna Keralam (TEST)',
-          drawNumber: 'SK-67-TEST',
+          title: 'KeralaDraws Alert Test',
+          body: 'Official test push notification dispatched successfully from Admin Control.',
         }),
       });
 
-      const json = await res.json();
-      if (json.success) {
+      const data = await res.json();
+      if (data.success) {
         setMessage({
           type: 'success',
-          text: `FCM test notification dispatched: ${json.summary.sent} sent, ${json.summary.skipped} duplicate skipped, ${json.summary.failed} failed (${json.summary.totalEligible} eligible subscribers).`,
+          text: `Push test dispatched. Sent: ${data.summary?.sent ?? 0}, Failed: ${data.summary?.failed ?? 0}`,
         });
         loadAdminData(token);
       } else {
-        setMessage({ type: 'error', text: json.error || 'Failed to dispatch test notification.' });
+        setMessage({
+          type: 'error',
+          text: `Push test failed: ${data.error || 'Unknown error'}`,
+        });
       }
     } catch (err: any) {
-      setMessage({ type: 'error', text: 'Error testing notification delivery.' });
+      setMessage({ type: 'error', text: err?.message || 'Error sending test notification.' });
     } finally {
       setTestingNotification(false);
     }
@@ -175,26 +194,27 @@ export default function AdminPage() {
 
   const handleCreateArticle = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle.trim()) return;
+    if (!newTitle.trim() || !newContent.trim()) {
+      setMessage({ type: 'error', text: 'Title and content are required.' });
+      return;
+    }
 
     const slug = newTitle
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)+/g, '');
+      .replace(/(^-|-$)/g, '');
 
     const newArt: NewsArticle = {
-      id: `article-${Date.now()}`,
+      id: `art-${Date.now()}`,
       slug,
-      title: newTitle.trim(),
       category: newCategory,
+      title: newTitle.trim(),
       subtitle: newSubtitle.trim() || newTitle.trim(),
-      excerpt: newSubtitle.trim() || newTitle.trim(),
+      excerpt: newSubtitle.trim() || newContent.trim().substring(0, 140),
       publishedAt: new Date().toISOString().split('T')[0],
-      author: 'Administrative Staff',
+      author: 'KeralaDraws Editorial Desk',
       readTime: '3 min read',
-      content: newContent
-        ? newContent.split('\n\n').filter(Boolean)
-        : ['Official article dispatch published by lottery management.'],
+      content: newContent.split('\n\n').filter((p) => p.trim()),
     };
 
     setNewsList([newArt, ...newsList]);
@@ -206,7 +226,7 @@ export default function AdminPage() {
   };
 
   const handleDeleteArticle = (id: string) => {
-    setNewsList(newsList.filter(a => a.id !== id));
+    setNewsList(newsList.filter((a) => a.id !== id));
     setMessage({ type: 'success', text: 'Article removed from live news list.' });
   };
 
@@ -234,7 +254,7 @@ export default function AdminPage() {
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 placeholder="Enter ADMIN_SECRET"
-                className="w-full px-4 py-3 rounded-2xl border border-[#E2E7E3] bg-[#F7F7F4] text-[#17201D] text-sm focus:bg-white focus:ring-2 focus:ring-[#0B3B32] focus:outline-none font-mono"
+                className="w-full px-4 py-3 rounded-2xl border border-[#E2E7E3] bg-[#F7F7F4] text-[#17201D] text-sm focus:bg-white focus:ring-2 focus:ring-[#0B3B32] focus:outline-hidden font-mono"
                 required
               />
             </div>
@@ -248,9 +268,9 @@ export default function AdminPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-2xl bg-[#0B3B32] hover:bg-[#16845B] text-white font-bold text-xs shadow-sm transition-colors flex items-center justify-center gap-2 font-tabular"
+              className="w-full bg-[#0B3B32] hover:bg-[#10201D] text-white py-3.5 rounded-2xl font-bold text-xs shadow-xs transition-colors disabled:opacity-50"
             >
-              {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Authenticate & Enter'}
+              {loading ? 'Authenticating...' : 'Authenticate & Unlock Control'}
             </button>
           </form>
         </div>
@@ -267,7 +287,7 @@ export default function AdminPage() {
             Operational Control Center
           </span>
           <h1 className="text-3xl font-extrabold text-[#17201D] mt-1">
-            Kerala Lottery System Monitor
+            KeralaDraws System Monitor
           </h1>
         </div>
 
@@ -307,6 +327,7 @@ export default function AdminPage() {
         {[
           { id: 'overview', label: 'Overview & Health', icon: Layers },
           { id: 'sync', label: 'LOTIS Sync Engine', icon: RefreshCw },
+          { id: 'growth', label: 'Growth & SEO', icon: TrendingUp },
           { id: 'news', label: 'News Management', icon: Newspaper },
           { id: 'notifications', label: 'FCM Push Telemetry', icon: Bell },
         ].map((tab) => {
@@ -319,7 +340,7 @@ export default function AdminPage() {
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap border ${
                 isActive
                   ? 'bg-[#0B3B32] text-white border-[#0B3B32] shadow-xs'
-                  : 'bg-white border-[#E2E7E3] text-[#17201D] hover:bg-[#F7F7F4]'
+                  : 'bg-white text-[#17201D] border-[#E2E7E3] hover:bg-[#F7F7F4]'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -331,10 +352,10 @@ export default function AdminPage() {
 
       {message && (
         <div
-          className={`p-4 rounded-2xl border text-xs font-semibold flex items-center gap-2 ${
+          className={`p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 ${
             message.type === 'success'
-              ? 'bg-[#16845B]/10 border-[#16845B]/30 text-[#16845B]'
-              : 'bg-[#B54747]/10 border-[#B54747]/30 text-[#B54747]'
+              ? 'bg-[#16845B]/10 text-[#16845B] border border-[#16845B]/20'
+              : 'bg-[#B54747]/10 text-[#B54747] border border-[#B54747]/20'
           }`}
         >
           {message.type === 'success' ? (
@@ -349,97 +370,84 @@ export default function AdminPage() {
       {/* TAB 1: OVERVIEW */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          {/* Live System Health Matrix */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-            <div className="bg-white p-4 rounded-2xl border border-[#E2E7E3] shadow-2xs space-y-1">
-              <span className="text-[10px] uppercase font-bold text-[#68736E] block font-tabular">Official LOTIS</span>
-              <div className="flex items-center gap-1.5 text-[#16845B] font-extrabold text-xs sm:text-sm">
-                <span className="w-2 h-2 rounded-full bg-[#16845B]" />
-                <span>ONLINE</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white rounded-3xl p-6 border border-[#E2E7E3] shadow-xs space-y-2">
+              <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wide block font-tabular">
+                Database Certified Draws
+              </span>
+              <div className="text-3xl font-black text-[#17201D] font-tabular">
+                {stats?.database?.totalDraws ?? '—'}
               </div>
+              <p className="text-xs text-[#68736E]">Across all 7 weekly + seasonal bumper schemes</p>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl border border-[#E2E7E3] shadow-2xs space-y-1">
-              <span className="text-[10px] uppercase font-bold text-[#68736E] block font-tabular">Supabase Database</span>
-              <div className="flex items-center gap-1.5 text-[#16845B] font-extrabold text-xs sm:text-sm">
-                <span className="w-2 h-2 rounded-full bg-[#16845B]" />
-                <span>CONNECTED</span>
+            <div className="bg-white rounded-3xl p-6 border border-[#E2E7E3] shadow-xs space-y-2">
+              <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wide block font-tabular">
+                Active FCM Subscribers
+              </span>
+              <div className="text-3xl font-black text-[#16845B] font-tabular">
+                {stats?.fcm?.activeSubscriptions ?? '—'}
               </div>
+              <p className="text-xs text-[#68736E]">Active browser push tokens registered</p>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl border border-[#E2E7E3] shadow-2xs space-y-1">
-              <span className="text-[10px] uppercase font-bold text-[#68736E] block font-tabular">Supabase pg_cron</span>
-              <div className="flex items-center gap-1.5 text-[#16845B] font-extrabold text-xs sm:text-sm">
-                <span className="w-2 h-2 rounded-full bg-[#16845B]" />
-                <span>EVERY 15 MIN</span>
+            <div className="bg-white rounded-3xl p-6 border border-[#E2E7E3] shadow-xs space-y-2">
+              <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wide block font-tabular">
+                Ticket Watchlist Users
+              </span>
+              <div className="text-3xl font-black text-[#17201D] font-tabular">
+                {growthData?.watchlistSubscribers ?? '—'}
               </div>
+              <p className="text-xs text-[#68736E]">Monitored tickets in retention loop</p>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl border border-[#E2E7E3] shadow-2xs space-y-1">
-              <span className="text-[10px] uppercase font-bold text-[#68736E] block font-tabular">Edge Function</span>
-              <div className="flex items-center gap-1.5 text-[#16845B] font-extrabold text-xs sm:text-sm">
-                <span className="w-2 h-2 rounded-full bg-[#16845B]" />
-                <span>DEPLOYED</span>
+            <div className="bg-white rounded-3xl p-6 border border-[#E2E7E3] shadow-xs space-y-2">
+              <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wide block font-tabular">
+                Indexable URLs
+              </span>
+              <div className="text-3xl font-black text-[#C8A45D] font-tabular">
+                {growthData?.totalIndexableUrls ?? '—'}
               </div>
-            </div>
-
-            <div className="bg-white p-4 rounded-2xl border border-[#E2E7E3] shadow-2xs space-y-1">
-              <span className="text-[10px] uppercase font-bold text-[#68736E] block font-tabular">FCM Web Push</span>
-              <div className="flex items-center gap-1.5 text-[#16845B] font-extrabold text-xs sm:text-sm">
-                <span className="w-2 h-2 rounded-full bg-[#16845B]" />
-                <span>ACTIVE</span>
-              </div>
+              <p className="text-xs text-[#68736E]">In dynamic sitemap.xml</p>
             </div>
           </div>
 
-          {/* Live Draw Monitor Card */}
-          {liveStatus && (
-            <div className="bg-white rounded-3xl p-6 border border-[#E2E7E3] shadow-sm space-y-4">
-              <div className="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
-                <h2 className="text-sm font-extrabold text-[#17201D] flex items-center gap-2">
-                  <Radio className="w-4 h-4 text-[#B54747]" />
-                  <span>Today's Live Draw Monitor</span>
-                </h2>
-                <span className="text-xs font-mono font-bold text-[#68736E] font-tabular">
-                  Server Time: {liveStatus.serverTimeIST}
-                </span>
+          {/* Quick Health Status */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2E7E3] shadow-xs space-y-4">
+            <h2 className="text-lg font-extrabold text-[#17201D]">Platform Health & Verification Checks</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+              <div className="bg-[#F7F7F4] p-4 rounded-2xl border border-[#E2E7E3] flex items-center justify-between">
+                <span className="font-bold text-[#17201D]">Supabase Cron</span>
+                <span className="font-bold text-[#16845B] font-tabular">Every 15m Active</span>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
-                <div className="bg-[#F7F7F4] p-4 rounded-xl border border-[#E2E7E3]">
-                  <span className="text-[#68736E] block uppercase font-bold text-[10px]">Scheme</span>
-                  <span className="text-sm font-extrabold text-[#17201D] block mt-0.5">
-                    {liveStatus.todayDraw?.lottery?.name || liveStatus.scheduledScheme?.name || 'Kerala Lottery'}
-                  </span>
-                </div>
-                <div className="bg-[#F7F7F4] p-4 rounded-xl border border-[#E2E7E3]">
-                  <span className="text-[#68736E] block uppercase font-bold text-[10px]">Scheduled Time</span>
-                  <span className="text-sm font-extrabold text-[#17201D] block mt-0.5 font-tabular">3:00 PM IST</span>
-                </div>
-                <div className="bg-[#F7F7F4] p-4 rounded-xl border border-[#E2E7E3]">
-                  <span className="text-[#68736E] block uppercase font-bold text-[10px]">Draw Status</span>
-                  <span className="text-sm font-extrabold text-[#16845B] block mt-0.5 font-tabular">
-                    {liveStatus.status}
-                  </span>
-                </div>
-                <div className="bg-[#F7F7F4] p-4 rounded-xl border border-[#E2E7E3]">
-                  <span className="text-[#68736E] block uppercase font-bold text-[10px]">Last Source Check</span>
-                  <span className="text-sm font-bold text-[#17201D] block mt-0.5 font-tabular">
-                    {new Date(liveStatus.lastCheckedAt).toLocaleTimeString()}
-                  </span>
-                </div>
+              <div className="bg-[#F7F7F4] p-4 rounded-2xl border border-[#E2E7E3] flex items-center justify-between">
+                <span className="font-bold text-[#17201D]">XML Sitemap</span>
+                <span className="font-bold text-[#16845B] font-tabular">Dynamic (Live DB)</span>
+              </div>
+              <div className="bg-[#F7F7F4] p-4 rounded-2xl border border-[#E2E7E3] flex items-center justify-between">
+                <span className="font-bold text-[#17201D]">Statutory Disclaimer</span>
+                <span className="font-bold text-[#16845B] font-tabular">E-E-A-T Compliant</span>
               </div>
             </div>
-          )}
+          </div>
         </div>
       )}
 
       {/* TAB 2: SYNC LOGS */}
       {activeTab === 'sync' && (
-        <div className="bg-white rounded-3xl border border-[#E2E7E3] shadow-sm overflow-hidden space-y-4 p-6">
+        <div className="bg-white rounded-3xl border border-[#E2E7E3] shadow-xs overflow-hidden p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
-            <h2 className="text-base font-extrabold text-[#17201D]">LOTIS Synchronization Audit Trail</h2>
-            <span className="text-xs text-[#68736E]">Showing last {syncLogs.length} sync executions</span>
+            <h2 className="text-base font-extrabold text-[#17201D] flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 text-[#0B3B32]" />
+              <span>LOTIS Synchronization History</span>
+            </h2>
+            <button
+              onClick={() => handleTriggerSync(true)}
+              disabled={syncing}
+              className="px-3.5 py-1.5 rounded-xl bg-[#F7F7F4] text-[#0B3B32] font-bold text-xs border border-[#E2E7E3] hover:bg-[#F1F4F2]"
+            >
+              Force Sync Latest 10 Draws
+            </button>
           </div>
 
           <div className="overflow-x-auto">
@@ -448,165 +456,163 @@ export default function AdminPage() {
                 <tr>
                   <th className="py-3 px-4">Started (IST)</th>
                   <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Records Found</th>
+                  <th className="py-3 px-4">Records Evaluated</th>
                   <th className="py-3 px-4">New Draws</th>
-                  <th className="py-3 px-4">Duration</th>
-                  <th className="py-3 px-4">Error / Notes</th>
+                  <th className="py-3 px-4">Execution Message</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E2E7E3]">
-                {syncLogs.map((log) => {
-                  const duration = log.completedAt
-                    ? `${Math.round((new Date(log.completedAt).getTime() - new Date(log.startedAt).getTime()) / 1000)}s`
-                    : '—';
-
-                  return (
-                    <tr key={log.id} className="hover:bg-[#F7F7F4]">
-                      <td className="py-3 px-4 font-mono font-medium font-tabular">
-                        {new Date(log.startedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
-                      </td>
-                      <td className="py-3 px-4">
-                        {log.status === 'SUCCESS' ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#16845B] bg-[#16845B]/10 px-2 py-0.5 rounded font-tabular">
-                            <CheckCircle2 className="w-3 h-3" /> SUCCESS
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#B54747] bg-[#B54747]/10 px-2 py-0.5 rounded font-tabular">
-                            <XCircle className="w-3 h-3" /> {log.status}
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 font-bold font-tabular">{log.recordsFound}</td>
-                      <td className="py-3 px-4 font-bold text-[#16845B] font-tabular">{log.newDrawsCount}</td>
-                      <td className="py-3 px-4 text-[#68736E] font-tabular">{duration}</td>
-                      <td className="py-3 px-4 text-[#68736E] max-w-xs truncate" title={log.errorMessage || ''}>
-                        {log.errorMessage || '—'}
-                      </td>
-                    </tr>
-                  );
-                })}
+                {syncLogs.map((log) => (
+                  <tr key={log.id} className="hover:bg-[#F7F7F4]">
+                    <td className="py-3 px-4 font-mono font-tabular">
+                      {new Date(log.startedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+                    </td>
+                    <td className="py-3 px-4">
+                      {log.status === 'SUCCESS' ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#16845B] bg-[#16845B]/10 px-2 py-0.5 rounded font-tabular">
+                          <CheckCircle2 className="w-3 h-3" /> SUCCESS
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#B54747] bg-[#B54747]/10 px-2 py-0.5 rounded font-tabular">
+                          <XCircle className="w-3 h-3" /> {log.status}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 font-tabular">{log.recordsFound}</td>
+                    <td className="py-3 px-4 font-bold font-tabular text-[#16845B]">{log.newDrawsCount}</td>
+                    <td className="py-3 px-4 text-[#68736E] max-w-xs truncate">{log.errorMessage || 'Clean sync.'}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         </div>
       )}
 
-      {/* TAB 3: NEWS MANAGEMENT */}
-      {activeTab === 'news' && (
+      {/* TAB 3: GROWTH & SEO DASHBOARD */}
+      {activeTab === 'growth' && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between bg-white p-6 rounded-3xl border border-[#E2E7E3] shadow-sm">
-            <div>
-              <h2 className="text-base font-extrabold text-[#17201D]">Editorial News & Dispatches</h2>
-              <p className="text-xs text-[#68736E]">Manage public reports, bumper announcements, and statutory guidelines.</p>
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2E7E3] shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2E7E3] pb-4">
+              <div>
+                <h2 className="text-lg font-extrabold text-[#17201D] flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-[#0B3B32]" />
+                  <span>Search Intent Mapping & Canonical Matrix</span>
+                </h2>
+                <p className="text-xs text-[#68736E] mt-0.5">
+                  Topical cluster mapping to prevent keyword cannibalization and maximize Google indexation.
+                </p>
+              </div>
+              <span className="text-xs bg-[#16845B]/10 text-[#16845B] px-3 py-1 rounded-full font-bold font-tabular">
+                All Clusters Optimized
+              </span>
             </div>
-            <button
-              onClick={() => setShowNewArticleModal(!showNewArticleModal)}
-              className="px-4 py-2 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white text-xs font-bold flex items-center gap-1.5 transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Publish New Article</span>
-            </button>
-          </div>
 
-          {showNewArticleModal && (
-            <form onSubmit={handleCreateArticle} className="bg-white p-6 rounded-3xl border border-[#E2E7E3] shadow-sm space-y-4">
-              <h3 className="text-sm font-extrabold text-[#17201D]">Create New Article Dispatch</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-[#17201D]">Title</label>
-                  <input
-                    type="text"
-                    required
-                    value={newTitle}
-                    onChange={(e) => setNewTitle(e.target.value)}
-                    placeholder="Article headline..."
-                    className="w-full px-3.5 py-2 rounded-xl border border-[#E2E7E3] text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-[#17201D]">Category</label>
-                  <select
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value as any)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-[#E2E7E3] text-xs"
-                  >
-                    <option value="Bumper Lotteries">Bumper Lotteries</option>
-                    <option value="Scheme Updates">Scheme Updates</option>
-                    <option value="Claim Rules">Claim Rules</option>
-                    <option value="Draw Analysis">Draw Analysis</option>
-                  </select>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-[#17201D]">Subtitle / Excerpt</label>
-                <input
-                  type="text"
-                  value={newSubtitle}
-                  onChange={(e) => setNewSubtitle(e.target.value)}
-                  placeholder="Short summary..."
-                  className="w-full px-3.5 py-2 rounded-xl border border-[#E2E7E3] text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-[#17201D]">Paragraphs (Separate by blank line)</label>
-                <textarea
-                  rows={4}
-                  value={newContent}
-                  onChange={(e) => setNewContent(e.target.value)}
-                  placeholder="Article content..."
-                  className="w-full p-3 rounded-xl border border-[#E2E7E3] text-xs"
-                />
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white text-xs font-bold"
-                >
-                  Save & Publish
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowNewArticleModal(false)}
-                  className="px-4 py-2 rounded-xl bg-[#F7F7F4] text-[#68736E] text-xs font-bold"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          )}
-
-          <div className="bg-white rounded-3xl border border-[#E2E7E3] overflow-hidden shadow-sm">
-            <div className="divide-y divide-[#E2E7E3]">
-              {newsList.map((art) => (
-                <div key={art.id} className="p-4 sm:p-5 flex items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-[#0B3B32] bg-[#F1F4F2] px-2 py-0.5 rounded uppercase font-tabular">
-                      {art.category}
-                    </span>
-                    <h4 className="font-extrabold text-sm text-[#17201D]">{art.title}</h4>
-                    <p className="text-xs text-[#68736E]">{art.publishedAt} • {art.author}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleDeleteArticle(art.id)}
-                      className="p-2 rounded-lg text-[#B54747] hover:bg-rose-50 border border-transparent hover:border-[#B54747]/20"
-                      title="Delete article"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#F7F7F4] text-[#68736E] uppercase font-bold border-b border-[#E2E7E3]">
+                  <tr>
+                    <th className="py-3 px-4">Search Intent</th>
+                    <th className="py-3 px-4">Target Keyword Query</th>
+                    <th className="py-3 px-4">Canonical Target Page</th>
+                    <th className="py-3 px-4 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E2E7E3]">
+                  {growthData?.queryMappings?.map((map: any, idx: number) => (
+                    <tr key={idx} className="hover:bg-[#F7F7F4]">
+                      <td className="py-3.5 px-4 font-bold text-[#17201D]">{map.intent}</td>
+                      <td className="py-3.5 px-4 font-mono text-[#68736E]">{map.primaryQuery}</td>
+                      <td className="py-3.5 px-4">
+                        <a
+                          href={map.targetPath}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-bold text-[#0B3B32] hover:underline"
+                        >
+                          {map.targetPath}
+                        </a>
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#16845B] bg-[#16845B]/10 px-2.5 py-0.5 rounded font-tabular">
+                          <CheckCircle2 className="w-3 h-3" /> {map.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       )}
 
-      {/* TAB 4: NOTIFICATIONS & TELEMETRY */}
+      {/* TAB 4: NEWS MANAGEMENT */}
+      {activeTab === 'news' && (
+        <div className="bg-white rounded-3xl border border-[#E2E7E3] shadow-xs p-6 space-y-6">
+          <div className="flex items-center justify-between border-b border-[#E2E7E3] pb-4">
+            <div>
+              <h2 className="text-base font-extrabold text-[#17201D] flex items-center gap-2">
+                <Newspaper className="w-4 h-4 text-[#0B3B32]" />
+                <span>Editorial News & Gazette Releases</span>
+              </h2>
+              <p className="text-xs text-[#68736E]">Manage published articles and announcements.</p>
+            </div>
+            <button
+              onClick={() => setShowNewArticleModal(true)}
+              className="px-4 py-2 bg-[#0B3B32] text-white font-bold text-xs rounded-xl hover:bg-[#16845B] transition-colors flex items-center gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Article</span>
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {newsList.map((art) => (
+              <div
+                key={art.id}
+                className="p-5 rounded-2xl border border-[#E2E7E3] bg-[#F7F7F4] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-white text-[#0B3B32] px-2 py-0.5 rounded border border-[#E2E7E3]">
+                      {art.category}
+                    </span>
+                    <span className="text-xs text-[#68736E] font-tabular">{art.publishedAt}</span>
+                  </div>
+                  <h3 className="font-extrabold text-sm sm:text-base text-[#17201D]">
+                    {art.title}
+                  </h3>
+                  <p className="text-xs text-[#68736E] line-clamp-1">{art.excerpt}</p>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <a
+                    href={`/news/${art.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-bold text-[#0B3B32] hover:underline"
+                  >
+                    View Live
+                  </a>
+                  <button
+                    onClick={() => handleDeleteArticle(art.id)}
+                    className="p-2 rounded-xl text-[#68736E] hover:text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: NOTIFICATIONS */}
       {activeTab === 'notifications' && (
         <div className="space-y-6">
           {stats?.fcm && (
-            <div className="bg-[#10201D] text-white rounded-3xl p-6 sm:p-8 border border-[#0B3B32]/40 shadow-md space-y-6">
+            <div className="bg-[#10201D] text-white rounded-3xl p-6 sm:p-8 border border-[#0B3B32]/40 shadow-xs space-y-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div className="space-y-1">
                   <h2 className="text-lg font-bold text-white flex items-center gap-2">
@@ -650,7 +656,7 @@ export default function AdminPage() {
           )}
 
           {deliveries.length > 0 && (
-            <div className="bg-white rounded-3xl border border-[#E2E7E3] shadow-sm overflow-hidden space-y-4 p-6">
+            <div className="bg-white rounded-3xl border border-[#E2E7E3] shadow-xs overflow-hidden space-y-4 p-6">
               <div className="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
                 <h2 className="text-base font-extrabold text-[#17201D] flex items-center gap-2">
                   <Smartphone className="w-4 h-4 text-[#0B3B32]" />
@@ -667,7 +673,6 @@ export default function AdminPage() {
                       <th className="py-3 px-4">Result / Draw</th>
                       <th className="py-3 px-4">Status</th>
                       <th className="py-3 px-4">FCM Token</th>
-                      <th className="py-3 px-4">Notes</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E2E7E3]">
@@ -691,9 +696,6 @@ export default function AdminPage() {
                         <td className="py-3 px-4 font-mono text-[#68736E] truncate max-w-xs" title={del.pushSubscription?.fcmToken}>
                           {del.pushSubscription?.fcmToken ? `${del.pushSubscription.fcmToken.substring(0, 20)}...` : '—'}
                         </td>
-                        <td className="py-3 px-4 text-[#68736E] max-w-xs truncate" title={del.errorMessage || ''}>
-                          {del.errorMessage || '—'}
-                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -701,6 +703,81 @@ export default function AdminPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* New Article Modal */}
+      {showNewArticleModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-[#E2E7E3] shadow-2xl space-y-4">
+            <h3 className="text-lg font-extrabold text-[#17201D]">Publish New Gazette Article</h3>
+            <form onSubmit={handleCreateArticle} className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-[#17201D] block mb-1">Title</label>
+                <input
+                  type="text"
+                  required
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="e.g. Thiruvonam Bumper 2026 Release Timetable"
+                  className="w-full p-3 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4]"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-[#17201D] block mb-1">Category</label>
+                <select
+                  value={newCategory}
+                  onChange={(e: any) => setNewCategory(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4]"
+                >
+                  <option value="Bumper Lotteries">Bumper Lotteries</option>
+                  <option value="Scheme Updates">Scheme Updates</option>
+                  <option value="Claim Rules">Claim Rules</option>
+                  <option value="Draw Analysis">Draw Analysis</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-[#17201D] block mb-1">Subtitle / Excerpt</label>
+                <input
+                  type="text"
+                  value={newSubtitle}
+                  onChange={(e) => setNewSubtitle(e.target.value)}
+                  placeholder="Short summary for search results"
+                  className="w-full p-3 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4]"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-[#17201D] block mb-1">Content (Paragraphs separated by double linebreaks)</label>
+                <textarea
+                  rows={5}
+                  required
+                  value={newContent}
+                  onChange={(e) => setNewContent(e.target.value)}
+                  placeholder="Write verified article content..."
+                  className="w-full p-3 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowNewArticleModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-[#68736E]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#0B3B32] text-white text-xs font-bold hover:bg-[#16845B]"
+                >
+                  Publish Article
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

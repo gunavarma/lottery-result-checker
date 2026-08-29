@@ -158,6 +158,16 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/my-tickets" className="text-slate-300 hover:text-white transition-colors">
+                  My Saved Tickets
+                </Link>
+              </li>
+              <li>
+                <Link href="/guides" className="text-slate-300 hover:text-white transition-colors">
+                  Helpful Guides
+                </Link>
+              </li>
+              <li>
                 <Link href="/lottery-calendar" className="text-slate-300 hover:text-white transition-colors">
                   Draw Timetable 2026
                 </Link>

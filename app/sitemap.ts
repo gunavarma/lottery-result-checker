@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import { prisma } from '@/lib/prisma';
 import { SITE_URL } from '@/lib/seo';
 import { getAllNews } from '@/lib/news';
+import { getAllGuides } from '@/lib/guides';
 import { format } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
@@ -9,7 +10,7 @@ export const dynamic = 'force-dynamic';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_URL;
 
-  // 1. Static high-priority landing and legal pages
+  // 1. Static high-priority landing, tools, and legal pages
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
@@ -45,7 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${baseUrl}/check-ticket`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
-      priority: 0.8,
+      priority: 0.85,
     },
     {
       url: `${baseUrl}/lottery-calendar`,
@@ -58,6 +59,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/guides`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.85,
     },
     {
       url: `${baseUrl}/news`,
@@ -145,7 +152,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
-    return [...staticRoutes, ...lotteryRoutes, ...drawRoutes, ...newsRoutes];
+    // 5. Dynamic Helpful Guides
+    const guides = getAllGuides();
+    const guideRoutes: MetadataRoute.Sitemap = guides.map((guide) => ({
+      url: `${baseUrl}/guides/${guide.slug}`,
+      lastModified: new Date(guide.updatedAt || guide.publishedAt),
+      changeFrequency: 'monthly',
+      priority: 0.75,
+    }));
+
+    return [...staticRoutes, ...lotteryRoutes, ...drawRoutes, ...newsRoutes, ...guideRoutes];
   } catch (error) {
     console.error('Error generating dynamic sitemap:', error);
     return staticRoutes;

@@ -30,6 +30,7 @@ const NAV_LINKS = [
   { label: 'Archive', href: '/results/archive' },
   { label: 'Check Ticket', href: '/check-ticket' },
   { label: 'Calendar', href: '/lottery-calendar' },
+  { label: 'Guides', href: '/guides' },
   { label: 'News', href: '/news' },
 ];
 
