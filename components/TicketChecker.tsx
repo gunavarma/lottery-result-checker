@@ -12,7 +12,7 @@ import {
   Award,
   ExternalLink,
   ShieldCheck,
-  Camera,
+  ScanLine,
 } from 'lucide-react';
 import { formatINR } from '@/lib/prisma';
 import { TicketScannerModal } from './TicketScannerModal';
@@ -173,9 +173,10 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
                   type="button"
                   onClick={() => setScannerOpen(true)}
                   className="px-4 py-3 rounded-xl bg-white hover:bg-[#F7F7F4] text-[#0B3B32] border border-[#E2E7E3] font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5 shrink-0 font-tabular cursor-pointer"
-                  title="Scan physical ticket using camera or upload image"
+                  title="Scan physical ticket using camera"
+                  aria-label="Start camera scanner"
                 >
-                  <Camera className="w-4 h-4 text-[#C59B27]" />
+                  <ScanLine className="w-4 h-4 text-[#C59B27]" />
                   <span>Scan Ticket</span>
                 </button>
                 <button

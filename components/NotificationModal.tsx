@@ -17,8 +17,6 @@ export function NotificationModal({
   lotteryName,
   onClose,
 }: NotificationModalProps) {
-  if (!isOpen) return null;
-
   const [allLotteries, setAllLotteries] = useState<any[]>([]);
   const [selectedLotteryIds, setSelectedLotteryIds] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(true);
@@ -174,6 +172,8 @@ export function NotificationModal({
       setLoading(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#10201D]/60 backdrop-blur-xs animate-fadeIn" role="dialog" aria-modal="true" aria-label="Notification Preferences">

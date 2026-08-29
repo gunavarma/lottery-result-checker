@@ -49,6 +49,21 @@ describe('Kerala Lottery Ticket OCR Parser', () => {
     expect(result.ticketNumber).toBe('4567');
   });
 
+  it('correctly detects Bumper lottery schemes and formats', () => {
+    const rawThiruvonam = 'KERALA STATE LOTTERIES THIRUVONAM BUMPER BR-99 TA 492019';
+    const r1 = parseKeralaLotteryTicketOcr(rawThiruvonam);
+    expect(r1.ticketNumber).toBe('492019');
+    expect(r1.series).toBe('TA');
+    expect(r1.detectedLotteryName).toBe('Thiruvonam Bumper');
+    expect(r1.detectedLotterySlug).toBe('thiruvonam-bumper');
+
+    const rawXmas = "KERALA STATE LOTTERIES X'MAS NEW YEAR BUMPER BR-98 XA 837492";
+    const r2 = parseKeralaLotteryTicketOcr(rawXmas);
+    expect(r2.ticketNumber).toBe('837492');
+    expect(r2.series).toBe('XA');
+    expect(r2.detectedLotterySlug).toBe('xmas-new-year-bumper');
+  });
+
   it('returns safe empty result for noisy/unreadable image text', () => {
     const raw = 'RANDOM TEXT WITH NO NUMBERS OR LOTTERY INFORMATION';
     const result = parseKeralaLotteryTicketOcr(raw);

@@ -89,6 +89,26 @@
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Subtle vertical scanning line animation */
+@keyframes scannerMove {
+  0% {
+    top: 6%;
+    opacity: 0.7;
+  }
+  50% {
+    top: 88%;
+    opacity: 1;
+  }
+  100% {
+    top: 6%;
+    opacity: 0.7;
+  }
+}
+
+.animate-scanner-line {
+  animation: scannerMove 2.4s ease-in-out infinite;
+}
+
 /* Print optimizations */
 @media print {
   header, footer, nav, .no-print {

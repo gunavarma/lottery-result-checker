@@ -20,7 +20,7 @@ import {
   Bell,
   HelpCircle,
   BookOpen,
-  Camera,
+  ScanLine,
 } from 'lucide-react';
 import { TicketScannerModal } from '@/components/TicketScannerModal';
 
@@ -384,9 +384,10 @@ export default function CheckTicketPage() {
             <button
               type="button"
               onClick={() => setScannerOpen(true)}
+              aria-label="Start camera scanner"
               className="px-6 py-3.5 rounded-xl bg-white hover:bg-[#F7F7F4] text-[#0B3B32] border border-[#E2E7E3] font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
-              <Camera className="w-4 h-4 text-[#C59B27]" />
+              <ScanLine className="w-4 h-4 text-[#C59B27]" />
               <span>Scan Physical Ticket</span>
             </button>
 

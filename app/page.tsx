@@ -128,17 +128,7 @@ export default async function HomePage() {
     <div className="space-y-10 sm:space-y-14 pb-16">
       {/* 1. Hero Result Terminal (Immediate 1-second Answer) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 space-y-6">
-        <div className="space-y-2 max-w-3xl">
-          <span className="text-xs font-bold text-[#0B5D45] uppercase tracking-wider block font-tabular">
-            KeralaDraws • Official Gazette Synchronized
-          </span>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#17201D] tracking-tight leading-tight">
-            Kerala Lottery Results Today & Winning Numbers
-          </h1>
-          <p className="text-xs sm:text-sm text-[#5F6B66] leading-relaxed">
-            Independent Kerala State Lottery results terminal, live 3:00 PM draw status, prize structures, and instant ticket verification — synchronized directly with official LOTIS gazette publications.
-          </p>
-        </div>
+
 
         {/* Today's Result Centerpiece */}
         <HeroTodayCard initialData={data} />
