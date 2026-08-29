@@ -13,7 +13,7 @@ describe('Firebase Cloud Messaging (FCM) Web Push Architecture', () => {
     drawTime: '3:00 PM',
     firstPrizeAmountFormatted: '₹1,00,00,000',
     firstPrizeTicket: 'SK 320327',
-    resultUrl: 'https://keralalottery.org/result/2026-08-28/suvarna-keralam',
+    resultUrl: 'https://keraladraws.com/result/2026-08-28/suvarna-keralam',
   };
 
   it('detects Firebase Admin configuration status safely', () => {

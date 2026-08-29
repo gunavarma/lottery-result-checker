@@ -20,13 +20,13 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: process.env.NEXT_PUBLIC_SITE_URL || 'https://keralalottery.org',
+        item: process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com',
       },
       ...items.map((item, idx) => ({
         '@type': 'ListItem',
         position: idx + 2,
         name: item.label,
-        ...(item.href ? { item: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://keralalottery.org'}${item.href}` } : {}),
+        ...(item.href ? { item: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com'}${item.href}` } : {}),
       })),
     ],
   };

@@ -207,8 +207,8 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                   )}
                 </div>
 
-                <div className="mt-2.5">
-                  <span className="text-3xl sm:text-5xl font-black text-[#C8A45D] font-mono tracking-wider bg-black/40 px-4 py-2.5 rounded-xl border border-[#C8A45D]/30 inline-block font-tabular shadow-inner">
+                <div className="mt-2.5 flex items-center gap-3">
+                  <span className="text-3xl sm:text-5xl font-black text-[#C69A3A] font-mono tracking-wider bg-black/50 px-4 py-2.5 rounded-xl border border-[#C69A3A]/30 inline-block font-tabular shadow-inner">
                     {firstPrizeWinner ? firstPrizeWinner.displayNumber : 'Checking...'}
                   </span>
                 </div>

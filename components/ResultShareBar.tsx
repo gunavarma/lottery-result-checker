@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Share2, MessageCircle, Send, Link as LinkIcon, Check } from 'lucide-react';
 
 interface ResultShareBarProps {
@@ -10,24 +10,32 @@ interface ResultShareBarProps {
 
 export function ResultShareBar({ title, url }: ResultShareBarProps) {
   const [copied, setCopied] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const fullUrl =
-    typeof window !== 'undefined'
-      ? `${window.location.origin}${url}`
-      : `https://keralalottery.org${url}`;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const baseOrigin =
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com';
+  const fullUrl = mounted && typeof window !== 'undefined'
+    ? `${window.location.origin}${url}`
+    : `${baseOrigin}${url}`;
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(fullUrl);
+    const shareLink = typeof window !== 'undefined' ? `${window.location.origin}${url}` : fullUrl;
+    navigator.clipboard.writeText(shareLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleNativeShare = () => {
+    const shareLink = typeof window !== 'undefined' ? `${window.location.origin}${url}` : fullUrl;
     if (navigator.share) {
       navigator.share({
         title,
         text: `${title} — Official Kerala State Lotteries winning numbers`,
-        url: fullUrl,
+        url: shareLink,
       }).catch(() => {});
     } else {
       handleCopyLink();

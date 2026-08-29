@@ -25,12 +25,12 @@ import { SearchModal } from './SearchModal';
 import { NotificationModal } from './NotificationModal';
 
 const NAV_LINKS = [
+  { label: 'Today', href: '/' },
   { label: 'Results', href: '/results' },
-  { label: 'Lotteries', href: '/lotteries' },
-  { label: 'Archive', href: '/results/archive' },
   { label: 'Check Ticket', href: '/check-ticket' },
-  { label: 'Calendar', href: '/lottery-calendar' },
-  { label: 'Guides', href: '/guides' },
+  { label: 'Archive', href: '/results/archive' },
+  { label: 'Upcoming', href: '/lottery-calendar' },
+  { label: 'Lotteries', href: '/lotteries' },
   { label: 'News', href: '/news' },
 ];
 
@@ -212,43 +212,43 @@ export function Navbar() {
       <nav aria-label="Mobile Navigation" className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E2E7E3] py-2 px-3 flex items-center justify-around lg:hidden shadow-lg">
         <Link
           href="/"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname === '/' ? 'text-[#0B3B32]' : 'text-[#414C47] hover:text-[#0B3B32]'
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname === '/' ? 'text-[#0B5D45]' : 'text-[#5F6B66] hover:text-[#0B5D45]'
             }`}
         >
           <Home className="w-5 h-5" />
-          <span>Home</span>
+          <span>Today</span>
         </Link>
         <Link
           href="/results"
           className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/result')
-            ? 'text-[#0B3B32]'
-            : 'text-[#414C47] hover:text-[#0B3B32]'
+            ? 'text-[#0B5D45]'
+            : 'text-[#5F6B66] hover:text-[#0B5D45]'
             }`}
         >
           <Award className="w-5 h-5" />
           <span>Results</span>
         </Link>
         <Link
-          href="/lotteries"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/lotteries')
-            ? 'text-[#0B3B32]'
-            : 'text-[#414C47] hover:text-[#0B3B32]'
-            }`}
-        >
-          <Layers className="w-5 h-5" />
-          <span>Lotteries</span>
-        </Link>
-        <Link
           href="/check-ticket"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname === '/check-ticket' ? 'text-[#0B3B32]' : 'text-[#414C47] hover:text-[#0B3B32]'
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname === '/check-ticket' ? 'text-[#0B5D45]' : 'text-[#5F6B66] hover:text-[#0B5D45]'
             }`}
         >
           <Ticket className="w-5 h-5" />
           <span>Check</span>
         </Link>
         <Link
+          href="/lottery-calendar"
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/lottery-calendar')
+            ? 'text-[#0B5D45]'
+            : 'text-[#5F6B66] hover:text-[#0B5D45]'
+            }`}
+        >
+          <Calendar className="w-5 h-5" />
+          <span>Upcoming</span>
+        </Link>
+        <Link
           href="/news"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/news') ? 'text-[#0B3B32]' : 'text-[#414C47] hover:text-[#0B3B32]'
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/news') ? 'text-[#0B5D45]' : 'text-[#5F6B66] hover:text-[#0B5D45]'
             }`}
         >
           <Newspaper className="w-5 h-5" />

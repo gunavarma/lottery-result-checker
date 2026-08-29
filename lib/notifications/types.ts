@@ -10,7 +10,7 @@ export interface DrawPublishedEvent {
   drawTime: string;
   firstPrizeAmountFormatted: string; // e.g. "₹1,00,00,000"
   firstPrizeTicket?: string; // e.g. "PS 320327"
-  resultUrl: string; // e.g. "https://keralalottery.org/result/2026-08-28/suvarna-keralam"
+  resultUrl: string; // e.g. "https://keraladraws.com/result/2026-08-28/suvarna-keralam"
 }
 
 export interface NotificationSendResult {
