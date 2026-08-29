@@ -101,6 +101,7 @@ export function DrawScheduleTable() {
                     <td className="py-4 px-4 sm:px-6 text-right">
                       <Link
                         href={`/lottery/${item.slug}`}
+                        aria-label={`View ${item.name} scheme details and prize structure`}
                         className="inline-flex items-center gap-1 text-xs font-bold text-[#0B3B32] hover:text-[#16845B]"
                       >
                         <span>View</span>
@@ -160,6 +161,7 @@ export function DrawScheduleTable() {
                   <td className="py-4 px-4 sm:px-6 text-right">
                     <Link
                       href={`/lottery/${item.slug}`}
+                      aria-label={`View ${item.name} jackpot details and schedule`}
                       className="inline-flex items-center gap-1 text-xs font-bold text-[#0B3B32] hover:text-[#16845B]"
                     >
                       <span>View</span>

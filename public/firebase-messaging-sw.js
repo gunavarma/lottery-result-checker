@@ -1,27 +1,26 @@
-// Firebase Cloud Messaging (FCM) Service Worker for Kerala Lottery Results
+try {
+  importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js');
+  importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js');
 
-importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js');
+  const firebaseConfig = {
+    apiKey: 'AIzaSyDemoDummyApiKeyForFirebase12345',
+    authDomain: 'kerala-lottery-results.firebaseapp.com',
+    projectId: 'kerala-lottery-results',
+    storageBucket: 'kerala-lottery-results.appspot.com',
+    messagingSenderId: '123456789012',
+    appId: '1:123456789012:web:abcdef1234567890',
+  };
 
-const firebaseConfig = {
-  apiKey: 'AIzaSyDemoDummyApiKeyForFirebase12345',
-  authDomain: 'kerala-lottery-results.firebaseapp.com',
-  projectId: 'kerala-lottery-results',
-  storageBucket: 'kerala-lottery-results.appspot.com',
-  messagingSenderId: '123456789012',
-  appId: '1:123456789012:web:abcdef1234567890',
-};
+  if (typeof firebase !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+    const messaging = firebase.messaging();
 
-firebase.initializeApp(firebaseConfig);
-
-const messaging = firebase.messaging();
-
-// 1. Handle Background FCM Notifications
-messaging.onBackgroundMessage((payload) => {
-  const notificationTitle =
-    payload.notification?.title ||
-    payload.data?.title ||
-    'Kerala Lottery Result';
+    // 1. Handle Background FCM Notifications
+    messaging.onBackgroundMessage((payload) => {
+      const notificationTitle =
+        payload.notification?.title ||
+        payload.data?.title ||
+        'Kerala Lottery Result';
 
   const notificationOptions = {
     body:
@@ -70,3 +69,7 @@ self.addEventListener('notificationclick', (event) => {
       })
   );
 });
+  }
+} catch {
+  // Graceful fallback if Firebase service worker is disabled or offline
+}

@@ -54,9 +54,9 @@ export function UpcomingDrawsTimeline() {
           <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
             Draw Schedule Timeline
           </span>
-          <h3 className="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
             Upcoming Kerala Lottery Draws
-          </h3>
+          </h2>
         </div>
         <Link
           href="/calendar"

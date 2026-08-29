@@ -10,37 +10,58 @@ export const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '1:123456789012:web:abcdef1234567890',
 };
 
+export function isFirebaseConfigured(): boolean {
+  return Boolean(
+    process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
+    !process.env.NEXT_PUBLIC_FIREBASE_API_KEY.includes('Dummy') &&
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
+    !process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID.includes('dummy')
+  );
+}
+
 let clientApp: FirebaseApp | null = null;
 let clientMessaging: Messaging | null = null;
 
-export function getClientFirebaseApp(): FirebaseApp {
+export function getClientFirebaseApp(): FirebaseApp | null {
   if (typeof window === 'undefined') {
-    throw new Error('Client Firebase App should only be initialized on the client side.');
-  }
-
-  if (getApps().length > 0) {
-    clientApp = getApp();
-  } else {
-    clientApp = initializeApp(firebaseConfig);
-  }
-
-  return clientApp;
-}
-
-export async function getClientMessaging(): Promise<Messaging | null> {
-  if (typeof window === 'undefined') return null;
-
-  const supported = await isSupported().catch(() => false);
-  if (!supported) {
     return null;
   }
 
-  if (!clientMessaging) {
-    const app = getClientFirebaseApp();
-    clientMessaging = getMessaging(app);
+  if (!isFirebaseConfigured()) {
+    return null;
   }
 
-  return clientMessaging;
+  try {
+    if (getApps().length > 0) {
+      clientApp = getApp();
+    } else {
+      clientApp = initializeApp(firebaseConfig);
+    }
+    return clientApp;
+  } catch {
+    return null;
+  }
+}
+
+export async function getClientMessaging(): Promise<Messaging | null> {
+  if (typeof window === 'undefined' || !isFirebaseConfigured()) return null;
+
+  try {
+    const supported = await isSupported().catch(() => false);
+    if (!supported) {
+      return null;
+    }
+
+    if (!clientMessaging) {
+      const app = getClientFirebaseApp();
+      if (!app) return null;
+      clientMessaging = getMessaging(app);
+    }
+
+    return clientMessaging;
+  } catch {
+    return null;
+  }
 }
 
 /**

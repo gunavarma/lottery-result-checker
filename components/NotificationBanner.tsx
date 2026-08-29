@@ -29,9 +29,9 @@ export function NotificationBanner({ lotteryId, lotteryName, className = '' }: N
               </span>
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
             </div>
-            <h3 className="text-lg sm:text-xl font-black text-white">
+            <h2 className="text-lg sm:text-xl font-black text-white">
               {lotteryName ? `Never Miss ${lotteryName} Results` : 'Get Kerala Lottery Result Alerts'}
-            </h3>
+            </h2>
             <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
               Receive an automatic push notification the moment official results are published by the Directorate of Kerala State Lotteries.
             </p>

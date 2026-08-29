@@ -74,6 +74,7 @@ export function ResultCard({ draw }: ResultCardProps) {
         <span className="text-[11px] text-[#68736E]">Official LOTIS Record</span>
         <Link
           href={resultUrl}
+          aria-label={`View complete results for ${draw.lottery?.name || 'Kerala Lottery'} draw ${draw.drawNumber}`}
           className="font-bold text-[#0B3B32] group-hover:text-[#16845B] inline-flex items-center gap-1 transition-colors"
         >
           <span>Complete Result</span>

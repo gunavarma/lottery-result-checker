@@ -47,6 +47,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
         <span>{article.publishedAt}</span>
         <Link
           href={`/news/${article.slug}`}
+          aria-label={`Read article: ${article.title}`}
           className="font-bold text-[#0B3B32] group-hover:text-[#16845B] inline-flex items-center gap-1 transition-colors"
         >
           <span>Read Article</span>
@@ -71,11 +72,11 @@ export function FeaturedNewsHero({ article }: { article: NewsArticle }) {
           </span>
         </div>
 
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight group-hover:text-slate-100 transition-colors">
+        <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight group-hover:text-slate-100 transition-colors">
           <Link href={`/news/${article.slug}`}>
             {article.title}
           </Link>
-        </h2>
+        </h3>
 
         <p className="text-sm text-slate-300 leading-relaxed">
           {article.subtitle}
@@ -84,6 +85,7 @@ export function FeaturedNewsHero({ article }: { article: NewsArticle }) {
         <div className="pt-2 flex items-center gap-4 text-xs">
           <Link
             href={`/news/${article.slug}`}
+            aria-label={`Read full report: ${article.title}`}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white font-bold transition-all shadow-sm"
           >
             <BookOpen className="w-4 h-4 text-[#C8A45D]" />

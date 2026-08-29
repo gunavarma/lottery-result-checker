@@ -58,9 +58,9 @@ export function TrustSection() {
                 <Icon className="w-5 h-5 text-[#0B3B32]" />
               </div>
 
-              <h4 className="font-extrabold text-base text-[#17201D]">
+              <h3 className="font-extrabold text-base text-[#17201D]">
                 {s.title}
-              </h4>
+              </h3>
 
               <p className="text-xs text-[#68736E] leading-relaxed">
                 {s.desc}
