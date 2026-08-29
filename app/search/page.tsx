@@ -9,11 +9,15 @@ import { NewsCard } from '@/components/NewsComponents';
 import { parse, isValid, format } from 'date-fns';
 import { Search, Award, Calendar, ExternalLink, ShieldCheck, ArrowRight, Newspaper, Ticket } from 'lucide-react';
 
-export const metadata: Metadata = {
+import { constructMetadata } from '@/lib/seo';
+
+export const metadata: Metadata = constructMetadata({
   title: 'Search Kerala Lottery Results & News | Universal Lookup',
   description:
     'Search Kerala lottery results by lottery scheme, draw number (e.g. KN-638, SK-67), date or winning ticket number. Database search across verified official LOTIS results.',
-};
+  path: '/search',
+  noIndex: true,
+});
 
 async function getSearchResults(query: string) {
   if (!query || query.trim().length < 2) {

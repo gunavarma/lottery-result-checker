@@ -6,7 +6,11 @@ import { getNewsBySlug, getAllNews, getRelatedNewsForLottery } from '@/lib/news'
 import { NewsCard } from '@/components/NewsComponents';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { ResultShareBar } from '@/components/ResultShareBar';
+import { StructuredData } from '@/components/StructuredData';
+import { constructMetadata, getBreadcrumbSchema, getNewsArticleSchema } from '@/lib/seo';
 import { Clock, User, Calendar, Tag, ArrowRight, ShieldCheck, Ticket, FileText } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
@@ -17,21 +21,19 @@ export async function generateMetadata({
   const article = getNewsBySlug(slug);
 
   if (!article) {
-    return {
-      title: 'Article Not Found | Kerala Lottery News',
-    };
+    return constructMetadata({
+      title: 'Article Not Found | KeralaDraws News',
+      path: `/news/${slug}`,
+      noIndex: true,
+    });
   }
 
-  return {
-    title: `${article.title} | Kerala Lottery News`,
-    description: article.excerpt,
-    openGraph: {
-      title: article.title,
-      description: article.subtitle,
-      type: 'article',
-      publishedTime: article.publishedAt,
-    },
-  };
+  return constructMetadata({
+    title: `${article.title} | KeralaDraws`,
+    description: article.excerpt || article.subtitle,
+    path: `/news/${article.slug}`,
+    keywords: [article.category, article.relatedLotteryName || 'Kerala Lottery', 'KeralaDraws News'],
+  });
 }
 
 export default async function NewsArticlePage({
@@ -47,157 +49,122 @@ export default async function NewsArticlePage({
   }
 
   const allArticles = getAllNews();
-  const relatedArticles = allArticles.filter(a => a.id !== article.id).slice(0, 2);
+  const relatedArticles = allArticles.filter((a) => a.id !== article.id).slice(0, 2);
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'NewsArticle',
-    headline: article.title,
+  const breadcrumbs = [
+    { name: 'Home', url: '/' },
+    { name: 'News', url: '/news' },
+    { name: article.title, url: `/news/${article.slug}` },
+  ];
+
+  const articleSchema = getNewsArticleSchema({
+    title: article.title,
     description: article.subtitle,
-    datePublished: article.publishedAt,
-    author: {
-      '@type': 'Organization',
-      name: article.author,
-    },
-    publisher: {
-      '@type': 'Organization',
-      name: 'Kerala Lottery Results',
-    },
-  };
+    slug: article.slug,
+    publishedAt: article.publishedAt,
+    updatedAt: article.updatedAt,
+    author: article.author,
+  });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-10">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8">
+      <StructuredData data={[getBreadcrumbSchema(breadcrumbs), articleSchema]} />
 
       <Breadcrumbs
         items={[
           { label: 'Home', href: '/' },
-          { label: 'News & Official Reports', href: '/news' },
-          { label: article.title },
+          { label: 'News & Updates', href: '/news' },
+          { label: article.category },
         ]}
       />
 
-      {/* Main Article Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        {/* Article Column */}
-        <article className="lg:col-span-8 space-y-8">
-          {/* Header */}
-          <div className="space-y-4 border-b border-[#E2E7E3] pb-6">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-[#0B3B32] bg-[#F1F4F2] px-3 py-1 rounded-full uppercase tracking-wider font-tabular">
-                {article.category}
-              </span>
-              <span className="text-xs text-[#68736E] flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-[#68736E]" />
-                <span>{article.readTime}</span>
-              </span>
-            </div>
+      {/* Article Header */}
+      <div className="space-y-4 border-b border-[#E2E7E3] pb-8">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider bg-[#F1F4F2] text-[#0B3B32] px-3 py-1 rounded-full border border-[#0B3B32]/10 font-tabular">
+            {article.category}
+          </span>
+          {article.relatedLotteryName && (
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-[#C8A45D]/15 text-[#A66A00] px-3 py-1 rounded-full border border-[#C8A45D]/30 font-tabular">
+              {article.relatedLotteryName}
+            </span>
+          )}
+        </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#17201D] tracking-tight leading-tight">
-              {article.title}
-            </h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#17201D] tracking-tight leading-tight">
+          {article.title}
+        </h1>
 
-            <p className="text-base sm:text-lg text-[#68736E] leading-relaxed font-medium">
-              {article.subtitle}
-            </p>
+        <p className="text-sm sm:text-base text-[#68736E] leading-relaxed">
+          {article.subtitle}
+        </p>
 
-            <div className="pt-2 flex flex-wrap items-center justify-between gap-4 text-xs text-[#68736E] border-t border-[#E2E7E3]/60 pt-4">
-              <div className="flex items-center gap-4">
-                <span className="flex items-center gap-1.5 font-medium text-[#17201D]">
-                  <User className="w-4 h-4 text-[#0B3B32]" />
-                  <span>{article.author}</span>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4 text-[#68736E]" />
-                  <span>Published: {article.publishedAt}</span>
-                </span>
-              </div>
+        <div className="flex flex-wrap items-center gap-4 text-xs text-[#68736E] pt-2">
+          <span className="flex items-center gap-1 font-tabular">
+            <Calendar className="w-3.5 h-3.5" />
+            <span>{article.publishedAt}</span>
+          </span>
+          <span>•</span>
+          <span className="flex items-center gap-1">
+            <User className="w-3.5 h-3.5" />
+            <span>{article.author}</span>
+          </span>
+          <span>•</span>
+          <span className="flex items-center gap-1 font-tabular">
+            <Clock className="w-3.5 h-3.5" />
+            <span>{article.readTime}</span>
+          </span>
+        </div>
+      </div>
 
-              <div className="flex items-center gap-1 text-[#16845B] font-semibold">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Verified Editorial Record</span>
-              </div>
-            </div>
-          </div>
+      {/* Article Content */}
+      <article className="prose prose-slate max-w-none text-[#17201D] leading-relaxed space-y-5 text-sm sm:text-base">
+        {article.content.map((paragraph, index) => (
+          <p key={index} className="text-[#17201D] leading-relaxed">
+            {paragraph}
+          </p>
+        ))}
+      </article>
 
-          {/* Social Share Bar */}
-          <ResultShareBar
-            title={article.title}
-            url={`/news/${article.slug}`}
-          />
+      {/* Share and Related Schemes */}
+      <div className="pt-6 border-t border-[#E2E7E3] flex flex-wrap items-center justify-between gap-4">
+        {article.relatedLotterySlug ? (
+          <Link
+            href={`/lotteries/${article.relatedLotterySlug}`}
+            className="inline-flex items-center gap-2 bg-[#0B3B32] hover:bg-[#10201D] text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-xs transition-colors"
+          >
+            <span>View {article.relatedLotteryName} Hub</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        ) : (
+          <Link
+            href="/results"
+            className="inline-flex items-center gap-2 bg-[#0B3B32] hover:bg-[#10201D] text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-xs transition-colors"
+          >
+            <span>Explore All Results</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        )}
 
-          {/* Body Content */}
-          <div className="space-y-6 text-base sm:text-lg text-[#17201D] leading-relaxed max-w-3xl">
-            {article.content.map((paragraph, idx) => (
-              <p key={idx} className="text-[#17201D] leading-relaxed">
-                {paragraph}
-              </p>
+        <ResultShareBar
+          title={article.title}
+          url={`/news/${article.slug}`}
+        />
+      </div>
+
+      {/* Related Articles */}
+      {relatedArticles.length > 0 && (
+        <section className="pt-10 border-t border-[#E2E7E3] space-y-6">
+          <h2 className="text-xl font-extrabold text-[#17201D]">
+            More Kerala Lottery News & Reports
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {relatedArticles.map((rel) => (
+              <NewsCard key={rel.id} article={rel} />
             ))}
           </div>
-
-          {/* Related Scheme Box if any */}
-          {article.relatedLotterySlug && (
-            <div className="bg-white rounded-2xl p-6 border border-[#E2E7E3] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
-              <div className="space-y-1">
-                <span className="text-xs font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
-                  Related Lottery Scheme
-                </span>
-                <h4 className="text-lg font-black text-[#17201D]">
-                  {article.relatedLotteryName || 'Kerala Lottery'}
-                </h4>
-                <p className="text-xs text-[#68736E]">
-                  View complete draw timetable, past winning results, and prize tiers for this scheme.
-                </p>
-              </div>
-              <Link
-                href={`/lottery/${article.relatedLotterySlug}`}
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white font-bold text-xs transition-colors shrink-0"
-              >
-                <span>View Scheme Results</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          )}
-        </article>
-
-        {/* Sidebar Column */}
-        <aside className="lg:col-span-4 space-y-8">
-          {/* Quick Ticket Verification Card */}
-          <div className="bg-white rounded-3xl p-6 border border-[#E2E7E3] shadow-sm space-y-4">
-            <div className="flex items-center gap-2 text-[#0B3B32]">
-              <Ticket className="w-5 h-5" />
-              <h3 className="font-extrabold text-[#17201D] text-base">Check Your Ticket</h3>
-            </div>
-            <p className="text-xs text-[#68736E] leading-relaxed">
-              Verify your 4-digit or 6-digit lottery ticket against today’s officially published draw numbers.
-            </p>
-            <Link
-              href="/check-ticket"
-              className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white font-bold text-xs transition-colors"
-            >
-              <span>Launch Ticket Checker</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          {/* More Stories */}
-          <div className="space-y-4">
-            <div className="border-b border-[#E2E7E3] pb-2">
-              <h3 className="font-extrabold text-[#17201D] text-sm uppercase tracking-wider">
-                Related Dispatches
-              </h3>
-            </div>
-            <div className="space-y-4">
-              {relatedArticles.map(a => (
-                <NewsCard key={a.id} article={a} compact />
-              ))}
-            </div>
-          </div>
-        </aside>
-      </div>
+        </section>
+      )}
     </div>
   );
 }

@@ -78,7 +78,7 @@ export function LotteryDirectoryList({ lotteries }: LotteryDirectoryListProps) {
                     </span>
                   </div>
                   <h4 className="font-extrabold text-base sm:text-lg text-[#17201D] group-hover:text-[#0B3B32] transition-colors mt-0.5">
-                    <Link href={`/lottery/${lottery.slug}`}>
+                    <Link href={`/lotteries/${lottery.slug}`}>
                       {lottery.name}
                     </Link>
                   </h4>
@@ -97,7 +97,7 @@ export function LotteryDirectoryList({ lotteries }: LotteryDirectoryListProps) {
                 </div>
 
                 <Link
-                  href={`/lottery/${lottery.slug}`}
+                  href={`/lotteries/${lottery.slug}`}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#F7F7F4] group-hover:bg-[#0B3B32] text-[#17201D] group-hover:text-white text-xs font-bold transition-all border border-[#E2E7E3] group-hover:border-[#0B3B32]"
                 >
                   <span>Results</span>

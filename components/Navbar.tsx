@@ -19,17 +19,18 @@ import {
   Award,
   Newspaper,
   Layers,
-  User
+  User,
 } from 'lucide-react';
 import { SearchModal } from './SearchModal';
 import { NotificationModal } from './NotificationModal';
 
 const NAV_LINKS = [
-  { label: 'Results', href: '/previous-results' },
-  { label: 'Lotteries', href: '/#lotteries' },
+  { label: 'Results', href: '/results' },
+  { label: 'Lotteries', href: '/lotteries' },
+  { label: 'Archive', href: '/results/archive' },
   { label: 'Check Ticket', href: '/check-ticket' },
+  { label: 'Calendar', href: '/lottery-calendar' },
   { label: 'News', href: '/news' },
-  { label: 'Calendar', href: '/calendar' },
 ];
 
 export function Navbar() {
@@ -41,13 +42,13 @@ export function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E2E7E3] shadow-xs">
-        {/* Top Official Source Bar */}
+        {/* Top Source Bar */}
         <div className="bg-[#10201D] text-[#E2E7E3] text-[11px] py-1.5 px-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#16845B]" />
               <span className="tracking-wide">
-                Official LOTIS Feed • Directorate of Kerala State Lotteries
+                LOTIS Synchronized • Kerala State Lotteries Information
               </span>
             </div>
             <div className="hidden sm:flex items-center gap-4 text-slate-300">
@@ -58,7 +59,7 @@ export function Navbar() {
                 href="/admin"
                 className="hover:text-white transition-colors underline text-[11px]"
               >
-                Admin Control
+                Admin Center
               </Link>
             </div>
           </div>
@@ -69,22 +70,22 @@ export function Navbar() {
           <div className="flex items-center justify-between h-16 sm:h-18">
             {/* Brand Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-16 h-16 sm:w-16 sm:h-16  flex items-center justify-center p-1.5 shrink-0 shadow-xs">
+              <div className="w-14 h-14 flex items-center justify-center p-1 shrink-0">
                 <Image
                   src="/logo.svg"
-                  alt="Kerala Lottery Logo"
-                  width={64}
-                  height={64}
+                  alt="KeralaDraws Logo"
+                  width={56}
+                  height={56}
                   className="w-full h-full object-contain"
                   priority
                 />
               </div>
               <div>
                 <span className="text-base sm:text-lg font-extrabold text-[#17201D] tracking-tight block leading-none">
-                  Kerala Lottery Results
+                  KeralaDraws
                 </span>
                 <span className="text-[10px] text-[#0B3B32] font-bold tracking-wider uppercase block mt-1 font-tabular">
-                  Official Information Platform
+                  Results, Checker & Alerts
                 </span>
               </div>
             </Link>
@@ -92,7 +93,7 @@ export function Navbar() {
             {/* Desktop Navigation Links */}
             <nav className="hidden lg:flex items-center gap-1">
               {NAV_LINKS.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
                 return (
                   <Link
                     key={item.label}
@@ -217,14 +218,24 @@ export function Navbar() {
           <span>Home</span>
         </Link>
         <Link
-          href="/previous-results"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/result') || pathname === '/previous-results'
+          href="/results"
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/result')
             ? 'text-[#0B3B32]'
             : 'text-[#68736E] hover:text-[#17201D]'
             }`}
         >
           <Award className="w-5 h-5" />
           <span>Results</span>
+        </Link>
+        <Link
+          href="/lotteries"
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/lotteries')
+            ? 'text-[#0B3B32]'
+            : 'text-[#68736E] hover:text-[#17201D]'
+            }`}
+        >
+          <Layers className="w-5 h-5" />
+          <span>Lotteries</span>
         </Link>
         <Link
           href="/check-ticket"
@@ -242,13 +253,6 @@ export function Navbar() {
           <Newspaper className="w-5 h-5" />
           <span>News</span>
         </Link>
-        <button
-          onClick={() => setMobileMenuOpen(true)}
-          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-[#68736E] hover:text-[#17201D]"
-        >
-          <Layers className="w-5 h-5" />
-          <span>More</span>
-        </button>
       </nav>
 
       {/* Global Search Modal */}

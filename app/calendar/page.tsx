@@ -1,5 +1,7 @@
-import LotteryCalendarPage, { metadata } from '../lottery-calendar/page';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
-export { metadata };
-export default LotteryCalendarPage;
+
+export default function CalendarRedirect() {
+  redirect('/lottery-calendar');
+}

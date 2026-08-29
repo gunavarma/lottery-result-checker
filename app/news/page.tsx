@@ -4,22 +4,40 @@ import Link from 'next/link';
 import { getAllNews, getFeaturedNews } from '@/lib/news';
 import { NewsCard, FeaturedNewsHero } from '@/components/NewsComponents';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { StructuredData } from '@/components/StructuredData';
+import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
 import { Newspaper, ArrowRight, Tag, ShieldCheck } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'Kerala Lottery News & Official Updates | Announcements & Guides',
-  description: 'Official news, bumper draw announcements, prize claim procedures, schedule changes, and analysis from the Kerala State Lotteries ecosystem.',
-};
+export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = constructMetadata({
+  title: 'Kerala Lottery News & Gazette Announcements | KeralaDraws',
+  description:
+    'Read official Kerala lottery news, seasonal bumper announcements, prize claim compliance rules, draw date revisions, and gazette releases on KeralaDraws.',
+  path: '/news',
+  keywords: [
+    'Kerala Lottery News',
+    'Thiruvonam Bumper News',
+    'Kerala State Lottery Announcements',
+    'How to Claim Kerala Lottery Prize',
+    'KeralaDraws',
+  ],
+});
 
 export default function NewsPage() {
   const articles = getAllNews();
   const featured = getFeaturedNews();
-  const secondary = articles.filter(a => a.id !== featured.id);
+  const secondary = articles.filter((a) => a.id !== featured.id);
 
-  const categories = ['All', 'Bumper Lotteries', 'Scheme Updates', 'Claim Rules', 'Draw Analysis'];
+  const breadcrumbs = [
+    { name: 'Home', url: '/' },
+    { name: 'News & Announcements', url: '/news' },
+  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-10">
+      <StructuredData data={getBreadcrumbSchema(breadcrumbs)} />
+
       <Breadcrumbs
         items={[
           { label: 'Home', href: '/' },
@@ -35,10 +53,10 @@ export default function NewsPage() {
           </span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[#17201D] tracking-tight">
-          Kerala Lottery News & Official Reports
+          Kerala Lottery News & Gazette Announcements
         </h1>
         <p className="text-xs sm:text-sm text-[#68736E] max-w-3xl">
-          Authoritative information covering upcoming bumper releases, prize structures, claim compliance regulations, and Directorate notifications.
+          Authoritative reporting covering upcoming bumper releases, prize structures, claim compliance regulations, and Directorate notifications.
         </p>
       </div>
 
@@ -62,29 +80,6 @@ export default function NewsPage() {
             <NewsCard key={article.id} article={article} />
           ))}
         </div>
-      </section>
-
-      {/* Official Guidelines Trust Callout */}
-      <section className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2E7E3] flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-[#0B3B32]">
-            <ShieldCheck className="w-5 h-5 text-[#16845B]" />
-            <span className="text-xs font-bold uppercase tracking-wider">Statutory Verification Note</span>
-          </div>
-          <h3 className="text-lg font-bold text-[#17201D]">
-            Official Directorate Publication Guidelines
-          </h3>
-          <p className="text-xs text-[#68736E] max-w-2xl">
-            All news summaries are verified against official gazettes published by the Directorate of Kerala State Lotteries, Vikas Bhavan, Thiruvananthapuram.
-          </p>
-        </div>
-        <Link
-          href="/about"
-          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white text-xs font-bold transition-colors shrink-0"
-        >
-          <span>Claim Rules & Verification</span>
-          <ArrowRight className="w-4 h-4" />
-        </Link>
       </section>
     </div>
   );

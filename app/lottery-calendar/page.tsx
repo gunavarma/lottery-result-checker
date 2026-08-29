@@ -7,13 +7,24 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Calendar, Clock, Award, ShieldCheck, ChevronRight } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 
+import { StructuredData } from '@/components/StructuredData';
+import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
+
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = constructMetadata({
   title: 'Kerala Lottery Calendar 2026 | Weekly & Bumper Draw Timetable',
   description:
     'Complete Kerala State Lottery calendar and draw schedule for 2026. Weekly draw days (Monday to Sunday), 3:00 PM draw times, ticket prices, and annual bumper dates.',
-};
+  path: '/lottery-calendar',
+  keywords: [
+    'Kerala Lottery Calendar 2026',
+    'Kerala Lottery Schedule',
+    'Kerala Lottery Draw Days',
+    'Kerala Lottery Timetable',
+    'KeralaDraws',
+  ],
+});
 
 export default async function LotteryCalendarPage() {
   const today = new Date();
@@ -43,6 +54,12 @@ export default async function LotteryCalendarPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8">
+      <StructuredData
+        data={getBreadcrumbSchema([
+          { name: 'Home', url: '/' },
+          { name: 'Lottery Calendar', url: '/lottery-calendar' },
+        ])}
+      />
       <Breadcrumbs
         items={[
           { label: 'Home', href: '/' },

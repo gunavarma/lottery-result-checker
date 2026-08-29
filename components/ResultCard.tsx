@@ -15,9 +15,9 @@ export function ResultCard({ draw }: ResultCardProps) {
   const drawDateFormatted = draw.drawDate
     ? format(new Date(draw.drawDate), 'dd MMMM yyyy')
     : '';
-  const drawDateSlug = draw.drawDate
-    ? format(new Date(draw.drawDate), 'yyyy-MM-dd')
-    : '';
+  const lotterySlug = draw.lottery?.slug || 'kerala-lottery';
+  const drawNumberSlug = draw.drawNumber ? draw.drawNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
+  const resultUrl = `/results/${lotterySlug}/${drawNumberSlug}`;
 
   return (
     <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#E2E7E3] hover:border-[#0B3B32]/40 hover:shadow-md transition-all flex flex-col justify-between group">
@@ -29,7 +29,7 @@ export function ResultCard({ draw }: ResultCardProps) {
               {draw.drawNumber}
             </span>
             <h3 className="text-lg font-extrabold text-[#17201D] mt-1 group-hover:text-[#0B3B32] transition-colors leading-tight">
-              <Link href={`/result/${drawDateSlug}/${draw.lottery?.slug}`}>
+              <Link href={resultUrl}>
                 {draw.lottery?.name}
               </Link>
             </h3>
@@ -73,7 +73,7 @@ export function ResultCard({ draw }: ResultCardProps) {
       <div className="pt-4 mt-4 border-t border-[#E2E7E3] flex items-center justify-between text-xs">
         <span className="text-[11px] text-[#68736E]">Official LOTIS Record</span>
         <Link
-          href={`/result/${drawDateSlug}/${draw.lottery?.slug}`}
+          href={resultUrl}
           className="font-bold text-[#0B3B32] group-hover:text-[#16845B] inline-flex items-center gap-1 transition-colors"
         >
           <span>Complete Result</span>

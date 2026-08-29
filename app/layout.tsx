@@ -5,31 +5,49 @@ import { Footer } from '@/components/Footer';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
 import { ForegroundNotificationToast } from '@/components/ForegroundNotificationToast';
+import { StructuredData } from '@/components/StructuredData';
+import {
+  SITE_URL,
+  SITE_NAME,
+  SITE_TAGLINE,
+  SITE_DESCRIPTION,
+  getOrganizationSchema,
+  getWebSiteSchema,
+} from '@/lib/seo';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://keralalottery.org'),
+  metadataBase: new URL(SITE_URL),
   manifest: '/manifest.json',
   title: {
-    default: 'Kerala Lottery Results Today | Latest Kerala Lottery Results',
-    template: '%s | Kerala Lottery Results',
+    default: `${SITE_NAME} | Kerala Lottery Results Today, Ticket Checker & Alerts`,
+    template: `%s | ${SITE_NAME}`,
   },
-  description:
-    'Check official Kerala Lottery results today live, winning numbers, draw schedule, prize structure and previous results synchronized directly from the Directorate of Kerala State Lotteries LOTIS portal.',
+  description: SITE_DESCRIPTION,
   keywords: [
-    'Kerala Lottery Results',
     'Kerala Lottery Result Today',
+    'Kerala Lottery Results',
     'Kerala State Lotteries',
-    'LOTIS',
+    'Kerala Lottery Winning Numbers',
+    'Kerala Lottery Result Today Live',
+    'Kerala Lottery Result Yesterday',
+    'Kerala Lottery Ticket Check',
+    'Kerala Lottery Ticket Checker',
+    'Kerala Lottery Prize Structure',
+    'Kerala Lottery Calendar',
+    'Karunya Lottery Result',
     'Karunya Plus Result',
+    'Bhagyathara Result',
     'Sthree Sakthi Result',
     'Suvarna Keralam Result',
-    'Fifty Fifty Lottery Result',
-    'Kerala Lottery Winning Numbers',
-    'Kerala Lottery Calendar',
+    'Samrudhi Result',
+    'Nirmal Result',
+    'Win-Win Result',
+    'Dhanalekshmi Result',
+    'KeralaDraws',
   ],
-  authors: [{ name: 'Kerala Lottery Results' }],
-  creator: 'Kerala Lottery Results',
-  publisher: 'Kerala Lottery Results',
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
   icons: {
     icon: '/logo.svg',
     shortcut: '/logo.svg',
@@ -39,19 +57,26 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: 'Kerala Lottery Results Today | Latest Kerala Lottery Results',
-    description:
-      'Official Kerala State Lottery results, draw numbers, winning numbers and full prize details synchronized with official LOTIS government records.',
-    url: '/',
-    siteName: 'Kerala Lottery Results',
+    title: `${SITE_NAME} | Kerala Lottery Results Today & Ticket Checker`,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    siteName: SITE_NAME,
     locale: 'en_IN',
     type: 'website',
+    images: [
+      {
+        url: `${SITE_URL}/logo.svg`,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} - ${SITE_TAGLINE}`,
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kerala Lottery Results Today',
-    description:
-      'Official Kerala State Lottery results, draw numbers, and prize details updated live.',
+    title: `${SITE_NAME} | Kerala Lottery Results Today`,
+    description: SITE_DESCRIPTION,
+    images: [`${SITE_URL}/logo.svg`],
   },
   robots: {
     index: true,
@@ -67,7 +92,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#059669',
+  themeColor: '#0B3B32',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
@@ -79,11 +104,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  const organizationSchema = getOrganizationSchema();
+  const webSiteSchema = getWebSiteSchema();
 
   return (
     <html lang="en" className="scroll-smooth">
       <head>
         <link rel="manifest" href="/manifest.json" />
+        <StructuredData data={[organizationSchema, webSiteSchema]} />
         {/* Google Analytics optional script */}
         {gaId && (
           <>
@@ -104,7 +132,7 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans antialiased selection:bg-emerald-500 selection:text-white pb-14 xl:pb-0">
+      <body className="min-h-screen flex flex-col bg-[#F7F7F4] text-[#17201D] font-sans antialiased selection:bg-[#0B3B32] selection:text-white pb-14 xl:pb-0">
         <OfflineBanner />
         <Navbar />
         <main className="flex-grow">{children}</main>

@@ -5,13 +5,24 @@ import { prisma, serializeData, formatINR, formatINRExact } from '@/lib/prisma';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Award, ShieldCheck, Ticket, Info, CheckCircle2 } from 'lucide-react';
 
+import { StructuredData } from '@/components/StructuredData';
+import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
+
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = constructMetadata({
   title: 'Kerala Lottery Prize Structure 2026 | Weekly & Bumper Prize Breakdown',
   description:
     'Complete official Kerala Lottery prize structure breakdown for all weekly lotteries (Karunya Plus, Sthree Sakthi, Suvarna Keralam) and bumper lotteries. Prize tiers, winner counts, consolation prizes.',
-};
+  path: '/prize-structure',
+  keywords: [
+    'Kerala Lottery Prize Structure',
+    'Kerala Lottery 1st Prize Amount',
+    'Kerala Lottery Prize Breakdown',
+    'Kerala Lottery Consolation Prize',
+    'KeralaDraws',
+  ],
+});
 
 async function getPrizeStructureData() {
   try {
@@ -58,6 +69,12 @@ export default async function PrizeStructurePage({
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8">
+      <StructuredData
+        data={getBreadcrumbSchema([
+          { name: 'Home', url: '/' },
+          { name: 'Prize Structures', url: '/prize-structure' },
+        ])}
+      />
       <Breadcrumbs
         items={[
           { label: 'Home', href: '/' },

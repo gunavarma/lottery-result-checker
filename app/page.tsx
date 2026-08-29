@@ -114,41 +114,21 @@ export default async function HomePage() {
   const data = await getHomepageData();
   const allNews = getAllNews();
   const featuredArticle = getFeaturedNews();
-  const secondaryNews = allNews.filter(a => a.id !== featuredArticle.id).slice(0, 3);
-
-  const websiteSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: 'Kerala Lottery Results',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://keralalottery.org',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://keralalottery.org'}/search?q={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
-  };
+  const secondaryNews = allNews.filter((a) => a.id !== featuredArticle.id).slice(0, 3);
 
   return (
     <div className="space-y-12 sm:space-y-16 pb-16">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
-      />
-
       {/* Hero Editorial Header */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 space-y-8">
         <div className="space-y-3 max-w-3xl">
           <span className="text-xs font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
-            Kerala Lottery Results
+            KeralaDraws • Official Gazette Synchronized
           </span>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#17201D] tracking-tight leading-tight">
-            Today's Kerala Lottery Results
+            Kerala Lottery Results Today & Winning Numbers
           </h1>
           <p className="text-sm sm:text-base text-[#68736E] leading-relaxed">
-            Official lottery results, prize structures and ticket checking — updated as results are published by the Directorate of Kerala State Lotteries.
+            Independent Kerala State Lottery results, live 3:00 PM draw status, prize structures, and instant ticket verification — synchronized directly with official LOTIS gazette publications.
           </p>
         </div>
 
@@ -164,7 +144,7 @@ export default async function HomePage() {
         <UpcomingDrawsTimeline />
       </section>
 
-      {/* Level 2 Visual Priority: Active Lottery Directory (Compact List Layout) */}
+      {/* Level 2 Visual Priority: Active Lottery Directory */}
       <section id="lotteries" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
         <div className="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
           <div>
@@ -176,10 +156,10 @@ export default async function HomePage() {
             </h2>
           </div>
           <Link
-            href="/prize-structure"
+            href="/lotteries"
             className="text-xs font-bold text-[#0B3B32] hover:text-[#16845B] inline-flex items-center gap-1 transition-colors"
           >
-            <span>All Prize Structures</span>
+            <span>Explore All Schemes</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -219,7 +199,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Level 3 Visual Priority: Previous Results Archive Preview */}
+      {/* Level 3 Visual Priority: Results Archive Preview */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E2E7E3] pb-3">
           <div>
@@ -231,7 +211,7 @@ export default async function HomePage() {
             </h2>
           </div>
           <Link
-            href="/previous-results"
+            href="/results/archive"
             className="inline-flex items-center gap-1 text-xs font-bold text-[#0B3B32] hover:text-[#16845B] transition-colors shrink-0"
           >
             <span>Explore Complete Results Archive</span>
