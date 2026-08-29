@@ -18,8 +18,8 @@ export function LotteryDirectoryList({ lotteries }: LotteryDirectoryListProps) {
       if (saved) {
         setFavorites(JSON.parse(saved));
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
+      // Ignore localStorage read errors in private/sandboxed mode
     }
   }, []);
 
@@ -35,8 +35,8 @@ export function LotteryDirectoryList({ lotteries }: LotteryDirectoryListProps) {
     setFavorites(updated);
     try {
       localStorage.setItem('kl_favorite_lotteries', JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
+    } catch {
+      // Ignore localStorage write errors
     }
   };
 

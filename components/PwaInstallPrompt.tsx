@@ -9,10 +9,8 @@ export function PwaInstallPrompt() {
 
   useEffect(() => {
     // Register Service Worker
-    if ('serviceWorker' in navigator && window.location.protocol === 'https:' || window.location.hostname === 'localhost') {
-      navigator.serviceWorker.register('/sw.js').catch((err) => {
-        console.warn('SW registration skipped:', err);
-      });
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
 
     const handleBeforeInstallPrompt = (e: any) => {

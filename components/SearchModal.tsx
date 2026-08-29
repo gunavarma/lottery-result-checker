@@ -105,8 +105,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           news: matchedNews
         });
       }
-    } catch (err) {
-      console.error('Search error:', err);
+    } catch {
+      // Fallback on search network error
     } finally {
       setLoading(false);
     }

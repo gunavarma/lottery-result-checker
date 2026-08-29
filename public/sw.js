@@ -9,15 +9,14 @@ const STATIC_ASSETS = [
   '/my-lotteries',
   '/manifest.json',
   '/favicon.ico',
+  '/logo.svg',
 ];
 
 // 1. Install Event: Pre-cache core shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('PWA: Pre-caching partial failure', err);
-      });
+      return cache.addAll(STATIC_ASSETS).catch(() => {});
     })
   );
   self.skipWaiting();

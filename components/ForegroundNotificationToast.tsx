@@ -14,7 +14,6 @@ export function ForegroundNotificationToast() {
 
   useEffect(() => {
     const unsubscribe = onForegroundFcmMessage((payload) => {
-      console.log('[Foreground FCM Message Received]:', payload);
       const title = payload.notification?.title || payload.data?.title || 'Result Published';
       const body = payload.notification?.body || payload.data?.body || 'Official Kerala Lottery winning numbers are now available.';
       const url = payload.data?.url || '/live';

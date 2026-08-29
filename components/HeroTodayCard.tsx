@@ -49,8 +49,8 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
           setData(json);
           setLastChecked(new Date());
         }
-      } catch (err) {
-        console.error('Polling error:', err);
+      } catch {
+        // Silent recovery on polling error
       } finally {
         setLoading(false);
       }

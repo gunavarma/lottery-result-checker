@@ -51,7 +51,7 @@ export default function CheckTicketPage() {
           setLotteries(data.lotteries);
         }
       })
-      .catch((err) => console.warn('Failed to load lotteries for dropdown:', err));
+      .catch(() => {});
   }, []);
 
   const handleCheckTickets = async (e: React.FormEvent) => {
@@ -149,8 +149,8 @@ export default function CheckTicketPage() {
         setSavedTicketMsg(`Ticket ${ticketStr} saved to your Watchlist.`);
         setTimeout(() => setSavedTicketMsg(null), 4000);
       }
-    } catch (e) {
-      console.error('Error saving ticket:', e);
+    } catch {
+      // Ignore save ticket error
     }
   };
 

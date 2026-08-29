@@ -68,7 +68,7 @@ export function NotificationModal({
           }
         }
       })
-      .catch((err) => console.warn('Failed to load lotteries:', err));
+      .catch(() => {});
   }, [initialLotteryId]);
 
   const toggleLottery = (id: string) => {
@@ -129,7 +129,6 @@ export function NotificationModal({
         });
       }
     } catch (err: any) {
-      console.error('FCM subscription error:', err);
       if (typeof window !== 'undefined' && 'Notification' in window) {
         setPermissionState(Notification.permission);
       }
@@ -141,7 +140,7 @@ export function NotificationModal({
       } else {
         setStatusMsg({
           type: 'error',
-          text: err.message || 'Notification permission request was cancelled or failed.',
+          text: err?.message || 'Notification permission request was cancelled or failed.',
         });
       }
     } finally {
@@ -166,8 +165,11 @@ export function NotificationModal({
         type: 'info',
         text: 'You have been unsubscribed from push notifications.',
       });
-    } catch (err) {
-      console.error('Unsubscribe error:', err);
+    } catch {
+      setStatusMsg({
+        type: 'error',
+        text: 'Failed to complete unsubscription. Please try again.',
+      });
     } finally {
       setLoading(false);
     }

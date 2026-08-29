@@ -37,8 +37,8 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
         if (json.success && json.lotteries) {
           setLotteries(json.lotteries);
         }
-      } catch (e) {
-        console.error('Error fetching lotteries for checker:', e);
+      } catch {
+        // Fallback gracefully on network error
       }
     }
     fetchLotteries();
@@ -76,8 +76,7 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
       } else {
         setResults([]);
       }
-    } catch (err) {
-      console.error('Ticket check error:', err);
+    } catch {
       setResults([]);
     } finally {
       setLoading(false);

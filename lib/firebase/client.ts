@@ -32,7 +32,6 @@ export async function getClientMessaging(): Promise<Messaging | null> {
 
   const supported = await isSupported().catch(() => false);
   if (!supported) {
-    console.warn('Firebase Cloud Messaging is not supported on this browser/environment.');
     return null;
   }
 
@@ -67,9 +66,8 @@ export async function requestFcmToken(customVapidKey?: string): Promise<string |
   if ('serviceWorker' in navigator) {
     try {
       swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-    } catch (err) {
-      console.warn('Service worker registration fallback:', err);
-      swRegistration = await navigator.serviceWorker.ready;
+    } catch {
+      swRegistration = await navigator.serviceWorker.ready.catch(() => undefined);
     }
   }
 
