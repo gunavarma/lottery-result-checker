@@ -35,8 +35,8 @@ export function ResultCard({ draw }: ResultCardProps) {
             </h3>
           </div>
 
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#16845B] bg-[#16845B]/10 px-2 py-0.5 rounded-full font-tabular">
-            <CheckCircle2 className="w-3 h-3" />
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#075338] bg-[#E8F4F0] px-2 py-0.5 rounded-full font-tabular border border-[#16845B]/20">
+            <CheckCircle2 className="w-3 h-3 text-[#075338]" />
             <span>Published</span>
           </span>
         </div>

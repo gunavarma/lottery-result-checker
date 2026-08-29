@@ -174,12 +174,12 @@ export function NotificationModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#10201D]/60 backdrop-blur-xs animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#10201D]/60 backdrop-blur-xs animate-fadeIn" role="dialog" aria-modal="true" aria-label="Notification Preferences">
       <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-[#E2E7E3] shadow-2xl space-y-6 relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
-          aria-label="Close modal"
-          className="absolute top-5 right-5 p-2 rounded-full text-[#68736E] hover:text-[#17201D] hover:bg-[#F7F7F4] transition-colors"
+          aria-label="Close notification modal"
+          className="absolute top-6 right-6 p-2 rounded-full text-[#68736E] hover:text-[#17201D] hover:bg-[#F1F4F2] transition-colors"
         >
           <X className="w-5 h-5" />
         </button>

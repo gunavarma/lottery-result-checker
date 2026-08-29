@@ -129,11 +129,12 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     results.news.length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-12 sm:pt-20 px-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-12 sm:pt-20 px-4" role="dialog" aria-modal="true" aria-label="Search Kerala Lottery Database">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-[#10201D]/60 backdrop-blur-xs transition-opacity"
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Modal Card */}
@@ -144,6 +145,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           <input
             ref={inputRef}
             type="text"
+            aria-label="Search lottery schemes, draw numbers, ticket numbers or news"
             placeholder="Search lottery scheme, draw number (e.g. KN-638), 6-digit ticket, or news..."
             value={query}
             onChange={(e) => handleSearch(e.target.value)}
@@ -154,6 +156,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           ) : query ? (
             <button
               type="button"
+              aria-label="Clear search query"
               onClick={() => handleSearch('')}
               className="p-1 rounded-full text-[#68736E] hover:text-[#17201D] hover:bg-[#F1F4F2]"
             >

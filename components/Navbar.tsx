@@ -209,10 +209,10 @@ export function Navbar() {
       </header>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E2E7E3] py-2 px-3 flex items-center justify-around lg:hidden shadow-lg">
+      <nav aria-label="Mobile Navigation" className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E2E7E3] py-2 px-3 flex items-center justify-around lg:hidden shadow-lg">
         <Link
           href="/"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname === '/' ? 'text-[#0B3B32]' : 'text-[#68736E] hover:text-[#17201D]'
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname === '/' ? 'text-[#0B3B32]' : 'text-[#414C47] hover:text-[#0B3B32]'
             }`}
         >
           <Home className="w-5 h-5" />
@@ -222,7 +222,7 @@ export function Navbar() {
           href="/results"
           className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/result')
             ? 'text-[#0B3B32]'
-            : 'text-[#68736E] hover:text-[#17201D]'
+            : 'text-[#414C47] hover:text-[#0B3B32]'
             }`}
         >
           <Award className="w-5 h-5" />
@@ -232,7 +232,7 @@ export function Navbar() {
           href="/lotteries"
           className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/lotteries')
             ? 'text-[#0B3B32]'
-            : 'text-[#68736E] hover:text-[#17201D]'
+            : 'text-[#414C47] hover:text-[#0B3B32]'
             }`}
         >
           <Layers className="w-5 h-5" />
@@ -240,7 +240,7 @@ export function Navbar() {
         </Link>
         <Link
           href="/check-ticket"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname === '/check-ticket' ? 'text-[#0B3B32]' : 'text-[#68736E] hover:text-[#17201D]'
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname === '/check-ticket' ? 'text-[#0B3B32]' : 'text-[#414C47] hover:text-[#0B3B32]'
             }`}
         >
           <Ticket className="w-5 h-5" />
@@ -248,7 +248,7 @@ export function Navbar() {
         </Link>
         <Link
           href="/news"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/news') ? 'text-[#0B3B32]' : 'text-[#68736E] hover:text-[#17201D]'
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/news') ? 'text-[#0B3B32]' : 'text-[#414C47] hover:text-[#0B3B32]'
             }`}
         >
           <Newspaper className="w-5 h-5" />

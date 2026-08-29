@@ -113,10 +113,11 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
           {/* Scheme Selection */}
           <div className="sm:col-span-4 space-y-1.5">
-            <label className="block text-xs font-bold text-[#17201D] uppercase tracking-wide">
+            <label htmlFor="lottery-scheme-select" className="block text-xs font-bold text-[#17201D] uppercase tracking-wide">
               Lottery Scheme
             </label>
             <select
+              id="lottery-scheme-select"
               value={selectedLottery}
               onChange={(e) => setSelectedLottery(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] text-xs font-bold text-[#17201D] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B3B32] transition-colors"
@@ -132,11 +133,12 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
 
           {/* Ticket Number Input */}
           <div className="sm:col-span-8 space-y-1.5">
-            <label className="block text-xs font-bold text-[#17201D] uppercase tracking-wide">
+            <label htmlFor="ticket-number-input" className="block text-xs font-bold text-[#17201D] uppercase tracking-wide">
               Ticket Number
             </label>
             <div className="flex gap-2">
               <input
+                id="ticket-number-input"
                 type="text"
                 placeholder="e.g. 320327, PS 320327, 0266"
                 value={ticketInput}

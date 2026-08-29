@@ -41,9 +41,10 @@ export function NotificationBanner({ lotteryId, lotteryName, className = '' }: N
         <div className="shrink-0 flex items-center gap-3">
           <button
             onClick={() => setModalOpen(true)}
-            className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
+            aria-label="Enable Push Notifications"
+            className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-[#0B3B32] hover:bg-[#072B24] text-white font-bold text-xs shadow-md border border-[#C8A45D]/50 transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="w-4 h-4 text-[#C8A45D]" />
             <span>Enable Notifications</span>
           </button>
         </div>

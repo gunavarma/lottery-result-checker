@@ -38,7 +38,7 @@ export function DrawScheduleTable() {
               <span>Official Kerala Lottery Weekly Draw Schedule</span>
             </h3>
           </div>
-          <span className="text-xs font-bold bg-white/10 text-[#C8A45D] border border-white/15 px-3 py-1 rounded-full font-tabular">
+          <span className="text-xs font-bold bg-white/10 text-[#C8A45D] border border-white/15 px-3 py-1 rounded-full font-tabular" suppressHydrationWarning>
             Today is {todayDayName}
           </span>
         </div>

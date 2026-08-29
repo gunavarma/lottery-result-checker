@@ -26,6 +26,11 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
   const [data, setData] = useState<any>(initialData);
   const [loading, setLoading] = useState(false);
   const [lastChecked, setLastChecked] = useState<Date>(new Date());
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isTodayAvailable = data?.isTodayAvailable;
   const liveStatus = data?.liveStatus || 'WAITING';
@@ -68,21 +73,21 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
     switch (liveStatus) {
       case 'PUBLISHED':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#16845B]/15 text-[#16845B] border border-[#16845B]/30 font-tabular">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#16845B]/25 text-[#74E3B7] border border-[#16845B]/50 font-tabular">
             <CheckCircle2 className="w-3.5 h-3.5" />
             <span>RESULT PUBLISHED</span>
           </span>
         );
       case 'CHECKING':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#A66A00]/15 text-[#C8A45D] border border-[#A66A00]/30 font-tabular">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#A66A00]/25 text-[#F2D07C] border border-[#A66A00]/50 font-tabular">
             <RefreshCw className="w-3.5 h-3.5 animate-spin" />
             <span>UPDATING RESULT</span>
           </span>
         );
       case 'FAILED':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#B54747]/15 text-rose-300 border border-[#B54747]/30 font-tabular">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#B54747]/25 text-rose-300 border border-[#B54747]/50 font-tabular">
             <AlertCircle className="w-3.5 h-3.5" />
             <span>TEMPORARILY UNAVAILABLE</span>
           </span>
@@ -117,8 +122,10 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
 
           <div className="flex flex-col sm:items-end gap-1.5">
             {getStatusBadge()}
-            <span className="text-[11px] text-slate-300/80 font-tabular">
-              Last synchronized {formatDistanceToNow(lastChecked, { addSuffix: true })}
+            <span className="text-[11px] text-slate-300/80 font-tabular" suppressHydrationWarning>
+              {mounted
+                ? `Last synchronized ${formatDistanceToNow(lastChecked, { addSuffix: true })}`
+                : 'Synchronized with LOTIS gazette'}
             </span>
           </div>
         </div>
