@@ -33,65 +33,73 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-async function getTodayResultData() {
-  try {
-    const now = new Date();
-    const todayStart = startOfDay(now);
-    const todayEnd = endOfDay(now);
+import { getOrSetCache } from '@/lib/cache';
 
-    let draw = await prisma.draw.findFirst({
-      where: {
-        drawDate: {
-          gte: todayStart,
-          lte: todayEnd,
-        },
-      },
-      include: {
-        lottery: true,
-        prizes: {
-          orderBy: { orderIndex: 'asc' },
-          include: {
-            winningNumbers: {
-              orderBy: { id: 'asc' },
+async function getTodayResultData() {
+  return getOrSetCache(
+    'today_result_data',
+    async () => {
+      try {
+        const now = new Date();
+        const todayStart = startOfDay(now);
+        const todayEnd = endOfDay(now);
+
+        let draw = await prisma.draw.findFirst({
+          where: {
+            drawDate: {
+              gte: todayStart,
+              lte: todayEnd,
             },
           },
-        },
-      },
-    });
-
-    let isFromToday = true;
-    if (!draw) {
-      isFromToday = false;
-      draw = await prisma.draw.findFirst({
-        where: { status: 'PUBLISHED' },
-        orderBy: { drawDate: 'desc' },
-        include: {
-          lottery: true,
-          prizes: {
-            orderBy: { orderIndex: 'asc' },
-            include: {
-              winningNumbers: {
-                orderBy: { id: 'asc' },
+          include: {
+            lottery: true,
+            prizes: {
+              orderBy: { orderIndex: 'asc' },
+              include: {
+                winningNumbers: {
+                  orderBy: { id: 'asc' },
+                },
               },
             },
           },
-        },
-      });
-    }
+        });
 
-    return {
-      isFromToday,
-      draw: draw ? serializeData(draw) : null,
-      dateFormatted: format(now, 'dd MMMM yyyy (EEEE)'),
-    };
-  } catch (error) {
-    console.error('Error in getTodayResultData:', error);
-    return {
-      isFromToday: false,
-      draw: null,
-      dateFormatted: format(new Date(), 'dd MMMM yyyy (EEEE)'),
-    };
-  }
+        let isFromToday = true;
+        if (!draw) {
+          isFromToday = false;
+          draw = await prisma.draw.findFirst({
+            where: { status: 'PUBLISHED' },
+            orderBy: { drawDate: 'desc' },
+            include: {
+              lottery: true,
+              prizes: {
+                orderBy: { orderIndex: 'asc' },
+                include: {
+                  winningNumbers: {
+                    orderBy: { id: 'asc' },
+                  },
+                },
+              },
+            },
+          });
+        }
+
+        return {
+          isFromToday,
+          draw: draw ? serializeData(draw) : null,
+          dateFormatted: format(now, 'dd MMMM yyyy (EEEE)'),
+        };
+      } catch (error) {
+        console.error('Error in getTodayResultData:', error);
+        return {
+          isFromToday: false,
+          draw: null,
+          dateFormatted: format(new Date(), 'dd MMMM yyyy (EEEE)'),
+        };
+      }
+    },
+    { ttlMs: 30_000, swrMs: 300_000 }
+  );
 }
 
 export default async function TodayResultPage() {

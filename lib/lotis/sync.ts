@@ -7,6 +7,7 @@ import {
 } from '../parser/lotis-parser';
 import { ParsedDrawResultSchema } from '../validation/lottery';
 import { sendResultPublishedPushNotification } from '../firebase/fcm';
+import { invalidateCache } from '../cache';
 
 export const LOTIS_BASE_URL = 'https://www.lotteryagent.kerala.gov.in';
 export const LOTIS_PUBLIC_URL = `${LOTIS_BASE_URL}/result/public`;
@@ -342,17 +343,13 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
     const completedAt = new Date();
     const finalStatus = errors.length > 0 && newResults === 0 && updatedResults === 0 ? 'FAILED' : 'SUCCESS';
 
-    if (syncLogId) {
-      await prisma.syncLog.update({
-        where: { id: syncLogId },
-        data: {
-          completedAt,
-          status: finalStatus,
-          recordsFound: scrapedList.length,
-          newDrawsCount: newResults + updatedResults,
-          errorMessage: errors.length > 0 ? errors.slice(0, 3).join('; ') : null,
-        },
-      });
+    // Invalidate in-memory cache if new or updated results were written
+    if (newResults > 0 || updatedResults > 0) {
+      try {
+        invalidateCache();
+      } catch (cacheErr) {
+        console.warn('Cache invalidation error:', cacheErr);
+      }
     }
 
     return {

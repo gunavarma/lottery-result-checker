@@ -57,33 +57,43 @@ export async function generateMetadata({
   }
 }
 
+import { getOrSetCache } from '@/lib/cache';
+
 async function getLotterySchemeData(slug: string) {
-  try {
-    const lottery = await prisma.lottery.findUnique({
-      where: { slug },
-      include: {
-        draws: {
-          where: { status: 'PUBLISHED' },
-          orderBy: { drawDate: 'desc' },
-          take: 10,
+  const cacheKey = `lottery_scheme_hub_${slug.toLowerCase()}`;
+
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      try {
+        const lottery = await prisma.lottery.findUnique({
+          where: { slug },
           include: {
-            lottery: true,
-            prizes: {
-              orderBy: { orderIndex: 'asc' },
+            draws: {
+              where: { status: 'PUBLISHED' },
+              orderBy: { drawDate: 'desc' },
+              take: 10,
               include: {
-                winningNumbers: true,
+                lottery: true,
+                prizes: {
+                  orderBy: { orderIndex: 'asc' },
+                  include: {
+                    winningNumbers: true,
+                  },
+                },
               },
             },
           },
-        },
-      },
-    });
+        });
 
-    return lottery ? serializeData(lottery) : null;
-  } catch (error) {
-    console.error('Error in getLotterySchemeData:', error);
-    return null;
-  }
+        return lottery ? serializeData(lottery) : null;
+      } catch (error) {
+        console.error('Error in getLotterySchemeData:', error);
+        return null;
+      }
+    },
+    { ttlMs: 60_000, swrMs: 600_000 }
+  );
 }
 
 export default async function LotterySchemePage({

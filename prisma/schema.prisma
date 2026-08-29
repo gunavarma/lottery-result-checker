@@ -58,6 +58,7 @@ model Draw {
   @@index([drawDate])
   @@index([drawNumber])
   @@index([status])
+  @@index([status, drawDate])
 }
 
 model Prize {

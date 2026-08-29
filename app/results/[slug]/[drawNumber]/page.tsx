@@ -93,84 +93,94 @@ export async function generateMetadata({
   }
 }
 
-async function getDrawResultData(slug: string, drawNumber: string) {
-  try {
-    const cleanDrawNumber = drawNumber.toUpperCase();
+import { getOrSetCache } from '@/lib/cache';
 
-    const draw = await prisma.draw.findFirst({
-      where: {
-        lottery: { slug },
-        OR: [
-          { drawNumber: cleanDrawNumber },
-          { drawNumber: { contains: cleanDrawNumber } },
-        ],
-      },
-      include: {
-        lottery: true,
-        prizes: {
-          orderBy: { orderIndex: 'asc' },
+async function getDrawResultData(slug: string, drawNumber: string) {
+  const cacheKey = `draw_result_${slug}_${drawNumber.toLowerCase()}`;
+
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      try {
+        const cleanDrawNumber = drawNumber.toUpperCase();
+
+        const draw = await prisma.draw.findFirst({
+          where: {
+            lottery: { slug },
+            OR: [
+              { drawNumber: cleanDrawNumber },
+              { drawNumber: { contains: cleanDrawNumber } },
+            ],
+          },
           include: {
-            winningNumbers: {
-              orderBy: { id: 'asc' },
+            lottery: true,
+            prizes: {
+              orderBy: { orderIndex: 'asc' },
+              include: {
+                winningNumbers: {
+                  orderBy: { id: 'asc' },
+                },
+              },
             },
           },
-        },
-      },
-    });
+        });
 
-    if (!draw) return null;
+        if (!draw) return null;
 
-    // Fetch previous and next draws for navigation
-    const [previousDraw, nextDraw, relatedDraws] = await Promise.all([
-      prisma.draw.findFirst({
-        where: {
-          lotteryId: draw.lotteryId,
-          drawDate: { lt: draw.drawDate },
-          status: 'PUBLISHED',
-        },
-        orderBy: { drawDate: 'desc' },
-        select: { id: true, drawNumber: true, drawDate: true, lottery: { select: { slug: true } } },
-      }),
-      prisma.draw.findFirst({
-        where: {
-          lotteryId: draw.lotteryId,
-          drawDate: { gt: draw.drawDate },
-          status: 'PUBLISHED',
-        },
-        orderBy: { drawDate: 'asc' },
-        select: { id: true, drawNumber: true, drawDate: true, lottery: { select: { slug: true } } },
-      }),
-      prisma.draw.findMany({
-        where: {
-          lotteryId: draw.lotteryId,
-          id: { not: draw.id },
-          status: 'PUBLISHED',
-        },
-        orderBy: { drawDate: 'desc' },
-        take: 3,
-        select: {
-          id: true,
-          drawNumber: true,
-          drawDate: true,
-          lottery: { select: { name: true, slug: true, code: true } },
-          prizes: {
-            where: { orderIndex: 0 },
-            select: { amount: true, winningNumbers: { take: 1, select: { displayNumber: true } } },
-          },
-        },
-      }),
-    ]);
+        // Fetch previous and next draws for navigation
+        const [previousDraw, nextDraw, relatedDraws] = await Promise.all([
+          prisma.draw.findFirst({
+            where: {
+              lotteryId: draw.lotteryId,
+              drawDate: { lt: draw.drawDate },
+              status: 'PUBLISHED',
+            },
+            orderBy: { drawDate: 'desc' },
+            select: { id: true, drawNumber: true, drawDate: true, lottery: { select: { slug: true } } },
+          }),
+          prisma.draw.findFirst({
+            where: {
+              lotteryId: draw.lotteryId,
+              drawDate: { gt: draw.drawDate },
+              status: 'PUBLISHED',
+            },
+            orderBy: { drawDate: 'asc' },
+            select: { id: true, drawNumber: true, drawDate: true, lottery: { select: { slug: true } } },
+          }),
+          prisma.draw.findMany({
+            where: {
+              lotteryId: draw.lotteryId,
+              id: { not: draw.id },
+              status: 'PUBLISHED',
+            },
+            orderBy: { drawDate: 'desc' },
+            take: 3,
+            select: {
+              id: true,
+              drawNumber: true,
+              drawDate: true,
+              lottery: { select: { name: true, slug: true, code: true } },
+              prizes: {
+                where: { orderIndex: 0 },
+                select: { amount: true, winningNumbers: { take: 1, select: { displayNumber: true } } },
+              },
+            },
+          }),
+        ]);
 
-    return {
-      draw: serializeData(draw),
-      previousDraw: previousDraw ? serializeData(previousDraw) : null,
-      nextDraw: nextDraw ? serializeData(nextDraw) : null,
-      relatedDraws: serializeData(relatedDraws),
-    };
-  } catch (error) {
-    console.error('Error in getDrawResultData:', error);
-    return null;
-  }
+        return {
+          draw: serializeData(draw),
+          previousDraw: previousDraw ? serializeData(previousDraw) : null,
+          nextDraw: nextDraw ? serializeData(nextDraw) : null,
+          relatedDraws: serializeData(relatedDraws),
+        };
+      } catch (error) {
+        console.error('Error in getDrawResultData:', error);
+        return null;
+      }
+    },
+    { ttlMs: 3600_000, swrMs: 86400_000 }
+  );
 }
 
 export default async function PermanentResultPage({
