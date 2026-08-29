@@ -11,9 +11,11 @@ import {
   RefreshCw,
   Award,
   ExternalLink,
-  ShieldCheck
+  ShieldCheck,
+  Camera,
 } from 'lucide-react';
 import { formatINR } from '@/lib/prisma';
+import { TicketScannerModal } from './TicketScannerModal';
 
 interface TicketCheckerProps {
   initialLotteryId?: string;
@@ -25,6 +27,7 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
   const [selectedLottery, setSelectedLottery] = useState(initialLotteryId || 'all');
   const [ticketInput, setTicketInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [results, setResults] = useState<any[] | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -44,32 +47,26 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
     fetchLotteries();
   }, []);
 
-  const handleCheck = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-
-    const query = ticketInput.trim();
-    if (!query) {
-      setErrorMsg('Please enter a ticket number.');
-      return;
-    }
-    if (query.length < 3) {
+  const executeSearch = async (query: string, lotteryId: string = selectedLottery) => {
+    const trimmed = query.trim();
+    if (!trimmed || trimmed.length < 3) {
       setErrorMsg('Ticket number must be at least 3 digits.');
       return;
     }
 
     setLoading(true);
     setHasSearched(true);
+    setErrorMsg(null);
 
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`);
       const json = await res.json();
 
       if (json.success && json.results?.winningTickets) {
         let winningMatches = json.results.winningTickets;
-        if (selectedLottery !== 'all') {
+        if (lotteryId !== 'all') {
           winningMatches = winningMatches.filter(
-            (t: any) => t.prize?.draw?.lotteryId === selectedLottery
+            (t: any) => t.prize?.draw?.lotteryId === lotteryId
           );
         }
         setResults(winningMatches);
@@ -81,6 +78,31 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCheck = async (e: React.FormEvent) => {
+    e.preventDefault();
+    executeSearch(ticketInput);
+  };
+
+  const handleTicketDetected = (ticketData: {
+    ticketNumber: string;
+    series: string | null;
+    fullTicket: string;
+    lotterySlug?: string | null;
+  }) => {
+    setTicketInput(ticketData.fullTicket);
+
+    let matchingLotteryId = selectedLottery;
+    if (ticketData.lotterySlug) {
+      const found = lotteries.find((l) => l.slug === ticketData.lotterySlug);
+      if (found) {
+        matchingLotteryId = found.id;
+        setSelectedLottery(found.id);
+      }
+    }
+
+    executeSearch(ticketData.fullTicket, matchingLotteryId);
   };
 
   const handleReset = () => {
@@ -135,36 +157,45 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
             <label htmlFor="ticket-number-input" className="block text-xs font-bold text-[#17201D] uppercase tracking-wide">
               Ticket Number
             </label>
-            <div className="flex gap-2">
-              <input
-                id="ticket-number-input"
-                type="text"
-                placeholder="e.g. 320327, PS 320327, 0266"
-                value={ticketInput}
-                onChange={(e) => {
-                  setTicketInput(e.target.value);
-                  if (errorMsg) setErrorMsg(null);
-                }}
-                className="flex-1 px-4 py-3 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B3B32] text-sm sm:text-base text-[#17201D] font-mono font-bold tracking-wider placeholder:font-sans placeholder:font-normal placeholder:text-[#68736E]"
-              />
-              <button
-                type="submit"
-                disabled={loading || ticketInput.trim().length < 3}
-                className="px-6 py-3 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] disabled:opacity-50 text-white font-bold text-xs shadow-sm transition-colors flex items-center justify-center gap-2 shrink-0 font-tabular"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Verifying...</span>
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-4 h-4" />
-                    <span>Check Ticket</span>
-                  </>
-                )}
-              </button>
-            </div>
+              <div className="flex flex-wrap sm:flex-nowrap gap-2">
+                <input
+                  id="ticket-number-input"
+                  type="text"
+                  placeholder="e.g. 320327, PS 320327, 0266"
+                  value={ticketInput}
+                  onChange={(e) => {
+                    setTicketInput(e.target.value);
+                    if (errorMsg) setErrorMsg(null);
+                  }}
+                  className="flex-1 min-w-[180px] px-4 py-3 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B3B32] text-sm sm:text-base text-[#17201D] font-mono font-bold tracking-wider placeholder:font-sans placeholder:font-normal placeholder:text-[#68736E]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setScannerOpen(true)}
+                  className="px-4 py-3 rounded-xl bg-white hover:bg-[#F7F7F4] text-[#0B3B32] border border-[#E2E7E3] font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5 shrink-0 font-tabular cursor-pointer"
+                  title="Scan physical ticket using camera or upload image"
+                >
+                  <Camera className="w-4 h-4 text-[#C59B27]" />
+                  <span>Scan Ticket</span>
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || ticketInput.trim().length < 3}
+                  className="px-6 py-3 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] disabled:opacity-50 text-white font-bold text-xs shadow-sm transition-colors flex items-center justify-center gap-2 shrink-0 font-tabular cursor-pointer"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Verifying...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4" />
+                      <span>Check Ticket</span>
+                    </>
+                  )}
+                </button>
+              </div>
           </div>
         </div>
 
@@ -282,6 +313,13 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
           )}
         </div>
       )}
+
+      {/* Ticket Scanner Modal */}
+      <TicketScannerModal
+        isOpen={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onTicketDetected={handleTicketDetected}
+      />
     </div>
   );
 }

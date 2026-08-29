@@ -1,26 +1,26 @@
 import { NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/prisma';
-import { startOfDay, endOfDay } from 'date-fns';
+import { getTodayIstStr, getIstDateRange, IST_OFFSET_MS } from '@/lib/date';
 import { getOrSetCache } from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const data = await getOrSetCache(
-      'api_results_today',
-      async () => {
-        const now = new Date();
-        const todayStart = startOfDay(now);
-        const todayEnd = endOfDay(now);
+    const todayStr = getTodayIstStr();
+    const { istStartUtc, istEndUtc, formattedDisplay } = getIstDateRange(todayStr);
 
-        // Look for draw today
+    const data = await getOrSetCache(
+      `api_results_today_${todayStr}`,
+      async () => {
+        // 1. Look for published draw for today using exact IST boundaries
         const todayDraw = await prisma.draw.findFirst({
           where: {
             drawDate: {
-              gte: todayStart,
-              lte: todayEnd,
+              gte: istStartUtc,
+              lte: istEndUtc,
             },
+            status: 'PUBLISHED',
           },
           include: {
             lottery: true,
@@ -35,7 +35,7 @@ export async function GET() {
           },
         });
 
-        // If no draw found for today, get the most recent published draw
+        // 2. Most recent published draw for historical reference if needed
         const latestDraw = await prisma.draw.findFirst({
           where: {
             status: 'PUBLISHED',
@@ -56,38 +56,83 @@ export async function GET() {
           },
         });
 
-        // Check current hour in IST (UTC + 5:30)
-        const istOffset = 5.5 * 60 * 60 * 1000;
-        const istTime = new Date(now.getTime() + istOffset);
-        const istHour = istTime.getUTCHours();
-        const istMinutes = istTime.getUTCMinutes();
+        // 3. Determine day of week in IST
+        const [y, m, d] = todayStr.split('-').map(Number);
+        const dateObjInIst = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const todayDayOfWeek = daysOfWeek[dateObjInIst.getUTCDay()];
+
+        // 4. Find scheduled lottery for today
+        const scheduledLottery = await prisma.lottery.findFirst({
+          where: {
+            drawDay: { contains: todayDayOfWeek, mode: 'insensitive' },
+            active: true,
+          },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            code: true,
+            drawDay: true,
+            drawTime: true,
+            ticketPrice: true,
+            isBumper: true,
+          },
+        });
+
+        // 5. Current time in IST
+        const now = new Date();
+        const istTime = new Date(now.getTime() + IST_OFFSET_MS);
+        const currentIstHours = istTime.getUTCHours();
+        const currentIstMinutes = istTime.getUTCMinutes();
+        const currentIstSeconds = istTime.getUTCSeconds();
+
+        // Draw time in IST is 15:00:00 (3:00 PM IST)
+        const targetDrawDateIst = new Date(Date.UTC(y, m - 1, d, 15, 0, 0, 0) - IST_OFFSET_MS);
+        const nowUtc = now.getTime();
+        const targetUtc = targetDrawDateIst.getTime();
+        const secondsUntilDraw = Math.max(0, Math.floor((targetUtc - nowUtc) / 1000));
 
         let liveStatus: 'WAITING' | 'CHECKING' | 'PUBLISHED' | 'FAILED' = 'WAITING';
+
         if (todayDraw && todayDraw.status === 'PUBLISHED') {
           liveStatus = 'PUBLISHED';
-        } else if (istHour === 15 || (istHour === 16 && istMinutes <= 30)) {
+        } else if (secondsUntilDraw === 0) {
+          // After 3:00 PM IST, if draw hasn't landed yet, we are in active updating mode
           liveStatus = 'CHECKING';
-        } else if (istHour < 15) {
-          liveStatus = 'WAITING';
         } else {
-          liveStatus = todayDraw ? (todayDraw.status as any) : 'WAITING';
+          liveStatus = 'WAITING';
         }
 
         return serializeData({
           success: true,
-          isTodayAvailable: !!todayDraw,
+          todayDate: todayStr,
+          todayDateFormatted: formattedDisplay,
+          isTodayAvailable: !!(todayDraw && todayDraw.status === 'PUBLISHED'),
           liveStatus,
           todayDraw: todayDraw || null,
           latestDraw: latestDraw || null,
-          currentTimeIST: istTime.toISOString(),
+          scheduledLottery: scheduledLottery || {
+            name: 'Kerala State Lottery',
+            code: 'KL',
+            drawTime: '3:00 PM',
+            drawDay: todayDayOfWeek,
+          },
+          expectedDrawTime: '03:00:00 PM',
+          secondsUntilDraw,
+          currentIstTime: {
+            hours: currentIstHours,
+            minutes: currentIstMinutes,
+            seconds: currentIstSeconds,
+          },
         });
       },
-      { ttlMs: 15_000, swrMs: 60_000 }
+      { ttlMs: 10_000, swrMs: 30_000 }
     );
 
     return NextResponse.json(data, {
       headers: {
-        'Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
+        'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=15',
       },
     });
   } catch (error: any) {
