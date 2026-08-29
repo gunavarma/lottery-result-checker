@@ -44,8 +44,10 @@ model Draw {
   sourceUrl         String         // Official public URL e.g. https://www.lotteryagent.kerala.gov.in/result/public/
   sourceDocumentUrl String?        // Direct official PDF e.g. https://www.lotteryagent.kerala.gov.in/results/<itemId>
   sourceItemId      String?        // LOTIS UUID
+  sourceHash        String?        // MD5/SHA256 checksum of document to detect updates
   rawText           String?        // Audit text
   publishedAt       DateTime?
+  verifiedAt        DateTime?      // Timestamp when officially certified
   lastCheckedAt     DateTime       @default(now())
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -94,6 +96,41 @@ model WinningNumber {
   @@index([displayNumber])
 }
 
+// Resumable Historical & Automated Import Jobs
+model ImportJob {
+  id              String    @id @default(cuid())
+  jobType         String    // "HISTORICAL_BACKFILL", "REALTIME_SYNC", "NEWS_SYNC"
+  status          String    @default("PENDING") // PENDING, RUNNING, COMPLETED, FAILED, PAUSED
+  totalItems      Int       @default(0)
+  processedItems  Int       @default(0)
+  successfulItems Int       @default(0)
+  failedItems     Int       @default(0)
+  lastCursor      String?   // Pagination offset or token
+  errorSummary    String?
+  startedAt       DateTime  @default(now())
+  completedAt     DateTime?
+  updatedAt       DateTime  @updatedAt
+
+  @@index([jobType])
+  @@index([status])
+  @@index([startedAt])
+}
+
+model ImportError {
+  id               String    @id @default(cuid())
+  sourceIdentifier String    // e.g. itemId, drawNumber, url
+  errorType        String    // e.g. "PARSE_ERROR", "NETWORK_ERROR", "VALIDATION_ERROR"
+  errorMessage     String
+  attemptCount     Int       @default(1)
+  status           String    @default("PENDING") // PENDING, RESOLVED, IGNORED
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([sourceIdentifier])
+  @@index([errorType])
+  @@index([status])
+}
+
 model SyncLog {
   id            String    @id @default(cuid())
   source        String    @default("LOTIS")
@@ -109,8 +146,73 @@ model SyncLog {
   @@index([status])
 }
 
-// Phase 2: Firebase Cloud Messaging (FCM) Web Push Notification Models
+// Automated Real News System Models
+model NewsCategory {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  slug        String        @unique
+  description String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
+  articles    NewsArticle[]
+
+  @@index([slug])
+}
+
+model NewsSource {
+  id            String        @id @default(cuid())
+  name          String        @unique
+  domain        String
+  baseUrl       String
+  feedUrl       String?
+  sourceType    String        @default("OFFICIAL") // OFFICIAL, PRESS_RELEASE, VERIFIED_MEDIA
+  isActive      Boolean       @default(true)
+  lastCheckedAt DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  articles      NewsArticle[]
+
+  @@index([domain])
+  @@index([isActive])
+}
+
+model NewsArticle {
+  id           String        @id @default(cuid())
+  sourceId     String?
+  categoryId   String?
+  title        String
+  slug         String        @unique
+  subtitle     String?
+  excerpt      String
+  content      String        @db.Text
+  canonicalUrl String?
+  sourceName   String        @default("Kerala State Lotteries Official")
+  imageUrl     String?
+  imageWidth   Int?
+  imageHeight  Int?
+  imageAlt     String?
+  imageHash    String?
+  author       String        @default("KeralaDraws Editorial Desk")
+  readTime     String        @default("3 min read")
+  isFeatured   Boolean       @default(false)
+  status       String        @default("PUBLISHED") // DRAFT, PUBLISHED, ARCHIVED
+  viewCount    Int           @default(0)
+  publishedAt  DateTime      @default(now())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  source       NewsSource?   @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  category     NewsCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+  @@index([publishedAt])
+  @@index([status, publishedAt])
+  @@index([categoryId])
+}
+
+// Phase 2: Firebase Cloud Messaging (FCM) Web Push Notification Models
 model PushSubscription {
   id              String                   @id @default(cuid())
   fcmToken        String                   @unique
@@ -168,8 +270,6 @@ model FavoriteLottery {
   @@unique([anonymousUserId, lotteryId])
   @@index([anonymousUserId])
 }
-
-// Future Ticket Monitoring & Notification Architecture
 
 model TicketWatchlist {
   id           String   @id @default(cuid())
