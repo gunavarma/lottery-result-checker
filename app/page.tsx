@@ -159,10 +159,10 @@ export default async function HomePage() {
             </h2>
           </div>
           <Link
-            href="/results/archive"
+            href="/results"
             className="inline-flex items-center gap-1 text-xs font-bold text-[#0B5D45] hover:text-[#084835] transition-colors shrink-0"
           >
-            <span>Complete Archive</span>
+            <span>View All Results</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

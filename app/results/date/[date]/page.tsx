@@ -140,7 +140,6 @@ export default async function DateResultsPage({
         items={[
           { label: 'Home', href: '/' },
           { label: 'Results', href: '/results' },
-          { label: 'By Date', href: '/results/archive' },
           { label: dateFormatted },
         ]}
       />
@@ -189,10 +188,10 @@ export default async function DateResultsPage({
 
           <div className="flex items-center gap-2">
             <Link
-              href="/results/archive"
+              href="/results"
               className="font-bold text-[#0B3B32] hover:underline flex items-center gap-1"
             >
-              <span>Browse Full Archive</span>
+              <span>Browse All Results</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>

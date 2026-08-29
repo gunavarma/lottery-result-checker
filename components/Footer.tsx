@@ -148,8 +148,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/results/archive" className="text-slate-300 hover:text-white transition-colors">
-                  Results Archive
+                <Link href="/results" className="text-slate-300 hover:text-white transition-colors">
+                  All Results
                 </Link>
               </li>
               <li>

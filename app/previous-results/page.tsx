@@ -9,5 +9,5 @@ export default async function PreviousResultsRedirect({
 }) {
   const params = await searchParams;
   const queryString = new URLSearchParams(params).toString();
-  redirect(queryString ? `/results/archive?${queryString}` : '/results/archive');
+  redirect(queryString ? `/results?${queryString}` : '/results');
 }

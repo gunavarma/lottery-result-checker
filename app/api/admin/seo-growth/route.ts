@@ -47,8 +47,8 @@ export async function GET() {
       {
         intent: 'Historical Results',
         primaryQuery: 'kerala lottery previous results archive',
-        targetPath: '/results/archive',
-        targetUrl: `${SITE_URL}/results/archive`,
+        targetPath: '/results',
+        targetUrl: `${SITE_URL}/results`,
         status: 'OPTIMIZED',
       },
       {

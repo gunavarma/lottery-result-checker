@@ -28,7 +28,6 @@ const NAV_LINKS = [
   { label: 'Today', href: '/' },
   { label: 'Results', href: '/results' },
   { label: 'Check Ticket', href: '/check-ticket' },
-  { label: 'Archive', href: '/results/archive' },
   { label: 'Upcoming', href: '/lottery-calendar' },
   { label: 'Lotteries', href: '/lotteries' },
   { label: 'News', href: '/news' },

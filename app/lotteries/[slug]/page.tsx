@@ -216,11 +216,11 @@ export default async function LotterySchemePage({
             <span>Prize Breakdown</span>
           </Link>
           <Link
-            href="/results/archive"
+            href="/results"
             className="inline-flex items-center gap-2 bg-[#F1F4F2] hover:bg-[#E2E7E3] text-[#0B3B32] px-4 py-2.5 rounded-xl font-bold text-xs transition-colors"
           >
             <Calendar className="w-4 h-4" />
-            <span>Past Results Archive</span>
+            <span>All Results</span>
           </Link>
         </div>
       </div>
@@ -271,7 +271,7 @@ export default async function LotterySchemePage({
               </h2>
             </div>
             <Link
-              href={`/results/archive?lottery=${lottery.slug}`}
+              href={`/results?lottery=${lottery.slug}`}
               className="text-xs font-bold text-[#0B3B32] hover:text-[#17201D] flex items-center gap-1"
             >
               <span>View All Past Draws</span>
