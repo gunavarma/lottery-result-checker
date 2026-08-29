@@ -69,12 +69,12 @@ export function Navbar() {
           <div className="flex items-center justify-between h-16 sm:h-18">
             {/* Brand Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#0B3B32] flex items-center justify-center p-1.5 shrink-0 shadow-xs">
+              <div className="w-16 h-16 sm:w-16 sm:h-16  flex items-center justify-center p-1.5 shrink-0 shadow-xs">
                 <Image
                   src="/logo.svg"
                   alt="Kerala Lottery Logo"
-                  width={36}
-                  height={36}
+                  width={64}
+                  height={64}
                   className="w-full h-full object-contain"
                   priority
                 />
@@ -97,11 +97,10 @@ export function Navbar() {
                   <Link
                     key={item.label}
                     href={item.href}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors ${
-                      isActive
-                        ? 'bg-[#F1F4F2] text-[#0B3B32]'
-                        : 'text-[#17201D] hover:text-[#0B3B32] hover:bg-[#F7F7F4]'
-                    }`}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors ${isActive
+                      ? 'bg-[#F1F4F2] text-[#0B3B32]'
+                      : 'text-[#17201D] hover:text-[#0B3B32] hover:bg-[#F7F7F4]'
+                      }`}
                   >
                     {item.label}
                   </Link>
@@ -179,11 +178,10 @@ export function Navbar() {
                   key={item.label}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
-                    isActive
-                      ? 'bg-[#F1F4F2] text-[#0B3B32]'
-                      : 'text-[#17201D] hover:bg-[#F7F7F4]'
-                  }`}
+                  className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-colors ${isActive
+                    ? 'bg-[#F1F4F2] text-[#0B3B32]'
+                    : 'text-[#17201D] hover:bg-[#F7F7F4]'
+                    }`}
                 >
                   <span>{item.label}</span>
                   <ChevronRight className="w-4 h-4 text-[#68736E]" />
@@ -212,38 +210,34 @@ export function Navbar() {
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E2E7E3] py-2 px-3 flex items-center justify-around lg:hidden shadow-lg">
         <Link
           href="/"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
-            pathname === '/' ? 'text-[#0B3B32]' : 'text-[#68736E] hover:text-[#17201D]'
-          }`}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname === '/' ? 'text-[#0B3B32]' : 'text-[#68736E] hover:text-[#17201D]'
+            }`}
         >
           <Home className="w-5 h-5" />
           <span>Home</span>
         </Link>
         <Link
           href="/previous-results"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
-            pathname.startsWith('/result') || pathname === '/previous-results'
-              ? 'text-[#0B3B32]'
-              : 'text-[#68736E] hover:text-[#17201D]'
-          }`}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/result') || pathname === '/previous-results'
+            ? 'text-[#0B3B32]'
+            : 'text-[#68736E] hover:text-[#17201D]'
+            }`}
         >
           <Award className="w-5 h-5" />
           <span>Results</span>
         </Link>
         <Link
           href="/check-ticket"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
-            pathname === '/check-ticket' ? 'text-[#0B3B32]' : 'text-[#68736E] hover:text-[#17201D]'
-          }`}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname === '/check-ticket' ? 'text-[#0B3B32]' : 'text-[#68736E] hover:text-[#17201D]'
+            }`}
         >
           <Ticket className="w-5 h-5" />
           <span>Check</span>
         </Link>
         <Link
           href="/news"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
-            pathname.startsWith('/news') ? 'text-[#0B3B32]' : 'text-[#68736E] hover:text-[#17201D]'
-          }`}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/news') ? 'text-[#0B3B32]' : 'text-[#68736E] hover:text-[#17201D]'
+            }`}
         >
           <Newspaper className="w-5 h-5" />
           <span>News</span>

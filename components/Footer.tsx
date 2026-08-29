@@ -11,12 +11,12 @@ export function Footer() {
           {/* Col 1: Brand & Official Attribution */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#0B3B32] p-1.5 flex items-center justify-center shrink-0 border border-[#C8A45D]/20">
+              <div className="w-16 h-16   flex items-center justify-center shrink-0 ">
                 <Image
                   src="/logo.svg"
                   alt="Kerala Lottery Logo"
-                  width={36}
-                  height={36}
+                  width={64}
+                  height={64}
                   className="w-full h-full object-contain"
                 />
               </div>
