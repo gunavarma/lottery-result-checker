@@ -1,24 +1,183 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Kerala Lottery Modern Logo</title>
   <defs>
-    <linearGradient id="kd-grad-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0B3B32"/>
-      <stop offset="100%" stop-color="#16845B"/>
+    <!-- Background Gradients -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#04231B"/>
+      <stop offset="45%" stop-color="#0B4235"/>
+      <stop offset="100%" stop-color="#02140F"/>
     </linearGradient>
-    <linearGradient id="kd-grad-gold" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#F2D07C"/>
-      <stop offset="100%" stop-color="#C8A45D"/>
+    <radialGradient id="ambientLight" cx="50%" cy="20%" r="65%">
+      <stop offset="0%" stop-color="#22C55E" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#10B981" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#0B4235" stop-opacity="0"/>
+    </radialGradient>
+    
+    <!-- Gold Metallic Gradients -->
+    <linearGradient id="goldLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF3B0"/>
+      <stop offset="25%" stop-color="#FCD34D"/>
+      <stop offset="50%" stop-color="#F59E0B"/>
+      <stop offset="75%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#B45309"/>
     </linearGradient>
+    
+    <linearGradient id="goldBright" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D97706"/>
+      <stop offset="35%" stop-color="#FDE68A"/>
+      <stop offset="60%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#FFFBEB"/>
+    </linearGradient>
+
+    <linearGradient id="goldStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A"/>
+      <stop offset="50%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#92400E"/>
+    </linearGradient>
+
+    <linearGradient id="rubyGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EF4444"/>
+      <stop offset="100%" stop-color="#991B1B"/>
+    </linearGradient>
+
+    <linearGradient id="ticketGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+
+    <!-- Drop Shadows & Glow Filters -->
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
   </defs>
-  <!-- Background rounded squircle -->
-  <rect x="4" y="4" width="92" height="92" rx="26" fill="url(#kd-grad-bg)" stroke="#C8A45D" stroke-width="2" stroke-opacity="0.4"/>
-  <!-- Decorative inner circle pattern -->
-  <circle cx="50" cy="50" r="38" fill="none" stroke="url(#kd-grad-gold)" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
-  <!-- Golden Award / Shield / Kerala Lottery Symbol -->
-  <path d="M50 20 C64 20 72 28 72 44 C72 62 50 78 50 78 C50 78 28 62 28 44 C28 28 36 20 50 20 Z" fill="none" stroke="url(#kd-grad-gold)" stroke-width="2.5"/>
-  <!-- Ticket Notch & Star Elements -->
-  <path d="M37 38 L63 38 M37 46 L63 46 M37 54 L53 54" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>
-  <!-- Center Golden Star Emblem -->
-  <polygon points="50,28 52.5,33.5 58,34 54,37.5 55,43 50,40 45,43 46,37.5 42,34 47.5,33.5" fill="url(#kd-grad-gold)"/>
-  <!-- Verification Certified Ring Indicator -->
-  <circle cx="63" cy="54" r="3" fill="url(#kd-grad-gold)"/>
+
+  <!-- Base Rounded Squircle with Shadow -->
+  <g filter="url(#softShadow)">
+    <rect x="24" y="24" width="464" height="464" rx="124" fill="url(#bgGrad)"/>
+    <rect x="24" y="24" width="464" height="464" rx="124" fill="url(#ambientLight)"/>
+    <!-- Outer Golden Border -->
+    <rect x="24" y="24" width="464" height="464" rx="124" fill="none" stroke="url(#goldStroke)" stroke-width="4"/>
+    <!-- Inner Concentric Ring -->
+    <rect x="36" y="36" width="440" height="440" rx="112" fill="none" stroke="url(#goldLight)" stroke-width="1.5" stroke-opacity="0.4" stroke-dasharray="8 6"/>
+  </g>
+
+  <!-- Decorative Corner Jewels -->
+  <g fill="url(#goldBright)">
+    <circle cx="100" cy="100" r="4"/>
+    <circle cx="412" cy="100" r="4"/>
+    <circle cx="100" cy="412" r="4"/>
+    <circle cx="412" cy="412" r="4"/>
+  </g>
+
+  <!-- Central Kerala Regal Crest -->
+  <g transform="translate(0, 10)">
+    <!-- Kerala Royal Nettipattam / Temple Arch Crown -->
+    <!-- Top Finial / Kalasam (Golden Pinnacle) -->
+    <g filter="url(#goldGlow)">
+      <circle cx="256" cy="92" r="14" fill="url(#goldBright)"/>
+      <circle cx="256" cy="92" r="7" fill="#FFFFFF" opacity="0.8"/>
+      <!-- Conical Tiered Spire -->
+      <path d="M246 112 L256 94 L266 112 Z" fill="url(#goldLight)"/>
+      <path d="M238 126 L256 112 L274 126 Z" fill="url(#goldBright)"/>
+      <path d="M230 142 L256 126 L282 142 Z" fill="url(#goldLight)"/>
+      <rect x="224" y="142" width="64" height="6" rx="3" fill="url(#goldStroke)"/>
+    </g>
+
+    <!-- Twin Majestic Curved Tusks / Royal Elephant Crest -->
+    <!-- Left Tusk -->
+    <path d="M214 158 C160 174 120 226 120 292 C120 348 152 396 200 418 C194 402 190 380 190 354 C190 300 220 248 244 220 C230 200 220 178 214 158 Z" 
+          fill="url(#goldBright)" filter="url(#softShadow)" opacity="0.95"/>
+    <path d="M214 158 C160 174 120 226 120 292 C120 348 152 396 200 418 C194 402 190 380 190 354 C190 300 220 248 244 220 C230 200 220 178 214 158 Z" 
+          fill="none" stroke="#FFFBEB" stroke-width="1.5" opacity="0.6"/>
+
+    <!-- Right Tusk (Mirrored) -->
+    <path d="M298 158 C352 174 392 226 392 292 C392 348 360 396 312 418 C318 402 322 380 322 354 C322 300 292 248 268 220 C282 200 292 178 298 158 Z" 
+          fill="url(#goldBright)" filter="url(#softShadow)" opacity="0.95"/>
+    <path d="M298 158 C352 174 392 226 392 292 C392 348 360 396 312 418 C318 402 322 380 322 354 C322 300 292 248 268 220 C282 200 292 178 298 158 Z" 
+          fill="none" stroke="#FFFBEB" stroke-width="1.5" opacity="0.6"/>
+
+    <!-- Golden Laurels / Prosperity Paddy Sheaves at Base -->
+    <g fill="url(#goldLight)" opacity="0.9">
+      <!-- Left Leaves -->
+      <path d="M190 412 C172 400 162 384 158 364 C168 376 182 388 200 398 Z"/>
+      <path d="M212 428 C192 422 178 410 170 394 C182 404 198 412 218 418 Z"/>
+      <path d="M236 438 C216 436 200 428 190 416 C204 422 220 426 240 428 Z"/>
+      <!-- Right Leaves -->
+      <path d="M322 412 C340 400 350 384 354 364 C344 376 330 388 312 398 Z"/>
+      <path d="M300 428 C320 422 334 410 342 394 C330 404 314 412 294 418 Z"/>
+      <path d="M276 438 C296 436 312 428 322 416 C308 422 292 426 272 428 Z"/>
+      <!-- Central Laurel Knot Gem -->
+      <circle cx="256" cy="436" r="8" fill="url(#rubyGlow)"/>
+      <circle cx="256" cy="436" r="4" fill="#FFFFFF" opacity="0.7"/>
+    </g>
+
+    <!-- Central Lottery Ticket & Lucky Emblem Shield -->
+    <g filter="url(#softShadow)" transform="translate(256, 275)">
+      <!-- Shield Base -->
+      <path d="M-82 -96 L82 -96 Q92 -96 92 -84 L92 12 Q92 78 0 120 Q-92 78 -92 12 L-92 -84 Q-92 -96 -82 -96 Z" 
+            fill="#032018" stroke="url(#goldStroke)" stroke-width="4"/>
+
+      <!-- Inner Shield Inset -->
+      <path d="M-74 -88 L74 -88 Q82 -88 82 -78 L82 10 Q82 68 0 106 Q-82 68 -82 10 L-82 -78 Q-82 -88 -74 -88 Z" 
+            fill="url(#bgGrad)" stroke="url(#goldBright)" stroke-width="1.5" stroke-opacity="0.5"/>
+
+      <!-- Ticket Motif Stack -->
+      <g transform="rotate(-6)">
+        <!-- Back Ticket -->
+        <rect x="-56" y="-62" width="112" height="66" rx="8" fill="url(#goldStroke)" opacity="0.7"/>
+        <!-- Front Ticket -->
+        <rect x="-52" y="-56" width="104" height="64" rx="8" fill="url(#ticketGrad)" stroke="url(#goldLight)" stroke-width="2"/>
+        
+        <!-- Ticket Notches -->
+        <circle cx="-52" cy="-24" r="7" fill="#032018"/>
+        <circle cx="52" cy="-24" r="7" fill="#032018"/>
+
+        <!-- Ticket Header Bar with Emerald -->
+        <rect x="-44" y="-48" width="88" height="14" rx="3" fill="url(#bgGrad)"/>
+        
+        <!-- Star Burst in Ticket -->
+        <g transform="translate(-26, -41) scale(0.65)" fill="url(#goldBright)">
+          <polygon points="0,-10 3,-3 10,0 3,3 0,10 -3,3 -10,0 -3,-3"/>
+        </g>
+        
+        <!-- Micro Text Lines on Ticket -->
+        <line x1="-12" y1="-41" x2="36" y2="-41" stroke="url(#goldBright)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="-40" y1="-22" x2="16" y2="-22" stroke="#0B3B32" stroke-width="3" stroke-linecap="round"/>
+        <line x1="-40" y1="-12" x2="28" y2="-12" stroke="#0B3B32" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="4 3"/>
+        <line x1="-40" y1="-2" x2="4" y2="-2" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- Certified Stamp Badge -->
+        <circle cx="30" cy="-14" r="10" fill="url(#rubyGlow)"/>
+        <circle cx="30" cy="-14" r="8" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-dasharray="2 2"/>
+        <polygon points="30,-19 31.5,-15.5 35,-15.5 32,-13 33.5,-9.5 30,-12 26.5,-9.5 28,-13 25,-15.5 28.5,-15.5" fill="#FFFFFF"/>
+      </g>
+
+      <!-- Central 8-Point Brilliant Star of Fortune -->
+      <g transform="translate(0, 42)" filter="url(#goldGlow)">
+        <!-- Outer Star Facets -->
+        <polygon points="0,-36 9,-12 36,0 9,12 0,36 -9,12 -36,0 -9,-12" fill="url(#goldBright)"/>
+        <polygon points="0,-36 0,0 -36,0 -9,-12" fill="url(#goldStroke)" opacity="0.6"/>
+        <polygon points="0,36 0,0 36,0 9,12" fill="url(#goldLight)" opacity="0.7"/>
+        
+        <!-- Diagonal Star Points -->
+        <polygon points="0,-24 6,-8 24,0 6,8 0,24 -6,8 -24,0 -6,-8" transform="rotate(45)" fill="url(#goldLight)"/>
+        
+        <!-- Center Sparkle Diamond -->
+        <circle cx="0" cy="0" r="8" fill="url(#rubyGlow)"/>
+        <circle cx="0" cy="0" r="4" fill="#FFFFFF"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- Modern Ribbon / Arch Text Header Indicator -->
+  <g transform="translate(256, 442)">
+    <path d="M-100 -8 L100 -8 Q120 -8 128 8 L116 20 Q106 14 90 14 L-90 14 Q-106 14 -116 20 L-128 8 Q-120 -8 -100 -8 Z" 
+          fill="url(#goldBright)" filter="url(#softShadow)"/>
+    <text x="0" y="6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" 
+          font-size="14" font-weight="900" letter-spacing="3.5" fill="#04231B" text-anchor="middle">KERALA DRAWS</text>
+  </g>
 </svg>
