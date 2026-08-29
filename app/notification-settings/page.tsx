@@ -32,7 +32,7 @@ export default function NotificationSettingsPage() {
           setAllLotteries(data.lotteries);
         }
       })
-      .catch((err) => console.warn('Failed to load lotteries:', err));
+      .catch(() => {});
   }, []);
 
   const toggleLottery = (id: string) => {

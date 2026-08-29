@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://keralalottery.org';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com';
 
     // If a specific test target token is provided, register it if not exists
     if (body.testFcmToken) {

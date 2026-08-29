@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       drawTime: drawTime || '3:00 PM',
       firstPrizeAmountFormatted: firstPrizeAmountFormatted || '₹1,00,00,000',
       firstPrizeTicket,
-      resultUrl: resultUrl || `${process.env.NEXT_PUBLIC_SITE_URL || 'https://keralalottery.org'}/result/${drawDate}/${lotteryCode}`,
+      resultUrl: resultUrl || `${process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com'}/result/${drawDate}/${lotteryCode}`,
     };
 
     const summary = await sendResultPublishedPushNotification(event);

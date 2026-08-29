@@ -316,7 +316,7 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
           try {
             const firstPrize = validData.prizes.find((p) => p.orderIndex === 0 || p.tierNumber === 1);
             const firstWinner = firstPrize?.winningNumbers?.[0];
-            const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://keralalottery.org';
+            const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com';
 
             await sendResultPublishedPushNotification({
               drawId: newDraw.id,

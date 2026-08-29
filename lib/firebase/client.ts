@@ -79,6 +79,9 @@ export async function requestFcmToken(customVapidKey?: string): Promise<string |
 
   const messaging = await getClientMessaging();
   if (!messaging) {
+    if (process.env.NODE_ENV !== 'production') {
+      return `fcm_dev_mock_token_${Date.now()}`;
+    }
     throw new Error('FCM Messaging is not supported in this browser.');
   }
 
