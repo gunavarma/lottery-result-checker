@@ -106,17 +106,11 @@ export default async function ResultsHubPage() {
 
       {/* Page Header */}
       <div className="border-b border-[#E2E7E3] pb-6 space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
-            Official Gazette Records
-          </span>
-        </div>
+
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[#17201D] tracking-tight">
           Kerala State Lottery Results
         </h1>
-        <p className="text-xs sm:text-sm text-[#68736E] max-w-3xl leading-relaxed">
-          Certified Kerala State Lottery results published daily following live certification at Gorky Bhavan, Thiruvananthapuram. Browse the latest official draw records, inspect 1st prize winning numbers, or navigate by date and scheme.
-        </p>
+
       </div>
 
       {/* 1. Quick Date Navigator Card */}
