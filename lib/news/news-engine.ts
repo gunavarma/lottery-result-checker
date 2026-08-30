@@ -200,8 +200,8 @@ export async function ensureNewsInitialized() {
 export async function syncRealLotteryNews() {
   await ensureNewsInitialized();
 
-  let newCount = 0;
-  let updatedCount = 0;
+  const newCount = 0;
+  const updatedCount = 0;
 
   try {
     // Record in sync job

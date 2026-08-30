@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/prisma';
-import { getTodayIstStr } from '@/lib/date';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,8 +18,6 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    const todayStr = getTodayIstStr();
 
     // 1. Fetch counts in parallel
     const [
@@ -113,7 +110,7 @@ export async function GET(request: NextRequest) {
         latestResults: {
           latestPublishedDraw: latestDraw
             ? {
-                lotteryName: latestDraw.lottery.name,
+                lotteryName: latestDraw.lottery?.name || 'Kerala State Lottery',
                 drawNumber: latestDraw.drawNumber,
                 drawDate: latestDraw.drawDate.toISOString().split('T')[0],
                 status: latestDraw.status,
