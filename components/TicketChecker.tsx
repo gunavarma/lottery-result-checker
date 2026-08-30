@@ -12,10 +12,8 @@ import {
   Award,
   ExternalLink,
   ShieldCheck,
-  ScanLine,
 } from 'lucide-react';
 import { formatINR } from '@/lib/prisma';
-import { TicketScannerModal } from './TicketScannerModal';
 
 interface TicketCheckerProps {
   initialLotteryId?: string;
@@ -27,7 +25,6 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
   const [selectedLottery, setSelectedLottery] = useState(initialLotteryId || 'all');
   const [ticketInput, setTicketInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [scannerOpen, setScannerOpen] = useState(false);
   const [results, setResults] = useState<any[] | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -83,26 +80,6 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
   const handleCheck = async (e: React.FormEvent) => {
     e.preventDefault();
     executeSearch(ticketInput);
-  };
-
-  const handleTicketDetected = (ticketData: {
-    ticketNumber: string;
-    series: string | null;
-    fullTicket: string;
-    lotterySlug?: string | null;
-  }) => {
-    setTicketInput(ticketData.fullTicket);
-
-    let matchingLotteryId = selectedLottery;
-    if (ticketData.lotterySlug) {
-      const found = lotteries.find((l) => l.slug === ticketData.lotterySlug);
-      if (found) {
-        matchingLotteryId = found.id;
-        setSelectedLottery(found.id);
-      }
-    }
-
-    executeSearch(ticketData.fullTicket, matchingLotteryId);
   };
 
   const handleReset = () => {
@@ -169,16 +146,6 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
                   }}
                   className="flex-1 min-w-[180px] px-4 py-3 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B3B32] text-sm sm:text-base text-[#17201D] font-mono font-bold tracking-wider placeholder:font-sans placeholder:font-normal placeholder:text-[#68736E]"
                 />
-                <button
-                  type="button"
-                  onClick={() => setScannerOpen(true)}
-                  className="px-4 py-3 rounded-xl bg-white hover:bg-[#F7F7F4] text-[#0B3B32] border border-[#E2E7E3] font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5 shrink-0 font-tabular cursor-pointer"
-                  title="Scan physical ticket using camera"
-                  aria-label="Start camera scanner"
-                >
-                  <ScanLine className="w-4 h-4 text-[#C59B27]" />
-                  <span>Scan Ticket</span>
-                </button>
                 <button
                   type="submit"
                   disabled={loading || ticketInput.trim().length < 3}
@@ -314,13 +281,6 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
           )}
         </div>
       )}
-
-      {/* Ticket Scanner Modal */}
-      <TicketScannerModal
-        isOpen={scannerOpen}
-        onClose={() => setScannerOpen(false)}
-        onTicketDetected={handleTicketDetected}
-      />
     </div>
   );
 }

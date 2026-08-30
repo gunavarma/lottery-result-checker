@@ -20,9 +20,7 @@ import {
   Bell,
   HelpCircle,
   BookOpen,
-  ScanLine,
 } from 'lucide-react';
-import { TicketScannerModal } from '@/components/TicketScannerModal';
 
 export default function CheckTicketPage() {
   const [lotteries, setLotteries] = useState<any[]>([]);
@@ -38,32 +36,11 @@ export default function CheckTicketPage() {
   const [bulkTickets, setBulkTickets] = useState<string>('');
 
   const [loading, setLoading] = useState(false);
-  const [scannerOpen, setScannerOpen] = useState(false);
   const [checkResults, setCheckResults] = useState<any[] | null>(null);
   const [drawsEvaluated, setDrawsEvaluated] = useState<any[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [savedTicketMsg, setSavedTicketMsg] = useState<string | null>(null);
-
-  const handleTicketDetected = (ticketData: {
-    ticketNumber: string;
-    series: string | null;
-    fullTicket: string;
-    lotterySlug?: string | null;
-  }) => {
-    setMode('single');
-    if (ticketData.series) {
-      setSeries(ticketData.series);
-    }
-    setTicketNumber(ticketData.ticketNumber);
-
-    if (ticketData.lotterySlug) {
-      const found = lotteries.find((l) => l.slug === ticketData.lotterySlug);
-      if (found) {
-        setSelectedLottery(found.id);
-      }
-    }
-  };
 
   // Load lottery schemes for dropdown
   useEffect(() => {
@@ -381,16 +358,6 @@ export default function CheckTicketPage() {
               )}
             </button>
 
-            <button
-              type="button"
-              onClick={() => setScannerOpen(true)}
-              aria-label="Start camera scanner"
-              className="px-6 py-3.5 rounded-xl bg-white hover:bg-[#F7F7F4] text-[#0B3B32] border border-[#E2E7E3] font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <ScanLine className="w-4 h-4 text-[#C59B27]" />
-              <span>Scan Physical Ticket</span>
-            </button>
-
             {mode === 'single' && ticketNumber.length >= 4 && (
               <button
                 type="button"
@@ -560,13 +527,6 @@ export default function CheckTicketPage() {
           </div>
         </div>
       </div>
-
-      {/* Ticket Scanner Modal */}
-      <TicketScannerModal
-        isOpen={scannerOpen}
-        onClose={() => setScannerOpen(false)}
-        onTicketDetected={handleTicketDetected}
-      />
     </div>
   );
 }
