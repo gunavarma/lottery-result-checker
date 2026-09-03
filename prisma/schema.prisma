@@ -38,7 +38,7 @@ model Draw {
   id                String         @id @default(cuid())
   lotteryId         String
   drawNumber        String         // e.g. "KN-638", "SS-534", "SK-67"
-  drawDate          DateTime       // Official draw date
+  drawDate          DateTime       @db.Date // Official draw date (DATE without timezone)
   drawTime          String         @default("3:00 PM")
   status            String         @default("PUBLISHED") // SCHEDULED, CHECKING, RESULT_PENDING, PUBLISHED, SOURCE_UNAVAILABLE, SYNC_ERROR
   sourceUrl         String         // Official public URL e.g. https://www.lotteryagent.kerala.gov.in/result/public/
@@ -58,6 +58,7 @@ model Draw {
   @@unique([lotteryId, drawNumber])
   @@unique([lotteryId, drawDate])
   @@index([drawDate])
+  @@index([lotteryId, drawDate])
   @@index([drawNumber])
   @@index([status])
   @@index([status, drawDate])
@@ -144,6 +145,24 @@ model SyncLog {
 
   @@index([startedAt])
   @@index([status])
+}
+
+model SyncRun {
+  id           String    @id @default(cuid())
+  jobName      String    @map("job_name")
+  startedAt    DateTime  @default(now()) @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+  status       String    @default("RUNNING") // SUCCESS, FAILED, RUNNING, NO_NEW_DATA
+  itemsChecked Int       @default(0) @map("items_checked")
+  itemsCreated Int       @default(0) @map("items_created")
+  itemsUpdated Int       @default(0) @map("items_updated")
+  itemsFailed  Int       @default(0) @map("items_failed")
+  errorSummary String?   @map("error_summary")
+
+  @@index([jobName])
+  @@index([startedAt])
+  @@index([status])
+  @@map("sync_runs")
 }
 
 // Automated Real News System Models

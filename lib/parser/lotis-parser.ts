@@ -103,8 +103,36 @@ export function parseLotisPdfText(fullText: string): ParsedDrawResult | null {
   let drawNumber = '';
   let lotteryCode = '';
   let drawDate: Date = new Date();
+  let drawDateFormatted = '';
   let drawTime = '3:00 PM';
   let venue: string | null = null;
+
+  const parseToCalendarDate = (rawDateStr: string): { dateObj: Date; formatted: string } | null => {
+    const cleanStr = rawDateStr.trim().replace(/\//g, '-');
+    const parts = cleanStr.split('-');
+    if (parts.length === 3) {
+      let day: number;
+      let month: number;
+      let year: number;
+      if (parts[0].length === 4) {
+        year = parseInt(parts[0], 10);
+        month = parseInt(parts[1], 10);
+        day = parseInt(parts[2], 10);
+      } else {
+        day = parseInt(parts[0], 10);
+        month = parseInt(parts[1], 10);
+        year = parseInt(parts[2], 10);
+      }
+      if (!isNaN(day) && !isNaN(month) && !isNaN(year) && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        const formatted = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        return {
+          dateObj: new Date(`${formatted}T00:00:00.000Z`),
+          formatted,
+        };
+      }
+    }
+    return null;
+  };
 
   // 1. Scan Header Lines
   for (let i = 0; i < Math.min(lines.length, 15); i++) {
@@ -117,13 +145,13 @@ export function parseLotisPdfText(fullText: string): ParsedDrawResult | null {
     if (headerMatch) {
       lotteryName = headerMatch[1].trim();
       drawNumber = headerMatch[2].trim();
-      const dateStr = headerMatch[3].trim().replace(/\//g, '-');
       if (headerMatch[4]) {
         drawTime = headerMatch[4].trim();
       }
-      const parsedDate = parse(dateStr, 'dd-MM-yyyy', new Date());
-      if (isValid(parsedDate)) {
-        drawDate = parsedDate;
+      const parsed = parseToCalendarDate(headerMatch[3]);
+      if (parsed) {
+        drawDate = parsed.dateObj;
+        drawDateFormatted = parsed.formatted;
       }
     }
 
@@ -140,12 +168,15 @@ export function parseLotisPdfText(fullText: string): ParsedDrawResult | null {
   if (!lotteryName || !drawNumber) {
     const mName = fullText.match(/([A-Z\s'-]{3,30})\s+LOTTERY/i);
     const mDraw = fullText.match(/NO\.?\s*([A-Z0-9-]{3,15})/i);
-    const mDate = fullText.match(/(\d{2}[/-]\d{2}[/-]\d{4})/);
+    const mDate = fullText.match(/(\d{1,2}[/-]\d{1,2}[/-]\d{4})/);
     if (mName) lotteryName = mName[1].trim();
     if (mDraw) drawNumber = mDraw[1].trim();
     if (mDate) {
-      const pDate = parse(mDate[1].replace(/\//g, '-'), 'dd-MM-yyyy', new Date());
-      if (isValid(pDate)) drawDate = pDate;
+      const parsed = parseToCalendarDate(mDate[1]);
+      if (parsed) {
+        drawDate = parsed.dateObj;
+        drawDateFormatted = parsed.formatted;
+      }
     }
   }
 
@@ -246,10 +277,9 @@ export function parseLotisPdfText(fullText: string): ParsedDrawResult | null {
     return null;
   }
 
-  const year = drawDate.getFullYear();
-  const month = String(drawDate.getMonth() + 1).padStart(2, '0');
-  const day = String(drawDate.getDate()).padStart(2, '0');
-  const drawDateFormatted = `${year}-${month}-${day}`;
+  if (!drawDateFormatted) {
+    drawDateFormatted = drawDate.toISOString().slice(0, 10);
+  }
 
   return {
     lotteryName: standardizeLotteryName(lotteryName),

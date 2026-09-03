@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/prisma';
-import { getTodayIstStr, getIstDateRange, IST_OFFSET_MS } from '@/lib/date';
+import { getTodayIstStr, getIstDateRange, IST_OFFSET_MS, parseDateOnlyUtc } from '@/lib/date';
 import { getOrSetCache } from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
@@ -8,18 +8,16 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const todayStr = getTodayIstStr();
-    const { istStartUtc, istEndUtc, formattedDisplay } = getIstDateRange(todayStr);
+    const todayDateObj = parseDateOnlyUtc(todayStr);
+    const { formattedDisplay } = getIstDateRange(todayStr);
 
     const data = await getOrSetCache(
       `api_results_today_${todayStr}`,
       async () => {
-        // 1. Look for published draw for today using exact IST boundaries
+        // 1. Look for published draw for today using exact calendar date
         const todayDraw = await prisma.draw.findFirst({
           where: {
-            drawDate: {
-              gte: istStartUtc,
-              lte: istEndUtc,
-            },
+            drawDate: todayDateObj,
             status: 'PUBLISHED',
           },
           include: {

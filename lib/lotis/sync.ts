@@ -1,4 +1,5 @@
 import { PDFParse } from 'pdf-parse';
+import crypto from 'crypto';
 import { prisma, formatINR } from '../prisma';
 import {
   parseLotisPdfText,
@@ -138,6 +139,9 @@ export async function downloadAndParseLotisResult(itemId: string) {
     const arrayBuffer = await res.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    // Compute checksum to detect changes without storing huge binary blobs in DB
+    const sourceHash = crypto.createHash('sha256').update(buffer).digest('hex');
+
     const parser = new PDFParse({ data: buffer });
     const pdfData = await parser.getText();
 
@@ -148,6 +152,7 @@ export async function downloadAndParseLotisResult(itemId: string) {
 
     return {
       parsed,
+      sourceHash,
       sourceUrl: LOTIS_PUBLIC_URL,
       sourceDocumentUrl: downloadUrl,
       sourceItemId: itemId,
@@ -161,7 +166,7 @@ export async function downloadAndParseLotisResult(itemId: string) {
 /**
  * Main Synchronization Service for official LOTIS results
  */
-export async function syncOfficialResults(options: { maxItemsToSync?: number; forceRefresh?: boolean } = {}): Promise<SyncResponse> {
+export async function syncOfficialResults(options: { maxItemsToSync?: number; forceRefresh?: boolean; checkGaps?: boolean } = {}): Promise<SyncResponse> {
   const startedAt = new Date();
   const maxItems = options.maxItemsToSync ?? 10;
   const errors: string[] = [];
@@ -169,19 +174,30 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
   let updatedResults = 0;
   let skippedResults = 0;
 
-  // Create audit log
+  // Create audit log and sync run
   let syncLogId: string | null = null;
+  let syncRunId: string | null = null;
   try {
-    const log = await prisma.syncLog.create({
-      data: {
-        source: 'LOTIS (Directorate of Kerala State Lotteries)',
-        startedAt,
-        status: 'RUNNING',
-      },
-    });
+    const [log, run] = await Promise.all([
+      prisma.syncLog.create({
+        data: {
+          source: 'LOTIS (Directorate of Kerala State Lotteries)',
+          startedAt,
+          status: 'RUNNING',
+        },
+      }),
+      prisma.syncRun.create({
+        data: {
+          jobName: 'SYNC_RESULTS',
+          startedAt,
+          status: 'RUNNING',
+        },
+      }),
+    ]);
     syncLogId = log.id;
+    syncRunId = run.id;
   } catch (err) {
-    console.warn('Unable to create initial SyncLog entry:', err);
+    console.warn('Unable to create initial audit entries:', err);
   }
 
   try {
@@ -199,6 +215,19 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
           },
         });
       }
+      if (syncRunId) {
+        await prisma.syncRun.update({
+          where: { id: syncRunId },
+          data: {
+            completedAt: new Date(),
+            status: 'NO_NEW_DATA',
+            itemsChecked: 0,
+            itemsCreated: 0,
+            itemsUpdated: 0,
+            itemsFailed: 0,
+          },
+        });
+      }
       return {
         success: true,
         newResults: 0,
@@ -210,6 +239,7 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
       };
     }
 
+    // Process recent items
     const itemsToProcess = scrapedList.slice(0, maxItems);
 
     for (const item of itemsToProcess) {
@@ -231,7 +261,7 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
         }
 
         // Fetch official result document
-        const { parsed, sourceUrl, sourceDocumentUrl, sourceItemId } = await downloadAndParseLotisResult(item.itemId);
+        const { parsed, sourceHash, sourceUrl, sourceDocumentUrl, sourceItemId } = await downloadAndParseLotisResult(item.itemId);
 
         // Zod validation
         const validationResult = ParsedDrawResultSchema.safeParse({
@@ -284,8 +314,10 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
               sourceUrl,
               sourceDocumentUrl,
               sourceItemId,
+              sourceHash,
               rawText: validData.rawText,
               publishedAt: validData.drawDate,
+              verifiedAt: new Date(),
               lastCheckedAt: new Date(),
             },
           });
@@ -303,8 +335,10 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
               sourceUrl,
               sourceDocumentUrl,
               sourceItemId,
+              sourceHash,
               rawText: validData.rawText,
               publishedAt: validData.drawDate,
+              verifiedAt: new Date(),
               lastCheckedAt: new Date(),
             },
           });
@@ -312,7 +346,7 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
           await insertPrizesForDraw(newDraw.id, validData.prizes);
           newResults++;
 
-          // Dispatch FCM RESULT_PUBLISHED notification event
+          // Dispatch FCM notification ONLY for genuinely new real-time draw
           try {
             const firstPrize = validData.prizes.find((p) => p.orderIndex === 0 || p.tierNumber === 1);
             const firstWinner = firstPrize?.winningNumbers?.[0];
@@ -337,6 +371,20 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
       } catch (itemErr: any) {
         console.error(`Error processing LOTIS item ${item.itemId} (${item.title}):`, itemErr);
         errors.push(`${item.title}: ${itemErr.message || itemErr}`);
+
+        // Record in ImportError table
+        try {
+          await prisma.importError.create({
+            data: {
+              sourceIdentifier: item.itemId,
+              errorType: 'PARSE_OR_VALIDATION_ERROR',
+              errorMessage: itemErr.message || String(itemErr),
+              status: 'PENDING',
+            },
+          });
+        } catch (dbErr) {
+          console.warn('Could not record ImportError:', dbErr);
+        }
       }
     }
 
@@ -350,6 +398,35 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
       } catch (cacheErr) {
         console.warn('Cache invalidation error:', cacheErr);
       }
+    }
+
+    // Complete audit records
+    if (syncLogId) {
+      await prisma.syncLog.update({
+        where: { id: syncLogId },
+        data: {
+          completedAt,
+          status: finalStatus,
+          recordsFound: scrapedList.length,
+          newDrawsCount: newResults,
+          errorMessage: errors.length > 0 ? errors.slice(0, 3).join('; ') : null,
+        },
+      });
+    }
+
+    if (syncRunId) {
+      await prisma.syncRun.update({
+        where: { id: syncRunId },
+        data: {
+          completedAt,
+          status: finalStatus,
+          itemsChecked: itemsToProcess.length,
+          itemsCreated: newResults,
+          itemsUpdated: updatedResults,
+          itemsFailed: errors.length,
+          errorSummary: errors.length > 0 ? errors.slice(0, 5).join('; ') : null,
+        },
+      });
     }
 
     return {
@@ -371,6 +448,16 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
           completedAt: new Date(),
           status: 'FAILED',
           errorMessage: error.message || 'Fatal error',
+        },
+      });
+    }
+    if (syncRunId) {
+      await prisma.syncRun.update({
+        where: { id: syncRunId },
+        data: {
+          completedAt: new Date(),
+          status: 'FAILED',
+          errorSummary: error.message || 'Fatal error',
         },
       });
     }
@@ -415,5 +502,5 @@ async function insertPrizesForDraw(drawId: string, parsedPrizes: any[]) {
 
 function getDayFromDate(d: Date): string {
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  return days[d.getDay()];
+  return days[d.getUTCDay()];
 }

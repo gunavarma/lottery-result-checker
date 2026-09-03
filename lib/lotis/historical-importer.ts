@@ -1,6 +1,6 @@
 import { PDFParse } from 'pdf-parse';
 import crypto from 'crypto';
-import { prisma, serializeData } from '../prisma';
+import { prisma } from '../prisma';
 import {
   parseLotisPdfText,
   standardizeLotteryName,
@@ -8,7 +8,7 @@ import {
 } from '../parser/lotis-parser';
 import { ParsedDrawResultSchema } from '../validation/lottery';
 import { invalidateCache } from '../cache';
-import { LOTIS_BASE_URL, LOTIS_PUBLIC_URL, parseLotisTableHtml, LOTISScrapedItem } from './sync';
+import { LOTIS_BASE_URL, LOTIS_PUBLIC_URL, fetchLotisDrawList, parseLotisTableHtml, LOTISScrapedItem } from './sync';
 
 export interface HistoricalImportProgress {
   jobId: string;
@@ -24,36 +24,22 @@ export interface HistoricalImportProgress {
 }
 
 /**
- * Discovers all accessible official result items from the LOTIS archive.
+ * Discovers all accessible official result items from the LOTIS archive with automatic retries.
  */
 export async function discoverAllLotisArchiveItems(): Promise<LOTISScrapedItem[]> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000);
-
-  try {
-    const res = await fetch(LOTIS_PUBLIC_URL, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      },
-      signal: controller.signal,
-      cache: 'no-store',
-    });
-
-    clearTimeout(timeout);
-
-    if (!res.ok) {
-      throw new Error(`LOTIS server responded with HTTP ${res.status}`);
+  let lastErr: any = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      return await fetchLotisDrawList();
+    } catch (err) {
+      lastErr = err;
+      console.warn(`[HistoricalImporter] fetchLotisDrawList attempt ${attempt} failed:`, err);
+      if (attempt < 3) {
+        await new Promise((r) => setTimeout(r, attempt * 1000));
+      }
     }
-
-    const html = await res.text();
-    const items = parseLotisTableHtml(html);
-    return items;
-  } catch (error) {
-    clearTimeout(timeout);
-    throw error;
   }
+  throw lastErr || new Error('Failed to discover archive items from LOTIS');
 }
 
 /**
@@ -118,6 +104,7 @@ export async function runResumableHistoricalImport(options: {
   forceRestart?: boolean;
 } = {}): Promise<HistoricalImportProgress> {
   const batchSize = options.batchSize || 50;
+  const startedAt = new Date();
 
   // 1. Check or create import job
   let job = await prisma.importJob.findFirst({
@@ -155,8 +142,25 @@ export async function runResumableHistoricalImport(options: {
     });
   }
 
+  // Create audit sync_runs row
+  let syncRunId: string | null = null;
+  try {
+    const run = await prisma.syncRun.create({
+      data: {
+        jobName: 'HISTORICAL_BACKFILL',
+        startedAt,
+        status: 'RUNNING',
+      },
+    });
+    syncRunId = run.id;
+  } catch (runErr) {
+    console.warn('Could not record historical SyncRun:', runErr);
+  }
+
   const errors: string[] = [];
   let skipped = 0;
+  let batchSuccessful = 0;
+  let batchFailed = 0;
   let latestImportedDate: string | undefined;
 
   try {
@@ -287,6 +291,7 @@ export async function runResumableHistoricalImport(options: {
         }
 
         latestImportedDate = validData.drawDateFormatted;
+        batchSuccessful++;
 
         // Update progress in DB
         await prisma.importJob.update({
@@ -300,6 +305,7 @@ export async function runResumableHistoricalImport(options: {
       } catch (itemError: any) {
         console.error(`Import failed for item ${item.itemId}:`, itemError);
         errors.push(`${item.title}: ${itemError.message || itemError}`);
+        batchFailed++;
 
         // Record in ImportError table
         try {
@@ -337,6 +343,21 @@ export async function runResumableHistoricalImport(options: {
       },
     });
 
+    if (syncRunId) {
+      await prisma.syncRun.update({
+        where: { id: syncRunId },
+        data: {
+          completedAt: new Date(),
+          status: isFinished ? 'SUCCESS' : 'PAUSED',
+          itemsChecked: itemsToProcess.length,
+          itemsCreated: batchSuccessful,
+          itemsUpdated: 0,
+          itemsFailed: batchFailed,
+          errorSummary: errors.length > 0 ? errors.slice(0, 5).join('; ') : null,
+        },
+      });
+    }
+
     // Invalidate caches
     invalidateCache();
 
@@ -361,6 +382,17 @@ export async function runResumableHistoricalImport(options: {
         errorSummary: fatalError.message || String(fatalError),
       },
     });
+
+    if (syncRunId) {
+      await prisma.syncRun.update({
+        where: { id: syncRunId },
+        data: {
+          completedAt: new Date(),
+          status: 'FAILED',
+          errorSummary: fatalError.message || String(fatalError),
+        },
+      });
+    }
 
     return {
       jobId: job.id,
@@ -404,5 +436,5 @@ async function insertPrizesAtomic(drawId: string, parsedPrizes: any[]) {
 
 function getDayName(d: Date): string {
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  return days[d.getDay()];
+  return days[d.getUTCDay()];
 }

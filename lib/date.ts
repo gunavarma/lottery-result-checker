@@ -20,6 +20,29 @@ export function isValidDateFormat(dateStr: string): boolean {
 }
 
 /**
+ * Converts a YYYY-MM-DD date string into a Date object at UTC midnight
+ * perfectly aligned with PostgreSQL DATE fields.
+ */
+export function parseDateOnlyUtc(dateStr: string): Date {
+  if (!isValidDateFormat(dateStr)) {
+    throw new Error(`Invalid date format: "${dateStr}". Expected YYYY-MM-DD.`);
+  }
+  return new Date(`${dateStr}T00:00:00.000Z`);
+}
+
+/**
+ * Extracts pure YYYY-MM-DD string from a Date or ISO string without timezone shifts
+ */
+export function formatDateOnly(date: Date | string): string {
+  if (typeof date === 'string') {
+    if (isValidDateFormat(date)) return date;
+    const d = new Date(date);
+    return isNaN(d.getTime()) ? date : d.toISOString().slice(0, 10);
+  }
+  return date.toISOString().slice(0, 10);
+}
+
+/**
  * Converts a YYYY-MM-DD date string into UTC start and end bounds
  * representing exactly 00:00:00.000 to 23:59:59.999 in Asia/Kolkata (IST).
  */
@@ -72,22 +95,20 @@ export function getYesterdayIstStr(): string {
 }
 
 /**
- * Converts a database UTC DateTime to IST YYYY-MM-DD string
+ * Converts a database Date or DateTime to IST YYYY-MM-DD string
  */
-export function toIstDateStr(date: Date): string {
-  const istTime = new Date(date.getTime() + IST_OFFSET_MS);
-  const year = istTime.getUTCFullYear();
-  const month = String(istTime.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(istTime.getUTCDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+export function toIstDateStr(date: Date | string): string {
+  return formatDateOnly(date);
 }
 
 /**
- * Formats a Date object in IST timezone for display
+ * Formats a Date object for display
  */
 export function formatIstDate(date: Date, formatPattern: string = 'dd MMMM yyyy (EEEE)'): string {
-  const istTime = new Date(date.getTime() + IST_OFFSET_MS);
-  return format(istTime, formatPattern);
+  const dateStr = formatDateOnly(date);
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dateObj = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+  return format(dateObj, formatPattern);
 }
 
 /**
@@ -99,12 +120,12 @@ export async function getAdjacentAvailableDates(currentDateStr: string): Promise
   allAvailableDates: string[];
 }> {
   try {
-    const { istStartUtc, istEndUtc } = getIstDateRange(currentDateStr);
+    const targetDate = parseDateOnlyUtc(currentDateStr);
 
     const [prevDraw, nextDraw, allDraws] = await Promise.all([
       prisma.draw.findFirst({
         where: {
-          drawDate: { lt: istStartUtc },
+          drawDate: { lt: targetDate },
           status: 'PUBLISHED',
         },
         orderBy: { drawDate: 'desc' },
@@ -112,7 +133,7 @@ export async function getAdjacentAvailableDates(currentDateStr: string): Promise
       }),
       prisma.draw.findFirst({
         where: {
-          drawDate: { gt: istEndUtc },
+          drawDate: { gt: targetDate },
           status: 'PUBLISHED',
         },
         orderBy: { drawDate: 'asc' },
@@ -121,17 +142,17 @@ export async function getAdjacentAvailableDates(currentDateStr: string): Promise
       prisma.draw.findMany({
         where: { status: 'PUBLISHED' },
         orderBy: { drawDate: 'desc' },
-        take: 30,
+        take: 100,
         select: { drawDate: true },
       }),
     ]);
 
-    const prevAvailableDate = prevDraw ? toIstDateStr(new Date(prevDraw.drawDate)) : null;
-    const nextAvailableDate = nextDraw ? toIstDateStr(new Date(nextDraw.drawDate)) : null;
+    const prevAvailableDate = prevDraw ? formatDateOnly(prevDraw.drawDate) : null;
+    const nextAvailableDate = nextDraw ? formatDateOnly(nextDraw.drawDate) : null;
     
     // Distinct set of YYYY-MM-DD dates
     const allAvailableDates = Array.from(
-      new Set(allDraws.map((d) => toIstDateStr(new Date(d.drawDate))))
+      new Set(allDraws.map((d) => formatDateOnly(d.drawDate)))
     );
 
     return {

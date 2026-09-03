@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma, formatINR, serializeData } from '@/lib/prisma';
+import { prisma, formatINR } from '@/lib/prisma';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { formatDateOnly, formatIstDate } from '@/lib/date';
 import { z } from 'zod';
-import { format } from 'date-fns';
 
 const TicketCheckSchema = z.object({
   lotteryId: z.string().optional(),
@@ -11,10 +11,196 @@ const TicketCheckSchema = z.object({
   tickets: z.array(z.string().min(3).max(20)).min(1).max(25),
 });
 
+export async function checkTicketsHandler(params: {
+  lotteryId?: string;
+  drawId?: string;
+  drawNumber?: string;
+  tickets: string[];
+}) {
+  const { lotteryId, drawId, drawNumber, tickets } = params;
+
+  // 1. Locate Target Draw or Recent Published Draws
+  const drawQuery: any = { status: 'PUBLISHED' };
+  if (drawId) {
+    drawQuery.id = drawId;
+  } else if (drawNumber) {
+    drawQuery.drawNumber = drawNumber.toUpperCase();
+  } else if (lotteryId) {
+    drawQuery.lotteryId = lotteryId;
+  }
+
+  const draws = await prisma.draw.findMany({
+    where: drawQuery,
+    orderBy: { drawDate: 'desc' },
+    take: drawId || drawNumber ? 1 : 10,
+    include: {
+      lottery: true,
+      prizes: {
+        orderBy: { orderIndex: 'asc' },
+        include: {
+          winningNumbers: true,
+        },
+      },
+    },
+  });
+
+  if (draws.length === 0) {
+    return {
+      success: true,
+      drawFound: false,
+      message: 'No published official draw results found for the selected criteria.',
+      results: tickets.map((t) => ({
+        inputTicket: t,
+        isMatch: false,
+        message: 'No draw result found to check against.',
+      })),
+    };
+  }
+
+  // 2. Perform Fast Indexed Ticket Matching
+  const evaluatedResults = [];
+
+  for (const rawTicket of tickets) {
+    const normalized = normalizeTicketInput(rawTicket);
+    let matchFound = false;
+    let matchedPrize: any = null;
+    let matchedWinningNumber: any = null;
+    let matchedDraw: any = null;
+
+    for (const draw of draws) {
+      for (const prize of draw.prizes) {
+        for (const winNum of prize.winningNumbers) {
+          // Case A: Full 6-digit with Series match (e.g. "PS 320327" vs "PS 320327")
+          if (
+            normalized.series &&
+            winNum.series &&
+            normalized.series.toUpperCase() === winNum.series.toUpperCase() &&
+            normalized.number === winNum.number
+          ) {
+            matchFound = true;
+            matchedPrize = prize;
+            matchedWinningNumber = winNum;
+            matchedDraw = draw;
+            break;
+          }
+
+          // Case B: Exact 6-digit number match when prize doesn't require specific series or series matches
+          if (
+            normalized.number.length === 6 &&
+            winNum.number === normalized.number &&
+            (!winNum.series || !normalized.series || winNum.series.toUpperCase() === normalized.series.toUpperCase())
+          ) {
+            matchFound = true;
+            matchedPrize = prize;
+            matchedWinningNumber = winNum;
+            matchedDraw = draw;
+            break;
+          }
+
+          // Case C: Ending 4-digit match (e.g. 4th-9th prizes where winning number is 4 digits)
+          if (
+            winNum.number.length === 4 &&
+            normalized.number.endsWith(winNum.number)
+          ) {
+            matchFound = true;
+            matchedPrize = prize;
+            matchedWinningNumber = winNum;
+            matchedDraw = draw;
+            break;
+          }
+        }
+        if (matchFound) break;
+      }
+      if (matchFound) break;
+    }
+
+    const drawDateFormatted = matchedDraw?.drawDate
+      ? formatIstDate(new Date(matchedDraw.drawDate), 'dd MMMM yyyy')
+      : null;
+    const drawDateSlug = matchedDraw?.drawDate
+      ? formatDateOnly(matchedDraw.drawDate)
+      : null;
+
+    if (matchFound && matchedPrize && matchedDraw) {
+      evaluatedResults.push({
+        inputTicket: rawTicket,
+        normalizedDisplay: normalized.display,
+        isMatch: true,
+        status: 'PRIZE_MATCH',
+        lotteryName: matchedDraw.lottery.name,
+        drawNumber: matchedDraw.drawNumber,
+        drawDate: drawDateFormatted,
+        prizeCategory: matchedPrize.category,
+        prizeAmount: Number(matchedPrize.amount),
+        prizeAmountFormatted: formatINR(matchedPrize.amount),
+        winningNumber: matchedWinningNumber?.displayNumber,
+        location: matchedWinningNumber?.location || null,
+        resultUrl: `/result/${drawDateSlug}/${matchedDraw.lottery.slug}`,
+        officialSourceUrl: matchedDraw.sourceUrl,
+        disclaimer:
+          'Winning-number match only. Final prize eligibility and claim/payment are subject to official verification by Kerala State Lotteries.',
+      });
+    } else {
+      evaluatedResults.push({
+        inputTicket: rawTicket,
+        normalizedDisplay: normalized.display,
+        isMatch: false,
+        status: 'NO_MATCH',
+        message: 'No matching winning number was found in the selected official result.',
+      });
+    }
+  }
+
+  return {
+    success: true,
+    drawFound: true,
+    drawsEvaluated: draws.map((d: any) => ({
+      id: d.id,
+      drawNumber: d.drawNumber,
+      lotteryName: d.lottery.name,
+      drawDate: formatDateOnly(d.drawDate),
+    })),
+    results: evaluatedResults,
+  };
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const ticketParam = searchParams.get('ticket') || searchParams.get('number');
+    const drawNumber = searchParams.get('drawNumber') || searchParams.get('draw') || undefined;
+    const lotteryId = searchParams.get('lotteryId') || searchParams.get('lottery') || undefined;
+    const drawId = searchParams.get('drawId') || undefined;
+
+    if (!ticketParam) {
+      return NextResponse.json(
+        { success: false, error: 'Please provide a ticket number via ?ticket=...' },
+        { status: 400 }
+      );
+    }
+
+    const tickets = ticketParam.split(',').map((t) => t.trim()).filter(Boolean);
+    const result = await checkTicketsHandler({
+      lotteryId,
+      drawId,
+      drawNumber,
+      tickets,
+    });
+
+    return NextResponse.json(result);
+  } catch (error: any) {
+    console.error('Error in GET /api/tickets/check:', error);
+    return NextResponse.json(
+      { success: false, error: error.message || 'Ticket verification engine error' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
-    const rateCheck = checkRateLimit(`ticket_check_${ip}`, 40, 60000);
+    const rateCheck = checkRateLimit(`ticket_check_${ip}`, 60, 60000);
 
     if (!rateCheck.allowed) {
       return NextResponse.json(
@@ -33,156 +219,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { lotteryId, drawId, drawNumber, tickets } = parseResult.data;
-
-    // 1. Locate Target Draw or Recent Published Draws
-    const drawQuery: any = { status: 'PUBLISHED' };
-    if (drawId) {
-      drawQuery.id = drawId;
-    } else if (drawNumber) {
-      drawQuery.drawNumber = drawNumber.toUpperCase();
-    } else if (lotteryId) {
-      drawQuery.lotteryId = lotteryId;
-    }
-
-    const draws = await prisma.draw.findMany({
-      where: drawQuery,
-      orderBy: { drawDate: 'desc' },
-      take: drawId || drawNumber ? 1 : 5,
-      include: {
-        lottery: true,
-        prizes: {
-          orderBy: { orderIndex: 'asc' },
-          include: {
-            winningNumbers: true,
-          },
-        },
-      },
-    });
-
-    if (draws.length === 0) {
-      return NextResponse.json(
-        {
-          success: true,
-          drawFound: false,
-          message: 'No published official draw results found for the selected criteria.',
-          results: tickets.map((t) => ({
-            inputTicket: t,
-            isMatch: false,
-            message: 'No draw result found to check against.',
-          })),
-        },
-        { status: 200 }
-      );
-    }
-
-    // 2. Perform Ticket Matching Logic
-    const evaluatedResults = [];
-
-    for (const rawTicket of tickets) {
-      const normalized = normalizeTicketInput(rawTicket);
-      let matchFound = false;
-      let matchedPrize = null;
-      let matchedWinningNumber = null;
-      let matchedDraw = null;
-
-      for (const draw of draws) {
-        for (const prize of draw.prizes) {
-          for (const winNum of prize.winningNumbers) {
-            // Case A: Full 6-digit with Series match (e.g. "PS 320327" vs "PS 320327")
-            if (
-              normalized.series &&
-              winNum.series &&
-              normalized.series.toUpperCase() === winNum.series.toUpperCase() &&
-              normalized.number === winNum.number
-            ) {
-              matchFound = true;
-              matchedPrize = prize;
-              matchedWinningNumber = winNum;
-              matchedDraw = draw;
-              break;
-            }
-
-            // Case B: Exact 6-digit number match when prize doesn't require specific series or series matches
-            if (
-              normalized.number.length === 6 &&
-              winNum.number === normalized.number &&
-              (!winNum.series || !normalized.series || winNum.series.toUpperCase() === normalized.series.toUpperCase())
-            ) {
-              matchFound = true;
-              matchedPrize = prize;
-              matchedWinningNumber = winNum;
-              matchedDraw = draw;
-              break;
-            }
-
-            // Case C: Ending 4-digit match (e.g. 4th-9th prizes where winning number is 4 digits)
-            if (
-              winNum.number.length === 4 &&
-              normalized.number.endsWith(winNum.number)
-            ) {
-              matchFound = true;
-              matchedPrize = prize;
-              matchedWinningNumber = winNum;
-              matchedDraw = draw;
-              break;
-            }
-          }
-          if (matchFound) break;
-        }
-        if (matchFound) break;
-      }
-
-      const drawDateFormatted = matchedDraw?.drawDate
-        ? format(new Date(matchedDraw.drawDate), 'dd MMMM yyyy')
-        : null;
-      const drawDateSlug = matchedDraw?.drawDate
-        ? format(new Date(matchedDraw.drawDate), 'yyyy-MM-dd')
-        : null;
-
-      if (matchFound && matchedPrize && matchedDraw) {
-        evaluatedResults.push({
-          inputTicket: rawTicket,
-          normalizedDisplay: normalized.display,
-          isMatch: true,
-          status: 'PRIZE_MATCH',
-          lotteryName: matchedDraw.lottery.name,
-          drawNumber: matchedDraw.drawNumber,
-          drawDate: drawDateFormatted,
-          prizeCategory: matchedPrize.category,
-          prizeAmount: Number(matchedPrize.amount),
-          prizeAmountFormatted: formatINR(matchedPrize.amount),
-          winningNumber: matchedWinningNumber?.displayNumber,
-          location: matchedWinningNumber?.location || null,
-          resultUrl: `/result/${drawDateSlug}/${matchedDraw.lottery.slug}`,
-          officialSourceUrl: matchedDraw.sourceUrl,
-          disclaimer:
-            'Winning-number match only. Final prize eligibility and claim/payment are subject to official verification by Kerala State Lotteries.',
-        });
-      } else {
-        evaluatedResults.push({
-          inputTicket: rawTicket,
-          normalizedDisplay: normalized.display,
-          isMatch: false,
-          status: 'NO_MATCH',
-          message: 'No matching winning number was found in the selected official result.',
-        });
-      }
-    }
-
-    return NextResponse.json({
-      success: true,
-      drawFound: true,
-      drawsEvaluated: draws.map((d: any) => ({
-        id: d.id,
-        drawNumber: d.drawNumber,
-        lotteryName: d.lottery.name,
-        drawDate: d.drawDate,
-      })),
-      results: evaluatedResults,
-    });
+    const result = await checkTicketsHandler(parseResult.data);
+    return NextResponse.json(result);
   } catch (error: any) {
-    console.error('Error in /api/tickets/check:', error);
+    console.error('Error in POST /api/tickets/check:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Ticket verification engine error' },
       { status: 500 }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/prisma';
-import { parseISO, startOfDay, endOfDay } from 'date-fns';
+import { isValidDateFormat, parseDateOnlyUtc } from '@/lib/date';
 import { getOrSetCache } from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
@@ -11,18 +11,15 @@ export async function GET(
 ) {
   try {
     const { date } = await params;
-    const targetDate = parseISO(date);
 
-    if (isNaN(targetDate.getTime())) {
+    if (!isValidDateFormat(date)) {
       return NextResponse.json(
         { success: false, error: 'Invalid date format. Expected YYYY-MM-DD.' },
         { status: 400 }
       );
     }
 
-    const dayStart = startOfDay(targetDate);
-    const dayEnd = endOfDay(targetDate);
-
+    const targetDate = parseDateOnlyUtc(date);
     const cacheKey = `api_results_date_${date}`;
 
     const data = await getOrSetCache(
@@ -30,10 +27,7 @@ export async function GET(
       async () => {
         const draws = await prisma.draw.findMany({
           where: {
-            drawDate: {
-              gte: dayStart,
-              lte: dayEnd,
-            },
+            drawDate: targetDate,
             status: 'PUBLISHED',
           },
           include: {
@@ -57,7 +51,7 @@ export async function GET(
           draws,
         });
       },
-      { ttlMs: 300_000, swrMs: 86400_000 } // Historical dates can be cached for long durations
+      { ttlMs: 300_000, swrMs: 86400_000 } // Historical dates can be cached aggressively
     );
 
     return NextResponse.json(data, {

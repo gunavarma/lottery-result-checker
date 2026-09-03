@@ -12,6 +12,12 @@ import { ResultShareBar } from '@/components/ResultShareBar';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
 import { getOrSetCache } from '@/lib/cache';
 import {
+  isValidDateFormat,
+  parseDateOnlyUtc,
+  getIstDateRange,
+  getAdjacentAvailableDates,
+} from '@/lib/date';
+import {
   format,
   parseISO,
   addDays,
@@ -65,23 +71,20 @@ export async function generateMetadata({
 }
 
 async function getDateResultsData(dateStr: string) {
-  const parsed = parseISO(dateStr);
-  if (!isValid(parsed)) return null;
+  if (!isValidDateFormat(dateStr)) return null;
 
   const cacheKey = `page_results_date_${dateStr}`;
 
   return getOrSetCache(
     cacheKey,
     async () => {
-      const dayStart = startOfDay(parsed);
-      const dayEnd = endOfDay(parsed);
+      const targetDate = parseDateOnlyUtc(dateStr);
+      const { formattedDisplay } = getIstDateRange(dateStr);
+      const adjacent = await getAdjacentAvailableDates(dateStr);
 
       const draws = await prisma.draw.findMany({
         where: {
-          drawDate: {
-            gte: dayStart,
-            lte: dayEnd,
-          },
+          drawDate: targetDate,
           status: 'PUBLISHED',
         },
         include: {
@@ -100,10 +103,10 @@ async function getDateResultsData(dateStr: string) {
 
       return serializeData({
         dateStr,
-        dateFormatted: format(parsed, 'dd MMMM yyyy (EEEE)'),
-        prevDateStr: format(addDays(parsed, -1), 'yyyy-MM-dd'),
-        nextDateStr: format(addDays(parsed, 1), 'yyyy-MM-dd'),
-        isFuture: parsed.getTime() > Date.now(),
+        dateFormatted: formattedDisplay,
+        prevDateStr: adjacent.prevAvailableDate || format(addDays(targetDate, -1), 'yyyy-MM-dd'),
+        nextDateStr: adjacent.nextAvailableDate || format(addDays(targetDate, 1), 'yyyy-MM-dd'),
+        isFuture: targetDate.getTime() > Date.now(),
         draws,
       });
     },

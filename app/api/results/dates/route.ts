@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getOrSetCache } from '@/lib/cache';
-import { format } from 'date-fns';
+import { formatDateOnly } from '@/lib/date';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +18,7 @@ export async function GET() {
           orderBy: { drawDate: 'desc' },
         });
 
-        const dates = draws.map((d) => format(d.drawDate, 'yyyy-MM-dd'));
+        const dates = draws.map((d) => formatDateOnly(d.drawDate));
 
         return {
           success: true,
