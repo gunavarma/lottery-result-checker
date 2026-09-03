@@ -13,30 +13,32 @@ import {
   ShieldCheck,
   ChevronRight,
   Ticket,
-  Star,
   Calendar,
   Home,
   Award,
   Newspaper,
-  Layers,
   User,
 } from 'lucide-react';
 import { SearchModal } from './SearchModal';
 import { NotificationModal } from './NotificationModal';
-
-const NAV_LINKS = [
-  { label: 'Today', href: '/' },
-  { label: 'Results', href: '/results' },
-  { label: 'Check Ticket', href: '/check-ticket' },
-  { label: 'Upcoming', href: '/lottery-calendar' },
-  { label: 'News', href: '/news' },
-];
+import { LanguageSelector } from './LanguageSelector';
+import { useLanguage } from '@/context/LanguageContext';
 
 export function Navbar() {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [notificationModalOpen, setNotificationModalOpen] = useState(false);
+
+  const navLinks = [
+    { label: t('nav.today', 'Today'), href: '/' },
+    { label: t('nav.results', 'Results'), href: '/results' },
+    { label: t('nav.archive', 'Archive'), href: '/kerala-lottery-results' },
+    { label: t('nav.check_ticket', 'Check Ticket'), href: '/ticket-checker' },
+    { label: t('nav.upcoming', 'Upcoming'), href: '/lottery-calendar' },
+    { label: t('nav.news', 'News'), href: '/news' },
+  ];
 
   return (
     <>
@@ -47,18 +49,19 @@ export function Navbar() {
             <div className="flex items-center gap-2">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#16845B]" />
               <span className="tracking-wide">
-                LOTIS Synchronized • Kerala State Lotteries Information
+                {t('ui.lotis_sync', 'LOTIS Synchronized • Kerala State Lotteries Information')}
               </span>
             </div>
             <div className="hidden sm:flex items-center gap-4 text-slate-300">
               <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3 text-[#C8A45D]" /> Daily Draw: 3:00 PM IST
+                <Clock className="w-3 h-3 text-[#C8A45D]" />{' '}
+                {t('ui.daily_draw_time', 'Daily Draw: 3:00 PM IST')}
               </span>
               <Link
                 href="/admin"
                 className="hover:text-white transition-colors underline text-[11px]"
               >
-                Admin Center
+                {t('nav.admin', 'Admin Center')}
               </Link>
             </div>
           </div>
@@ -91,16 +94,18 @@ export function Navbar() {
 
             {/* Desktop Navigation Links */}
             <nav className="hidden lg:flex items-center gap-1">
-              {NAV_LINKS.map((item) => {
-                const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+              {navLinks.map((item) => {
+                const isActive =
+                  pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
                 return (
                   <Link
-                    key={item.label}
+                    key={item.href}
                     href={item.href}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors ${isActive
-                      ? 'bg-[#F1F4F2] text-[#0B3B32]'
-                      : 'text-[#17201D] hover:text-[#0B3B32] hover:bg-[#F7F7F4]'
-                      }`}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors ${
+                      isActive
+                        ? 'bg-[#F1F4F2] text-[#0B3B32]'
+                        : 'text-[#17201D] hover:text-[#0B3B32] hover:bg-[#F7F7F4]'
+                    }`}
                   >
                     {item.label}
                   </Link>
@@ -116,11 +121,14 @@ export function Navbar() {
                 className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[#68736E] hover:text-[#17201D] bg-[#F7F7F4] hover:bg-[#F1F4F2] border border-[#E2E7E3] transition-colors"
               >
                 <Search className="w-3.5 h-3.5 text-[#68736E]" />
-                <span>Search</span>
+                <span>{t('nav.search', 'Search')}</span>
                 <kbd className="text-[10px] font-mono text-[#68736E] bg-white px-1.5 py-0.5 rounded border border-[#E2E7E3]">
                   ⌘K
                 </kbd>
               </button>
+
+              {/* Language Selector Dropdown */}
+              <LanguageSelector variant="header" />
 
               <button
                 onClick={() => setNotificationModalOpen(true)}
@@ -143,6 +151,9 @@ export function Navbar() {
 
             {/* Mobile Header Right Icons */}
             <div className="flex items-center gap-1.5 lg:hidden">
+              {/* Compact Language Selector on Mobile Header */}
+              <LanguageSelector variant="compact" />
+
               <button
                 onClick={() => setSearchModalOpen(true)}
                 aria-label="Open search"
@@ -170,24 +181,32 @@ export function Navbar() {
 
         {/* Mobile Menu Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-[#E2E7E3] bg-white px-4 pt-2 pb-6 space-y-1 shadow-lg animate-fadeIn">
-            {NAV_LINKS.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-colors ${isActive
-                    ? 'bg-[#F1F4F2] text-[#0B3B32]'
-                    : 'text-[#17201D] hover:bg-[#F7F7F4]'
+          <div className="lg:hidden border-t border-[#E2E7E3] bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg animate-fadeIn">
+            {/* Language Selector Section in Mobile Drawer */}
+            <div className="pb-3 border-b border-[#E2E7E3]">
+              <LanguageSelector variant="drawer" />
+            </div>
+
+            <div className="space-y-1">
+              {navLinks.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
+                      isActive
+                        ? 'bg-[#F1F4F2] text-[#0B3B32]'
+                        : 'text-[#17201D] hover:bg-[#F7F7F4]'
                     }`}
-                >
-                  <span>{item.label}</span>
-                  <ChevronRight className="w-4 h-4 text-[#68736E]" />
-                </Link>
-              );
-            })}
+                  >
+                    <span>{item.label}</span>
+                    <ChevronRight className="w-4 h-4 text-[#68736E]" />
+                  </Link>
+                );
+              })}
+            </div>
 
             <div className="pt-4 mt-3 border-t border-[#E2E7E3] flex items-center justify-between text-xs text-[#68736E] px-2">
               <span className="flex items-center gap-1">
@@ -199,7 +218,7 @@ export function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="underline text-[#0B3B32] font-semibold"
               >
-                Admin Center
+                {t('nav.admin', 'Admin Center')}
               </Link>
             </div>
           </div>
@@ -207,58 +226,67 @@ export function Navbar() {
       </header>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav aria-label="Mobile Navigation" className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E2E7E3] py-2 px-3 flex items-center justify-around lg:hidden shadow-lg">
+      <nav
+        aria-label="Mobile Navigation"
+        className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E2E7E3] py-2 px-3 flex items-center justify-around lg:hidden shadow-lg"
+      >
         <Link
           href="/"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname === '/' ? 'text-[#0B5D45]' : 'text-[#5F6B66] hover:text-[#0B5D45]'
-            }`}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
+            pathname === '/' ? 'text-[#0B5D45]' : 'text-[#5F6B66] hover:text-[#0B5D45]'
+          }`}
         >
           <Home className="w-5 h-5" />
-          <span>Today</span>
+          <span>{t('nav.today', 'Today')}</span>
         </Link>
         <Link
           href="/results"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/result')
-            ? 'text-[#0B5D45]'
-            : 'text-[#5F6B66] hover:text-[#0B5D45]'
-            }`}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
+            pathname.startsWith('/result')
+              ? 'text-[#0B5D45]'
+              : 'text-[#5F6B66] hover:text-[#0B5D45]'
+          }`}
         >
           <Award className="w-5 h-5" />
-          <span>Results</span>
+          <span>{t('nav.results', 'Results')}</span>
         </Link>
         <Link
-          href="/check-ticket"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname === '/check-ticket' ? 'text-[#0B5D45]' : 'text-[#5F6B66] hover:text-[#0B5D45]'
-            }`}
+          href="/ticket-checker"
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
+            pathname === '/ticket-checker' || pathname === '/check-ticket'
+              ? 'text-[#0B5D45]'
+              : 'text-[#5F6B66] hover:text-[#0B5D45]'
+          }`}
         >
           <Ticket className="w-5 h-5" />
-          <span>Check</span>
+          <span>{t('ui.check', 'Check')}</span>
         </Link>
         <Link
           href="/lottery-calendar"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/lottery-calendar')
-            ? 'text-[#0B5D45]'
-            : 'text-[#5F6B66] hover:text-[#0B5D45]'
-            }`}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
+            pathname.startsWith('/lottery-calendar')
+              ? 'text-[#0B5D45]'
+              : 'text-[#5F6B66] hover:text-[#0B5D45]'
+          }`}
         >
           <Calendar className="w-5 h-5" />
-          <span>Upcoming</span>
+          <span>{t('nav.upcoming', 'Upcoming')}</span>
         </Link>
         <Link
           href="/news"
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${pathname.startsWith('/news') ? 'text-[#0B5D45]' : 'text-[#5F6B66] hover:text-[#0B5D45]'
-            }`}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
+            pathname.startsWith('/news')
+              ? 'text-[#0B5D45]'
+              : 'text-[#5F6B66] hover:text-[#0B5D45]'
+          }`}
         >
           <Newspaper className="w-5 h-5" />
-          <span>News</span>
+          <span>{t('nav.news', 'News')}</span>
         </Link>
       </nav>
 
       {/* Global Search Modal */}
-      <SearchModal
-        isOpen={searchModalOpen}
-        onClose={() => setSearchModalOpen(false)}
-      />
+      <SearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
 
       {/* Notification Preferences Modal */}
       <NotificationModal

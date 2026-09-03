@@ -18,12 +18,14 @@ import {
 } from 'lucide-react';
 import { formatINR } from '@/lib/prisma';
 import { format } from 'date-fns';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface HeroTodayCardProps {
   initialData?: any;
 }
 
 export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
+  const { t } = useLanguage();
   const [data, setData] = useState<any>(initialData);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -254,14 +256,14 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
             {latestDraw && (
               <div className="border-t border-white/10 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-300">
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-400">Previous Draw:</span>
+                  <span className="text-slate-400">{t('ui.previous_draw', 'Previous Draw:')}</span>
                   <strong className="text-white uppercase">{latestDraw.lottery?.name} ({latestDraw.drawNumber})</strong>
                 </div>
                 <Link
                   href={`/results/${latestDraw.lottery?.slug}/${latestDraw.drawNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
                   className="text-[#C8A45D] hover:underline font-bold inline-flex items-center gap-1"
                 >
-                  <span>View Yesterday's Result</span>
+                  <span>{t('ui.view_result', "View Yesterday's Result")}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -299,7 +301,7 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="bg-white/5 border border-white/10 rounded-xl p-3">
                   <span className="text-slate-300 block text-[10px] uppercase font-bold tracking-wide">
-                    Draw Date
+                    {t('ui.held_on', 'Draw Date')}
                   </span>
                   <span className="font-bold text-white text-sm mt-0.5 block font-tabular">
                     {drawDateFormatted}
@@ -307,7 +309,7 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-xl p-3">
                   <span className="text-slate-300 block text-[10px] uppercase font-bold tracking-wide">
-                    Draw Time
+                    {t('ui.draw_time', 'Draw Time')}
                   </span>
                   <span className="font-bold text-white text-sm mt-0.5 block font-tabular">
                     {draw.drawTime || '3:00 PM IST'}
@@ -328,7 +330,7 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-[#C8A45D] uppercase tracking-wider flex items-center gap-1.5 font-tabular">
                     <Award className="w-4 h-4 text-[#C8A45D]" />
-                    1st Prize ({firstPrize ? formatINR(firstPrize.amount) : '₹1 Crore'})
+                    {t('ui.first_prize', '1st Prize')} ({firstPrize ? formatINR(firstPrize.amount) : '₹1 Crore'})
                   </span>
                   {firstPrizeWinner?.location && (
                     <span className="text-[11px] bg-white/10 text-slate-200 px-2.5 py-0.5 rounded-md font-medium flex items-center gap-1">
@@ -350,7 +352,7 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                 {secondPrize && (
                   <div className="bg-white/5 p-3 rounded-xl border border-white/10">
                     <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wide">
-                      2nd Prize ({formatINR(secondPrize.amount)})
+                      {t('ui.second_prize', '2nd Prize')} ({formatINR(secondPrize.amount)})
                     </span>
                     <span className="font-mono font-bold text-white text-base mt-1 block font-tabular">
                       {secondPrize.winningNumbers?.[0]?.displayNumber || '—'}
@@ -361,7 +363,7 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                 {consolationPrize && (
                   <div className="bg-white/5 p-3 rounded-xl border border-white/10">
                     <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wide">
-                      Consolation ({formatINR(consolationPrize.amount)})
+                      {t('ui.consolation_prize', 'Consolation')} ({formatINR(consolationPrize.amount)})
                     </span>
                     <span className="font-semibold text-slate-200 text-xs mt-1 block font-tabular">
                       {consolationPrize.winningNumbers?.length || 0} Winning Tickets
@@ -376,7 +378,7 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                   href={`/results/date/${drawDateSlug}`}
                   className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#16845B] hover:bg-[#16845B]/90 text-white font-bold text-xs transition-colors group shadow-sm cursor-pointer"
                 >
-                  <span>View Complete Prize Table</span>
+                  <span>{t('ui.view_result', 'View Complete Prize Table')}</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
                 {draw.sourceDocumentUrl && (

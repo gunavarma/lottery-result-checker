@@ -6,10 +6,40 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
+        allow: [
+          '/',
+          '/_next/static/',
+          '/_next/image',
+          '/kerala-lottery-result/',
+          '/kerala-lottery-results/',
+          '/lottery/',
+          '/ticket-checker',
+          '/news/',
+          '/guides/',
+        ],
+        disallow: [
+          '/admin',
+          '/admin/',
+          '/api/',
+          '/search',
+          '/search/',
+          '/my-lotteries',
+          '/my-tickets',
+          '/notification-settings',
+        ],
+      },
+      {
+        userAgent: 'Googlebot',
         allow: '/',
-        disallow: ['/admin', '/api/', '/notification-settings'],
+        disallow: [
+          '/admin/',
+          '/api/',
+          '/search',
+          '/notification-settings',
+        ],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   };
 }

@@ -34,7 +34,10 @@ export function constructMetadata({
   noIndex?: boolean;
   keywords?: string[];
 }): Metadata {
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} | ${SITE_TAGLINE}`;
+  const cleanTitle = title
+    ? title.replace(new RegExp(`(\\s*\\|\\s*${SITE_NAME})+$`, 'gi'), '').trim()
+    : undefined;
+  const fullTitle = cleanTitle ? `${cleanTitle} | ${SITE_NAME}` : `${SITE_NAME} | ${SITE_TAGLINE}`;
   const canonical = getCanonicalUrl(path);
 
   const defaultKeywords = [

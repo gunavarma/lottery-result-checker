@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Award, Copy, Check, Printer, FileText, MapPin } from 'lucide-react';
 import { formatINR, formatINRExact } from '@/lib/prisma';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface PrizeTableProps {
   prizes: any[];
@@ -11,6 +12,7 @@ interface PrizeTableProps {
 }
 
 export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps) {
+  const { t } = useLanguage();
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopyNumber = (text: string, id: string) => {
@@ -31,16 +33,31 @@ export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps)
     );
   }
 
+  const getLocalizedCategory = (category: string, tierNumber?: number) => {
+    const cat = (category || '').toLowerCase();
+    if (cat.includes('cons') || cat.includes('സമാശ്വാസ')) return t('ui.consolation_prize', 'Consolation Prize');
+    if (tierNumber === 1 || cat.includes('1st') || cat.includes('ഒന്നാം')) return t('ui.first_prize', '1st Prize');
+    if (tierNumber === 2 || cat.includes('2nd') || cat.includes('രണ്ടാം')) return t('ui.second_prize', '2nd Prize');
+    if (tierNumber === 3 || cat.includes('3rd') || cat.includes('മൂന്നാം')) return t('ui.third_prize', '3rd Prize');
+    if (tierNumber === 4 || cat.includes('4th') || cat.includes('നാലാം')) return t('ui.fourth_prize', '4th Prize');
+    if (tierNumber === 5 || cat.includes('5th') || cat.includes('അഞ്ചാം')) return t('ui.fifth_prize', '5th Prize');
+    if (tierNumber === 6 || cat.includes('6th') || cat.includes('ആറാം')) return t('ui.sixth_prize', '6th Prize');
+    if (tierNumber === 7 || cat.includes('7th') || cat.includes('ഏഴാം')) return t('ui.seventh_prize', '7th Prize');
+    if (tierNumber === 8 || cat.includes('8th') || cat.includes('എട്ടാം')) return t('ui.eighth_prize', '8th Prize');
+    if (tierNumber === 9 || cat.includes('9th') || cat.includes('ഒൻപതാം')) return t('ui.ninth_prize', '9th Prize');
+    return category;
+  };
+
   return (
     <div className="space-y-6">
       {/* Table Header Action Bar */}
       <div className="flex items-center justify-between no-print border-b border-[#E2E7E3] pb-3">
         <div>
           <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
-            Full Gazette Breakdown
+            {t('ui.certified_result', 'Full Gazette Breakdown')}
           </span>
           <h2 className="text-xl font-extrabold text-[#17201D] tracking-tight">
-            Official Prize Tiers & Winning Numbers
+            {t('ui.winning_numbers', 'Official Prize Tiers & Winning Numbers')}
           </h2>
         </div>
         <button
@@ -89,7 +106,7 @@ export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps)
                   </div>
                   <div>
                     <h3 className="font-extrabold text-[#17201D] text-base">
-                      {prize.category}
+                      {getLocalizedCategory(prize.category, prize.tierNumber)}
                     </h3>
                     {prize.description && (
                       <span className="text-[10px] text-[#68736E] block uppercase font-bold tracking-wide">
@@ -101,7 +118,7 @@ export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps)
 
                 <div className="text-right">
                   <span className="text-[10px] text-[#68736E] block uppercase font-bold tracking-wide">
-                    Prize Amount
+                    {t('ui.prize_amount', 'Prize Amount')}
                   </span>
                   <span
                     className={`text-base sm:text-lg font-black font-tabular ${

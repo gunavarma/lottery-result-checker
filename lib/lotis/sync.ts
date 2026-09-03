@@ -38,32 +38,42 @@ export interface SyncResponse {
  * Fetch draw list from official LOTIS portal
  */
 export async function fetchLotisDrawList(): Promise<LOTISScrapedItem[]> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+  let lastErr: any = null;
 
-  try {
-    const res = await fetch(LOTIS_PUBLIC_URL, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      },
-      signal: controller.signal,
-      cache: 'no-store',
-    });
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
 
-    clearTimeout(timeout);
+    try {
+      const res = await fetch(LOTIS_PUBLIC_URL, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        },
+        signal: controller.signal,
+        cache: 'no-store',
+      });
 
-    if (!res.ok) {
-      throw new Error(`LOTIS server returned HTTP ${res.status}`);
+      clearTimeout(timeout);
+
+      if (!res.ok) {
+        throw new Error(`LOTIS server returned HTTP ${res.status}`);
+      }
+
+      const html = await res.text();
+      return parseLotisTableHtml(html);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      lastErr = error;
+      console.warn(`[Sync] fetchLotisDrawList attempt ${attempt} failed:`, error?.message || error);
+      if (attempt < 3) {
+        await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+      }
     }
-
-    const html = await res.text();
-    return parseLotisTableHtml(html);
-  } catch (error) {
-    clearTimeout(timeout);
-    throw error;
   }
+
+  throw lastErr || new Error('Failed to fetch draw list from LOTIS after 3 attempts');
 }
 
 /**

@@ -14,6 +14,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { formatINR } from '@/lib/prisma';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface TicketCheckerProps {
   initialLotteryId?: string;
@@ -21,6 +22,7 @@ interface TicketCheckerProps {
 }
 
 export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketCheckerProps) {
+  const { t } = useLanguage();
   const [lotteries, setLotteries] = useState<any[]>([]);
   const [selectedLottery, setSelectedLottery] = useState(initialLotteryId || 'all');
   const [ticketInput, setTicketInput] = useState('');
@@ -138,7 +140,7 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
                 <input
                   id="ticket-number-input"
                   type="text"
-                  placeholder="e.g. 320327, PS 320327, 0266"
+                  placeholder={t('ui.enter_ticket_number', 'e.g. 320327, PS 320327, 0266')}
                   value={ticketInput}
                   onChange={(e) => {
                     setTicketInput(e.target.value);
@@ -154,12 +156,12 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Verifying...</span>
+                      <span>{t('ui.searching', 'Verifying...')}</span>
                     </>
                   ) : (
                     <>
                       <Search className="w-4 h-4" />
-                      <span>Check Ticket</span>
+                      <span>{t('ui.check_ticket_btn', 'Check Ticket')}</span>
                     </>
                   )}
                 </button>
@@ -185,7 +187,7 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
               <div className="flex items-center justify-between bg-[#16845B]/10 border border-[#16845B]/30 px-4 py-3 rounded-2xl">
                 <div className="flex items-center gap-2 text-xs font-bold text-[#16845B]">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>Winning ticket record found for "{ticketInput}"!</span>
+                  <span>{t('ui.prize_match', 'Winning ticket record found!')} ({ticketInput})</span>
                 </div>
                 <button
                   onClick={handleReset}
@@ -262,7 +264,7 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
             <div className="bg-[#F7F7F4] border border-[#E2E7E3] rounded-2xl p-6 text-center space-y-2">
               <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-[#17201D]">
                 <AlertCircle className="w-4 h-4 text-[#68736E]" />
-                <span>No matching prize found for "{ticketInput}"</span>
+                <span>{t('ui.no_match', 'No matching prize found for')} "{ticketInput}"</span>
               </div>
               <p className="text-xs text-[#68736E] max-w-md mx-auto leading-relaxed">
                 This ticket number does not match any currently published winning numbers in the database. Please verify the ticket series and digits against the complete prize table.

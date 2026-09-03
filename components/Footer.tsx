@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShieldCheck, ExternalLink, Award, FileText, HelpCircle, CheckCircle } from 'lucide-react';
+import { LanguageSelector } from './LanguageSelector';
 
 export function Footer() {
   return (
@@ -53,43 +54,43 @@ export function Footer() {
             </h3>
             <ul className="space-y-2.5 text-xs">
               <li>
-                <Link href="/lotteries/bhagya-thara" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
+                <Link href="/lottery/bhagya-thara" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
                   <span>Bhagya Thara</span>
                   <span className="text-slate-400">Monday</span>
                 </Link>
               </li>
               <li>
-                <Link href="/lotteries/sthree-sakthi" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
+                <Link href="/lottery/sthree-sakthi" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
                   <span>Sthree Sakthi</span>
                   <span className="text-slate-400">Tuesday</span>
                 </Link>
               </li>
               <li>
-                <Link href="/lotteries/fifty-fifty" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
+                <Link href="/lottery/fifty-fifty" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
                   <span>Fifty-Fifty</span>
                   <span className="text-slate-400">Wednesday</span>
                 </Link>
               </li>
               <li>
-                <Link href="/lotteries/karunya-plus" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
+                <Link href="/lottery/karunya-plus" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
                   <span>Karunya Plus</span>
                   <span className="text-slate-400">Thursday</span>
                 </Link>
               </li>
               <li>
-                <Link href="/lotteries/suvarna-keralam" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
+                <Link href="/lottery/suvarna-keralam" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
                   <span>Suvarna Keralam</span>
                   <span className="text-slate-400">Friday</span>
                 </Link>
               </li>
               <li>
-                <Link href="/lotteries/karunya" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
+                <Link href="/lottery/karunya" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
                   <span>Karunya</span>
                   <span className="text-slate-400">Saturday</span>
                 </Link>
               </li>
               <li>
-                <Link href="/lotteries/samrudhi" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
+                <Link href="/lottery/samrudhi" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
                   <span>Samrudhi / Akshaya</span>
                   <span className="text-slate-400">Sunday</span>
                 </Link>
@@ -104,31 +105,31 @@ export function Footer() {
             </h3>
             <ul className="space-y-2.5 text-xs">
               <li>
-                <Link href="/lotteries/thiruvonam-bumper" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
+                <Link href="/lottery/thiruvonam-bumper" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
                   <span>Thiruvonam Bumper</span>
                   <span className="text-[#C8A45D] font-bold font-tabular">₹25 Cr</span>
                 </Link>
               </li>
               <li>
-                <Link href="/lotteries/xmas-new-year-bumper" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
+                <Link href="/lottery/xmas-new-year-bumper" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
                   <span>Xmas New Year Bumper</span>
                   <span className="text-[#C8A45D] font-bold font-tabular">₹20 Cr</span>
                 </Link>
               </li>
               <li>
-                <Link href="/lotteries/vishu-bumper" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
+                <Link href="/lottery/vishu-bumper" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
                   <span>Vishu Bumper</span>
                   <span className="text-[#C8A45D] font-bold font-tabular">₹12 Cr</span>
                 </Link>
               </li>
               <li>
-                <Link href="/lotteries/pooja-bumper" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
+                <Link href="/lottery/pooja-bumper" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
                   <span>Pooja Bumper</span>
                   <span className="text-[#C8A45D] font-bold font-tabular">₹12 Cr</span>
                 </Link>
               </li>
               <li>
-                <Link href="/lotteries/monsoon-bumper" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
+                <Link href="/lottery/monsoon-bumper" className="text-slate-300 hover:text-white transition-colors flex items-center justify-between">
                   <span>Monsoon Bumper</span>
                   <span className="text-[#C8A45D] font-bold font-tabular">₹10 Cr</span>
                 </Link>
@@ -144,22 +145,22 @@ export function Footer() {
             <ul className="space-y-2.5 text-xs">
               <li>
                 <Link href="/kerala-lottery-result-today" className="text-slate-300 hover:text-white transition-colors">
-                  Today's Result
+                  Today&apos;s Result
                 </Link>
               </li>
               <li>
-                <Link href="/results" className="text-slate-300 hover:text-white transition-colors">
-                  All Results
+                <Link href="/kerala-lottery-results" className="text-slate-300 hover:text-white transition-colors">
+                  Results Archive
                 </Link>
               </li>
               <li>
-                <Link href="/check-ticket" className="text-slate-300 hover:text-white transition-colors">
+                <Link href="/previous-results" className="text-slate-300 hover:text-white transition-colors">
+                  Previous Results
+                </Link>
+              </li>
+              <li>
+                <Link href="/ticket-checker" className="text-slate-300 hover:text-white transition-colors">
                   Ticket Checker
-                </Link>
-              </li>
-              <li>
-                <Link href="/my-tickets" className="text-slate-300 hover:text-white transition-colors">
-                  My Saved Tickets
                 </Link>
               </li>
               <li>
@@ -207,9 +208,14 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Bottom Legal Links & Copyright */}
-        <div className="border-t border-white/10 pt-6 mt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
-          <p>© {new Date().getFullYear()} KeralaDraws (KeralaDraws.com). All rights reserved.</p>
+        {/* Language Switcher Bar */}
+        <div className="border-t border-white/10 pt-6 mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <LanguageSelector variant="footer" />
+          <p className="text-xs text-slate-400">© {new Date().getFullYear()} KeralaDraws (KeralaDraws.com). All rights reserved.</p>
+        </div>
+
+        {/* Bottom Legal Links */}
+        <div className="pt-4 flex flex-col sm:flex-row items-center justify-end text-xs text-slate-400 gap-4">
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <Link href="/about" className="hover:text-white transition-colors">
               About

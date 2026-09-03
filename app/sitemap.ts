@@ -3,14 +3,14 @@ import { prisma } from '@/lib/prisma';
 import { SITE_URL } from '@/lib/seo';
 import { getAllNews } from '@/lib/news';
 import { getAllGuides } from '@/lib/guides';
-import { format } from 'date-fns';
+import { formatDateOnly } from '@/lib/date';
 
 export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_URL;
 
-  // 1. Static high-priority landing, tools, and legal pages
+  // 1. Core Evergreen Landing Pages
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
@@ -25,15 +25,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1.0,
     },
     {
-      url: `${baseUrl}/results`,
+      url: `${baseUrl}/kerala-lottery-results`,
       lastModified: new Date(),
       changeFrequency: 'daily',
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/ticket-checker`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/check-ticket`,
+      url: `${baseUrl}/kerala-lottery-results/2026`,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
+      changeFrequency: 'daily',
       priority: 0.85,
     },
     {
@@ -62,76 +68,95 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${baseUrl}/about`,
-      lastModified: new Date(),
+      lastModified: new Date('2026-08-01T00:00:00.000Z'),
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.5,
     },
     {
       url: `${baseUrl}/contact`,
-      lastModified: new Date(),
+      lastModified: new Date('2026-08-01T00:00:00.000Z'),
       changeFrequency: 'monthly',
       priority: 0.5,
     },
     {
       url: `${baseUrl}/privacy-policy`,
-      lastModified: new Date(),
+      lastModified: new Date('2026-08-01T00:00:00.000Z'),
       changeFrequency: 'monthly',
       priority: 0.4,
     },
     {
       url: `${baseUrl}/terms`,
-      lastModified: new Date(),
+      lastModified: new Date('2026-08-01T00:00:00.000Z'),
       changeFrequency: 'monthly',
       priority: 0.4,
     },
     {
       url: `${baseUrl}/disclaimer`,
-      lastModified: new Date(),
+      lastModified: new Date('2026-08-01T00:00:00.000Z'),
       changeFrequency: 'monthly',
       priority: 0.5,
     },
   ];
 
   try {
-    // 2. Dynamic Active Lottery Scheme Pages
+    // 2. Canonical Lottery Scheme Landing Pages (/lottery/[slug])
     const lotteries = await prisma.lottery.findMany({
       where: { active: true },
       select: { slug: true, updatedAt: true },
     });
 
     const lotteryRoutes: MetadataRoute.Sitemap = lotteries.map((l) => ({
-      url: `${baseUrl}/lotteries/${l.slug}`,
+      url: `${baseUrl}/lottery/${l.slug}`,
       lastModified: l.updatedAt,
       changeFrequency: 'daily',
       priority: 0.85,
     }));
 
-    // 3. Dynamic Individual Draw Result Pages
+    // 3. Canonical Date-Based Result Pages (/kerala-lottery-result/YYYY-MM-DD)
     const draws = await prisma.draw.findMany({
       where: { status: 'PUBLISHED' },
       select: {
-        drawNumber: true,
         drawDate: true,
         updatedAt: true,
-        lottery: {
-          select: { slug: true },
-        },
+        verifiedAt: true,
       },
-      take: 500,
       orderBy: { drawDate: 'desc' },
     });
 
-    const drawRoutes: MetadataRoute.Sitemap = draws.map((d) => {
-      const drawNumSlug = d.drawNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      return {
-        url: `${baseUrl}/results/${d.lottery.slug}/${drawNumSlug}`,
-        lastModified: d.updatedAt,
-        changeFrequency: 'weekly',
-        priority: 0.75,
-      };
-    });
+    // Deduplicate dates for canonical date URLs
+    const dateMap = new Map<string, Date>();
+    const monthSet = new Set<string>();
 
-    // 4. Dynamic News Articles
+    for (const d of draws) {
+      const dateStr = formatDateOnly(d.drawDate);
+      const lastmod = d.verifiedAt || d.updatedAt || d.drawDate;
+      const existing = dateMap.get(dateStr);
+      if (!existing || lastmod > existing) {
+        dateMap.set(dateStr, lastmod);
+      }
+
+      const [y, m] = dateStr.split('-');
+      monthSet.add(`${y}/${m}`);
+    }
+
+    const dateResultRoutes: MetadataRoute.Sitemap = Array.from(dateMap.entries()).map(
+      ([dateStr, lastmod]) => ({
+        url: `${baseUrl}/kerala-lottery-result/${dateStr}`,
+        lastModified: lastmod,
+        changeFrequency: 'monthly',
+        priority: 0.8,
+      })
+    );
+
+    // 4. Canonical Monthly Archive Pages (/kerala-lottery-results/YYYY/MM)
+    const monthArchiveRoutes: MetadataRoute.Sitemap = Array.from(monthSet).map((ym) => ({
+      url: `${baseUrl}/kerala-lottery-results/${ym}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.75,
+    }));
+
+    // 5. Dynamic News Articles
     const newsArticles = getAllNews();
     const newsRoutes: MetadataRoute.Sitemap = newsArticles.map((article) => ({
       url: `${baseUrl}/news/${article.slug}`,
@@ -140,7 +165,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
-    // 5. Dynamic Helpful Guides
+    // 6. Dynamic Helpful Guides
     const guides = getAllGuides();
     const guideRoutes: MetadataRoute.Sitemap = guides.map((guide) => ({
       url: `${baseUrl}/guides/${guide.slug}`,
@@ -149,7 +174,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.75,
     }));
 
-    return [...staticRoutes, ...lotteryRoutes, ...drawRoutes, ...newsRoutes, ...guideRoutes];
+    return [
+      ...staticRoutes,
+      ...lotteryRoutes,
+      ...monthArchiveRoutes,
+      ...dateResultRoutes,
+      ...newsRoutes,
+      ...guideRoutes,
+    ];
   } catch (error) {
     console.error('Error generating dynamic sitemap:', error);
     return staticRoutes;

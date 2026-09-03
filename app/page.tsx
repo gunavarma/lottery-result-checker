@@ -14,25 +14,25 @@ import { NewsCard, FeaturedNewsHero } from '@/components/NewsComponents';
 import { Award, Calendar, ArrowRight, ShieldCheck, Search, Newspaper, Bell } from 'lucide-react';
 import { startOfDay, endOfDay } from 'date-fns';
 import { getOrSetCache } from '@/lib/cache';
+import { getTodayIstStr, parseDateOnlyUtc } from '@/lib/date';
+import { StructuredData } from '@/components/StructuredData';
+import { getWebSiteSchema, getOrganizationSchema } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
 async function getHomepageData() {
   return getOrSetCache(
-    'homepage_data',
+    'homepage_data_v2',
     async () => {
       try {
         const now = new Date();
-        const todayStart = startOfDay(now);
-        const todayEnd = endOfDay(now);
+        const todayDate = parseDateOnlyUtc(getTodayIstStr());
 
         const [todayDraw, latestDraws, popularLotteries] = await Promise.all([
           prisma.draw.findFirst({
             where: {
-              drawDate: {
-                gte: todayStart,
-                lte: todayEnd,
-              },
+              drawDate: todayDate,
+              status: 'PUBLISHED',
             },
             include: {
               lottery: true,
@@ -126,6 +126,9 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-10 sm:space-y-14 pb-16">
+      <StructuredData data={getWebSiteSchema()} />
+      <StructuredData data={getOrganizationSchema()} />
+
       {/* 1. Hero Result Terminal (Immediate 1-second Answer) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 space-y-6">
 

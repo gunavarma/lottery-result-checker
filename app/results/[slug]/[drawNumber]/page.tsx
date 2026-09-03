@@ -73,10 +73,12 @@ export async function generateMetadata({
     const title = `${lotteryName} ${draw.drawNumber} Result (${drawDateFormatted}) | KeralaDraws`;
     const description = `Check official ${lotteryName} (${draw.drawNumber}) Kerala lottery result held on ${drawDateFormatted}. 1st Prize Winner: ${firstPrizeTicket || 'Certified'}, consolation prizes, and complete winning tiers.`;
 
+    const dateSlug = draw ? draw.drawDate.toISOString().slice(0, 10) : '';
+
     return constructMetadata({
       title,
       description,
-      path: `/results/${slug}/${drawNumber.toLowerCase()}`,
+      path: dateSlug ? `/kerala-lottery-result/${dateSlug}` : `/results/${slug}/${drawNumber.toLowerCase()}`,
       keywords: [
         `${lotteryName} result`,
         `${draw.drawNumber} result`,

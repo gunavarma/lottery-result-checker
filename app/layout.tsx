@@ -18,10 +18,7 @@ import {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   manifest: '/manifest.json',
-  title: {
-    default: `${SITE_NAME} | Kerala Lottery Results Today, Ticket Checker & Alerts`,
-    template: `%s | ${SITE_NAME}`,
-  },
+  title: `${SITE_NAME} | Kerala Lottery Results Today, Ticket Checker & Alerts`,
   description: SITE_DESCRIPTION,
   keywords: [
     'Kerala Lottery Result Today',
@@ -101,6 +98,8 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
+import { LanguageProvider } from '@/context/LanguageContext';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -134,20 +133,46 @@ export default function RootLayout({
             />
           </>
         )}
+        {/* Google Translate Integration for Malayalam, Tamil, Hindi */}
+        <script
+          type="text/javascript"
+          dangerouslySetInnerHTML={{
+            __html: `
+              function googleTranslateElementInit() {
+                if (window.google && window.google.translate) {
+                  new window.google.translate.TranslateElement({
+                    pageLanguage: 'en',
+                    includedLanguages: 'en,ml,ta,hi',
+                    autoDisplay: false
+                  }, 'google_translate_element');
+                }
+              }
+            `,
+          }}
+        />
+        <script
+          type="text/javascript"
+          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          async
+          defer
+        />
       </head>
       <body className="min-h-screen flex flex-col bg-[#F7F7F4] text-[#17201D] font-sans antialiased selection:bg-[#0B3B32] selection:text-white pb-14 xl:pb-0">
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-[#0B3B32] focus:text-white focus:rounded-xl focus:shadow-xl focus:font-bold focus:text-xs"
-        >
-          Skip to main content
-        </a>
-        <OfflineBanner />
-        <Navbar />
-        <main id="main-content" className="flex-grow">{children}</main>
-        <Footer />
-        <PwaInstallPrompt />
-        <ForegroundNotificationToast />
+        <LanguageProvider>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-[#0B3B32] focus:text-white focus:rounded-xl focus:shadow-xl focus:font-bold focus:text-xs"
+          >
+            Skip to main content
+          </a>
+          <OfflineBanner />
+          <Navbar />
+          <main id="main-content" className="flex-grow">{children}</main>
+          <Footer />
+          <PwaInstallPrompt />
+          <ForegroundNotificationToast />
+          <div id="google_translate_element" style={{ display: 'none' }} />
+        </LanguageProvider>
       </body>
     </html>
   );
