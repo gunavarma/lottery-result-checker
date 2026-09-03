@@ -1,11 +1,12 @@
 // Kerala Lottery Results — Progressive Web App Service Worker
 
-const CACHE_NAME = 'kerala-lottery-v1';
+const CACHE_NAME = 'kerala-lottery-v2';
 const STATIC_ASSETS = [
   '/',
   '/live',
   '/kerala-lottery-result-today',
-  '/check-ticket',
+  '/ticket-checker',
+  '/kerala-lottery-results',
   '/my-lotteries',
   '/manifest.json',
   '/favicon.ico',
@@ -40,28 +41,48 @@ self.addEventListener('activate', (event) => {
 
 // 3. Fetch Event: Network-first for dynamic live data, cache fallback for offline
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
+  const req = event.request;
 
-  // Skip non-GET and API calls from cache interception
-  if (event.request.method !== 'GET' || url.pathname.startsWith('/api/')) {
+  // STRICT GUARD: Ignore any non-HTTP/HTTPS requests (chrome-extension://, moz-extension://, data:, etc.)
+  if (!req.url.startsWith('http://') && !req.url.startsWith('https://')) {
+    return;
+  }
+
+  let url;
+  try {
+    url = new URL(req.url);
+  } catch {
+    return;
+  }
+
+  // Only intercept same-origin first-party GET requests
+  if (req.method !== 'GET' || url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Skip API routes and Next.js dev websocket
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/_next/webpack-hmr')) {
     return;
   }
 
   event.respondWith(
-    fetch(event.request)
+    fetch(req)
       .then((response) => {
-        // Cache successful HTML / CSS / JS responses
-        if (response.status === 200) {
+        // Cache successful first-party responses only
+        if (response && response.status === 200 && response.type === 'basic') {
           const resClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, resClone);
-          });
+          caches
+            .open(CACHE_NAME)
+            .then((cache) => {
+              cache.put(req, resClone).catch(() => {});
+            })
+            .catch(() => {});
         }
         return response;
       })
       .catch(() => {
         // Offline fallback to cached version
-        return caches.match(event.request).then((cached) => {
+        return caches.match(req).then((cached) => {
           return (
             cached ||
             caches.match('/') ||
@@ -79,24 +100,24 @@ self.addEventListener('push', (event) => {
   let data = {
     title: 'Kerala Lottery Result Published',
     body: 'New official winning numbers are now available.',
-    url: '/live',
+    icon: '/logo.svg',
+    badge: '/favicon.ico',
+    url: '/',
   };
 
-  if (event.data) {
-    try {
-      data = event.data.json();
-    } catch {
-      data.body = event.data.text();
+  try {
+    if (event.data) {
+      data = { ...data, ...event.data.json() };
     }
+  } catch (err) {
+    console.error('Error parsing push notification data:', err);
   }
 
   const options = {
     body: data.body,
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    data: {
-      url: data.data?.url || data.url || '/live',
-    },
+    icon: data.icon || '/logo.svg',
+    badge: data.badge || '/favicon.ico',
+    data: { url: data.url || '/' },
     vibrate: [200, 100, 200],
     actions: [
       { action: 'view', title: 'View Result' },
@@ -107,26 +128,24 @@ self.addEventListener('push', (event) => {
   event.waitUntil(self.registration.showNotification(data.title, options));
 });
 
-// 5. Notification Click Event: Navigate to draw result URL
+// 5. Notification Click Event: Navigate directly to published result URL
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  if (event.action === 'close') {
-    return;
-  }
-
-  const targetUrl = event.notification.data?.url || '/live';
+  const targetUrl = event.notification.data?.url || '/';
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url === targetUrl && 'focus' in client) {
-          return client.focus();
+    clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((clientList) => {
+        for (const client of clientList) {
+          if (client.url.includes(self.location.origin) && 'focus' in client) {
+            return client.navigate(targetUrl).then((c) => c.focus());
+          }
         }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
-      }
-    })
+        if (clients.openWindow) {
+          return clients.openWindow(targetUrl);
+        }
+      })
   );
 });

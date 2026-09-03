@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { sendResultPublishedPushNotification } from '../lib/firebase/fcm';
 import { isFirebaseAdminConfigured } from '../lib/firebase/admin';
+import { prisma } from '../lib/prisma';
 
 describe('Firebase Cloud Messaging (FCM) Web Push Architecture', () => {
   const samplePublishedEvent = {
@@ -22,6 +23,7 @@ describe('Firebase Cloud Messaging (FCM) Web Push Architecture', () => {
   });
 
   it('sendResultPublishedPushNotification safely handles missing or dev subscriptions', async () => {
+    vi.spyOn(prisma.pushSubscription, 'findMany').mockResolvedValueOnce([]);
     const summary = await sendResultPublishedPushNotification(samplePublishedEvent);
     expect(summary).toBeDefined();
     expect(typeof summary.sent).toBe('number');

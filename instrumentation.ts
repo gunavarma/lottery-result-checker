@@ -1,10 +1,15 @@
 /**
  * Next.js Server Instrumentation
- * Runs once on server startup to initialize automated background sync workers
+ * Runs once on server startup to initialize automated background sync workers in persistent container runtimes.
+ * On Vercel / Serverless, synchronization runs via Supabase pg_cron and Vercel Cron endpoints.
  */
 export async function register() {
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
-    // Dynamically import to ensure modules only load in server Node runtime
+  // Do NOT run long-running intervals in Vercel / serverless lambdas
+  if (process.env.VERCEL || process.env.NEXT_RUNTIME !== 'nodejs') {
+    return;
+  }
+
+  try {
     const { syncOfficialResults } = await import('./lib/lotis/sync');
     const { syncRealLotteryNews } = await import('./lib/news/news-engine');
 
@@ -16,7 +21,7 @@ export async function register() {
       globalScheduler.__keralaLotterySchedulerInitialized = true;
       console.log('[Scheduler] KeralaDraws background synchronization worker initialized.');
 
-      // 1. Initial background run 15 seconds after boot
+      // 1. Initial background run 30 seconds after boot
       setTimeout(async () => {
         try {
           console.log('[Scheduler] Running initial automated results sync...');
@@ -24,17 +29,17 @@ export async function register() {
         } catch (err) {
           console.warn('[Scheduler] Initial results sync error:', err);
         }
-      }, 15000);
+      }, 30000);
 
-      // 2. Periodic results synchronization every 10 minutes
+      // 2. Periodic results synchronization every 15 minutes
       setInterval(async () => {
         try {
-          console.log('[Scheduler] Running periodic 10-minute automated results sync...');
+          console.log('[Scheduler] Running periodic 15-minute automated results sync...');
           await syncOfficialResults({ maxItemsToSync: 5 });
         } catch (err) {
           console.warn('[Scheduler] Periodic results sync error:', err);
         }
-      }, 10 * 60 * 1000);
+      }, 15 * 60 * 1000);
 
       // 3. Periodic news synchronization every 60 minutes
       setInterval(async () => {
@@ -46,5 +51,7 @@ export async function register() {
         }
       }, 60 * 60 * 1000);
     }
+  } catch (error) {
+    console.warn('[Scheduler] Instrumentation initialization skipped:', error);
   }
 }

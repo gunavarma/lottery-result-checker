@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -6,6 +7,7 @@ import { OfflineBanner } from '@/components/OfflineBanner';
 import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
 import { ForegroundNotificationToast } from '@/components/ForegroundNotificationToast';
 import { StructuredData } from '@/components/StructuredData';
+import { LanguageProvider } from '@/context/LanguageContext';
 import {
   SITE_URL,
   SITE_NAME,
@@ -15,8 +17,15 @@ import {
   getWebSiteSchema,
 } from '@/lib/seo';
 
+let safeMetadataBase: URL;
+try {
+  safeMetadataBase = new URL(SITE_URL);
+} catch {
+  safeMetadataBase = new URL('https://keraladraws.com');
+}
+
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase: safeMetadataBase,
   manifest: '/manifest.json',
   title: `${SITE_NAME} | Kerala Lottery Results Today, Ticket Checker & Alerts`,
   description: SITE_DESCRIPTION,
@@ -98,8 +107,6 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-import { LanguageProvider } from '@/context/LanguageContext';
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -114,48 +121,6 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
         <StructuredData data={[organizationSchema, webSiteSchema]} />
-        {/* Google Analytics optional script */}
-        {gaId && (
-          <>
-            <script
-              async
-              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-            />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${gaId}', { page_path: window.location.pathname });
-                `,
-              }}
-            />
-          </>
-        )}
-        {/* Google Translate Integration for Malayalam, Tamil, Hindi */}
-        <script
-          type="text/javascript"
-          dangerouslySetInnerHTML={{
-            __html: `
-              function googleTranslateElementInit() {
-                if (window.google && window.google.translate) {
-                  new window.google.translate.TranslateElement({
-                    pageLanguage: 'en',
-                    includedLanguages: 'en,ml,ta,hi',
-                    autoDisplay: false
-                  }, 'google_translate_element');
-                }
-              }
-            `,
-          }}
-        />
-        <script
-          type="text/javascript"
-          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-          async
-          defer
-        />
       </head>
       <body className="min-h-screen flex flex-col bg-[#F7F7F4] text-[#17201D] font-sans antialiased selection:bg-[#0B3B32] selection:text-white pb-14 xl:pb-0">
         <LanguageProvider>
@@ -167,11 +132,59 @@ export default function RootLayout({
           </a>
           <OfflineBanner />
           <Navbar />
-          <main id="main-content" className="flex-grow">{children}</main>
+          <main id="main-content" className="flex-grow">
+            {children}
+          </main>
           <Footer />
           <PwaInstallPrompt />
           <ForegroundNotificationToast />
           <div id="google_translate_element" style={{ display: 'none' }} />
+
+          {/* Optional Google Analytics Script */}
+          {gaId && (
+            <>
+              <Script
+                strategy="afterInteractive"
+                src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              />
+              <Script
+                id="ga-init"
+                strategy="afterInteractive"
+                dangerouslySetInnerHTML={{
+                  __html: `
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', '${gaId}', { page_path: window.location.pathname });
+                  `,
+                }}
+              />
+            </>
+          )}
+
+          {/* Google Translate Integration for Malayalam, Tamil, Hindi */}
+          <Script
+            id="google-translate-init"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                function googleTranslateElementInit() {
+                  if (window.google && window.google.translate) {
+                    new window.google.translate.TranslateElement({
+                      pageLanguage: 'en',
+                      includedLanguages: 'en,ml,ta,hi',
+                      autoDisplay: false
+                    }, 'google_translate_element');
+                  }
+                }
+              `,
+            }}
+          />
+          <Script
+            id="google-translate-script"
+            strategy="afterInteractive"
+            src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          />
         </LanguageProvider>
       </body>
     </html>

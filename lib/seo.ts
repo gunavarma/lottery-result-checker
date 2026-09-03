@@ -1,6 +1,15 @@
 import type { Metadata } from 'next';
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com';
+function getSafeSiteUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (!envUrl) return 'https://keraladraws.com';
+  if (envUrl.startsWith('http://') || envUrl.startsWith('https://')) {
+    return envUrl.replace(/\/+$/, '');
+  }
+  return `https://${envUrl}`.replace(/\/+$/, '');
+}
+
+export const SITE_URL = getSafeSiteUrl();
 export const SITE_NAME = 'KeralaDraws';
 export const SITE_TAGLINE = 'Kerala Lottery Results, Ticket Checker & Alerts';
 export const SITE_DESCRIPTION =
