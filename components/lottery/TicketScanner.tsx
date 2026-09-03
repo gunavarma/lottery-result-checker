@@ -12,6 +12,9 @@ import {
   Trash2,
   Check,
   RefreshCw,
+  Upload,
+  Lock,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { parseTicketCode, ParsedTicket } from '@/lib/lottery/normalize-ticket';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
@@ -190,39 +193,30 @@ export function TicketScanner({
         // Frame parsed with no barcode found — keep quiet for performance
       };
 
-      // Determine camera device ID or facingMode
-      let cameraConfig: any = { facingMode: 'environment' };
       try {
-        const devices = await Html5Qrcode.getCameras();
-        if (devices && devices.length > 0) {
-          const rearCam = devices.find((d) =>
-            /back|rear|environment/i.test(d.label)
-          );
-          cameraConfig = rearCam ? rearCam.id : devices[0].id;
+        // Start directly with environment (rear) camera
+        await html5QrCode.start({ facingMode: 'environment' }, config, onScanSuccess, onScanError);
+      } catch (envErr: any) {
+        // If environment camera is not available (e.g. laptops, webcams with only front/user camera)
+        console.warn('Environment camera unavailable, falling back to front/default camera...', envErr);
+        try {
+          await html5QrCode.start({ facingMode: 'user' }, config, onScanSuccess, onScanError);
+        } catch (userErr: any) {
+          throw userErr;
         }
-      } catch {
-        // If getCameras fails before permission, fallback to facingMode string
-        cameraConfig = { facingMode: 'environment' };
-      }
-
-      try {
-        await html5QrCode.start(cameraConfig, config, onScanSuccess, onScanError);
-      } catch (firstErr) {
-        // If environment/rear camera failed (e.g. on laptop with only front camera), fallback to user camera
-        console.warn('Initial camera start failed, attempting user camera fallback...', firstErr);
-        await html5QrCode.start({ facingMode: 'user' }, config, onScanSuccess, onScanError);
       }
 
       setCameraState('SCANNING');
     } catch (err: any) {
       console.error('Camera initialization failed:', err);
       setCameraState('ERROR');
-      if (err?.name === 'NotAllowedError' || err?.message?.includes('Permission denied')) {
-        setCameraError('Camera permission was denied. Please allow camera access in browser settings.');
-      } else if (err?.name === 'NotFoundError') {
-        setCameraError('No camera detected on this device.');
+      const errStr = String(err?.message || err);
+      if (err?.name === 'NotAllowedError' || errStr.includes('Permission denied') || errStr.includes('NotAllowedError')) {
+        setCameraError('Camera access was denied by browser or system settings.');
+      } else if (err?.name === 'NotFoundError' || errStr.includes('Requested device not found')) {
+        setCameraError('No camera found on this device.');
       } else {
-        setCameraError(err?.message || 'Unable to start camera scanner.');
+        setCameraError(errStr || 'Unable to start camera scanner.');
       }
     }
   }, [open, activeTab, handleDetectedCode, stopCamera]);
@@ -275,6 +269,47 @@ export function TicketScanner({
   // Remove individual ticket
   const removeTicket = (id: string) => {
     setScannedTickets((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Direct user-gesture permission request
+  const requestPermissionDirectly = async () => {
+    try {
+      setCameraState('STARTING');
+      setCameraError(null);
+      // Trigger native browser permission prompt on explicit user click
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((track) => track.stop());
+      await startCamera();
+    } catch (err: any) {
+      console.error('Explicit permission request failed:', err);
+      setCameraState('ERROR');
+      const errStr = String(err?.message || err);
+      setCameraError(
+        errStr.includes('Permission denied') || errStr.includes('NotAllowedError')
+          ? 'Permission was denied. Please click the 🔒 lock/camera icon in your address bar to allow Camera access.'
+          : errStr
+      );
+    }
+  };
+
+  // Upload/Snap Photo Scan fallback
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      showToast('Scanning ticket photo...', 'info');
+      const tempScanner = scannerRef.current || new Html5Qrcode(containerId, { verbose: false });
+      const decoded = await tempScanner.scanFile(file, false);
+      handleDetectedCode(decoded, 'barcode');
+    } catch (err) {
+      console.warn('Scan file failed:', err);
+      showToast('No readable barcode or QR code found in photo', 'warning');
+    } finally {
+      if (e.target) e.target.value = '';
+    }
   };
 
   // Add 4-digit manual slip ticket
@@ -383,26 +418,56 @@ export function TicketScanner({
 
                 {/* Camera Error Fallback View */}
                 {(cameraState === 'ERROR' || cameraState === 'UNSUPPORTED') && (
-                  <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center gap-3 p-6 text-center">
-                    <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
-                      <AlertCircle className="w-6 h-6" />
+                  <div className="absolute inset-0 bg-[#10201D] flex flex-col items-center justify-center p-5 text-center overflow-y-auto space-y-3 z-20">
+                    <div className="w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
+                      <AlertCircle className="w-5 h-5" />
                     </div>
-                    <div className="space-y-1 max-w-xs">
-                      <p className="text-xs font-bold text-white">Camera Access Required</p>
+
+                    <div className="space-y-1 max-w-sm">
+                      <p className="text-xs font-black text-white uppercase tracking-wider">
+                        Camera Access Blocked or Denied
+                      </p>
                       <p className="text-[11px] text-slate-300 leading-relaxed">
-                        {cameraError || 'Camera could not be accessed. You can still enter ticket numbers manually.'}
+                        {cameraError || 'Camera could not be accessed on this device.'}
                       </p>
                     </div>
-                    <div className="flex gap-2 pt-2">
+
+                    {/* Step by step browser unlocking helper */}
+                    <div className="bg-black/50 border border-white/10 rounded-xl p-3 text-[10px] text-left text-slate-300 max-w-xs space-y-1">
+                      <p className="font-bold text-white flex items-center gap-1">
+                        <Lock className="w-3 h-3 text-[#C8A45D]" />
+                        <span>How to enable in browser:</span>
+                      </p>
+                      <ol className="list-decimal list-inside space-y-0.5 text-slate-300">
+                        <li>Click the <strong>🔒 lock / camera icon</strong> in the browser address bar</li>
+                        <li>Toggle <strong>Camera</strong> to <strong>Allow</strong></li>
+                        <li>Mac users: Check System Settings → Privacy & Security → Camera</li>
+                      </ol>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
                       <button
-                        onClick={startCamera}
-                        className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-colors cursor-pointer"
+                        type="button"
+                        onClick={requestPermissionDirectly}
+                        className="px-4 py-2 rounded-xl bg-[#16845B] hover:bg-[#16845B]/90 text-xs font-bold text-white transition-colors cursor-pointer shadow-xs"
                       >
-                        Retry Camera
+                        Request Camera Access
                       </button>
+
                       <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload Ticket Photo</span>
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={() => setActiveTab('slip')}
-                        className="px-3.5 py-1.5 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-xs font-bold text-white transition-colors cursor-pointer"
+                        className="px-4 py-2 rounded-xl bg-black/40 border border-white/15 hover:bg-black/60 text-xs font-bold text-slate-300 hover:text-white transition-colors cursor-pointer"
                       >
                         Use 4-digit slip
                       </button>
@@ -411,9 +476,27 @@ export function TicketScanner({
                 )}
               </div>
 
-              <p className="text-[11px] text-center text-slate-300">
-                Align the barcode or QR code inside the green frame. Scan as many tickets as you want.
-              </p>
+              {/* Hidden File Input for Image/Photo Scanning */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+
+              <div className="flex items-center justify-between text-[11px] text-slate-300 px-1">
+                <span>Align the barcode or QR code inside the green frame.</span>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="font-bold text-[#C8A45D] hover:underline inline-flex items-center gap-1 cursor-pointer"
+                >
+                  <Upload className="w-3 h-3" />
+                  <span>Snap / Upload Photo</span>
+                </button>
+              </div>
             </div>
           )}
 
