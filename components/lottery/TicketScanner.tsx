@@ -180,18 +180,38 @@ export function TicketScanner({
         aspectRatio: 1.333334,
       };
 
-      await html5QrCode.start(
-        { facingMode: { ideal: 'environment' } },
-        config,
-        (decodedText, result) => {
-          const formatName = result?.result?.format?.formatName || 'BARCODE';
-          const type = formatName.includes('QR') ? 'qr' : 'barcode';
-          handleDetectedCode(decodedText, type);
-        },
-        () => {
-          // Frame parsed with no barcode found — keep quiet for performance
+      const onScanSuccess = (decodedText: string, result: any) => {
+        const formatName = result?.result?.format?.formatName || 'BARCODE';
+        const type = formatName.includes('QR') ? 'qr' : 'barcode';
+        handleDetectedCode(decodedText, type);
+      };
+
+      const onScanError = () => {
+        // Frame parsed with no barcode found — keep quiet for performance
+      };
+
+      // Determine camera device ID or facingMode
+      let cameraConfig: any = { facingMode: 'environment' };
+      try {
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          const rearCam = devices.find((d) =>
+            /back|rear|environment/i.test(d.label)
+          );
+          cameraConfig = rearCam ? rearCam.id : devices[0].id;
         }
-      );
+      } catch {
+        // If getCameras fails before permission, fallback to facingMode string
+        cameraConfig = { facingMode: 'environment' };
+      }
+
+      try {
+        await html5QrCode.start(cameraConfig, config, onScanSuccess, onScanError);
+      } catch (firstErr) {
+        // If environment/rear camera failed (e.g. on laptop with only front camera), fallback to user camera
+        console.warn('Initial camera start failed, attempting user camera fallback...', firstErr);
+        await html5QrCode.start({ facingMode: 'user' }, config, onScanSuccess, onScanError);
+      }
 
       setCameraState('SCANNING');
     } catch (err: any) {
@@ -200,7 +220,7 @@ export function TicketScanner({
       if (err?.name === 'NotAllowedError' || err?.message?.includes('Permission denied')) {
         setCameraError('Camera permission was denied. Please allow camera access in browser settings.');
       } else if (err?.name === 'NotFoundError') {
-        setCameraError('No rear camera detected on this device.');
+        setCameraError('No camera detected on this device.');
       } else {
         setCameraError(err?.message || 'Unable to start camera scanner.');
       }
