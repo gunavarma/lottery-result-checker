@@ -8,7 +8,7 @@ const TicketCheckSchema = z.object({
   lotteryId: z.string().optional(),
   drawId: z.string().optional(),
   drawNumber: z.string().optional(),
-  tickets: z.array(z.string().min(3).max(20)).min(1).max(25),
+  tickets: z.array(z.string().min(3).max(25)).min(1).max(100),
 });
 
 export async function checkTicketsHandler(params: {
