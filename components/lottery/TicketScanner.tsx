@@ -40,7 +40,7 @@ export function TicketScanner({
   onTicketsScanned,
   initialTickets = [],
 }: TicketScannerProps) {
-  const [activeTab, setActiveTab] = useState<'camera' | 'slip'>('camera');
+  const [activeTab, setActiveTab] = useState<'camera' | 'slip' | 'upload'>('camera');
   const [scannedTickets, setScannedTickets] = useState<ScannedTicket[]>(initialTickets);
   const [fourDigitInput, setFourDigitInput] = useState('');
   const [cameraState, setCameraState] = useState<
@@ -193,16 +193,18 @@ export function TicketScanner({
         // Frame parsed with no barcode found — keep quiet for performance
       };
 
+      const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const primaryFacing = isMobile ? 'environment' : 'user';
+
       try {
-        // Start directly with environment (rear) camera
-        await html5QrCode.start({ facingMode: 'environment' }, config, onScanSuccess, onScanError);
-      } catch (envErr: any) {
-        // If environment camera is not available (e.g. laptops, webcams with only front/user camera)
-        console.warn('Environment camera unavailable, falling back to front/default camera...', envErr);
+        await html5QrCode.start({ facingMode: primaryFacing }, config, onScanSuccess, onScanError);
+      } catch (firstErr: any) {
+        console.warn(`Camera start with facingMode "${primaryFacing}" failed, trying alternate...`, firstErr);
+        const altFacing = primaryFacing === 'environment' ? 'user' : 'environment';
         try {
-          await html5QrCode.start({ facingMode: 'user' }, config, onScanSuccess, onScanError);
-        } catch (userErr: any) {
-          throw userErr;
+          await html5QrCode.start({ facingMode: altFacing }, config, onScanSuccess, onScanError);
+        } catch (secondErr: any) {
+          throw secondErr;
         }
       }
 
@@ -357,7 +359,7 @@ export function TicketScanner({
           <div className="flex p-1 bg-black/40 rounded-xl border border-white/10 text-xs font-bold">
             <button
               onClick={() => setActiveTab('camera')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-all cursor-pointer ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all cursor-pointer ${
                 activeTab === 'camera'
                   ? 'bg-[#0B3B32] text-white shadow-xs'
                   : 'text-slate-400 hover:text-white'
@@ -368,7 +370,7 @@ export function TicketScanner({
             </button>
             <button
               onClick={() => setActiveTab('slip')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-all cursor-pointer ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all cursor-pointer ${
                 activeTab === 'slip'
                   ? 'bg-[#0B3B32] text-white shadow-xs'
                   : 'text-slate-400 hover:text-white'
@@ -376,6 +378,17 @@ export function TicketScanner({
             >
               <Hash className="w-3.5 h-3.5" />
               <span>4-digit slip</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('upload')}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all cursor-pointer ${
+                activeTab === 'upload'
+                  ? 'bg-[#0B3B32] text-white shadow-xs'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>Upload Photo</span>
             </button>
           </div>
         </div>
@@ -545,6 +558,41 @@ export function TicketScanner({
                 <CheckCircle2 className="w-4 h-4 text-[#16845B] shrink-0 mt-0.5" />
                 <span>
                   Enter 4 digits and tap <strong>Add</strong> or hit <strong>Enter</strong>. You can add multiple tickets before tapping Done.
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: Upload / Snap Ticket Photo */}
+          {activeTab === 'upload' && (
+            <div className="space-y-4 py-2">
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="bg-black/30 border-2 border-dashed border-white/20 hover:border-[#C8A45D] rounded-2xl p-8 text-center space-y-3 cursor-pointer transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-[#16845B]/20 border border-[#16845B]/40 flex items-center justify-center text-[#74E3B7] mx-auto">
+                  <Upload className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-bold text-white">
+                    Tap to Choose Ticket Image or Snap Photo
+                  </p>
+                  <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
+                    Does not require browser camera streaming permissions. Automatically decodes ticket barcodes and QR codes.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Browse or Take Photo
+                </button>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-[11px] text-slate-300 flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#16845B] shrink-0 mt-0.5" />
+                <span>
+                  You can upload or photograph multiple tickets one after another. Each recognized ticket is automatically added to your batch.
                 </span>
               </div>
             </div>
