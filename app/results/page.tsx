@@ -15,6 +15,7 @@ import {
   Search,
 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
+import { getOrSetCache } from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,43 +35,49 @@ export const metadata: Metadata = constructMetadata({
 });
 
 async function getResultsHubData() {
-  try {
-    const [latestDraws, lotteries] = await Promise.all([
-      prisma.draw.findMany({
-        where: { status: 'PUBLISHED' },
-        orderBy: { drawDate: 'desc' },
-        take: 25,
-        include: {
-          lottery: true,
-          prizes: {
-            orderBy: { orderIndex: 'asc' },
-            take: 3,
+  return getOrSetCache(
+    'results_hub_data',
+    async () => {
+      try {
+        const [latestDraws, lotteries] = await Promise.all([
+          prisma.draw.findMany({
+            where: { status: 'PUBLISHED' },
+            orderBy: { drawDate: 'desc' },
+            take: 25,
             include: {
-              winningNumbers: { take: 2 },
+              lottery: true,
+              prizes: {
+                orderBy: { orderIndex: 'asc' },
+                take: 3,
+                include: {
+                  winningNumbers: { take: 2 },
+                },
+              },
             },
-          },
-        },
-      }),
-      prisma.lottery.findMany({
-        where: { active: true },
-        orderBy: [
-          { isBumper: 'asc' },
-          { name: 'asc' },
-        ],
-      }),
-    ]);
+          }),
+          prisma.lottery.findMany({
+            where: { active: true },
+            orderBy: [
+              { isBumper: 'asc' },
+              { name: 'asc' },
+            ],
+          }),
+        ]);
 
-    return {
-      latestDraws: serializeData(latestDraws),
-      lotteries: serializeData(lotteries),
-    };
-  } catch (error) {
-    console.error('Error in getResultsHubData:', error);
-    return {
-      latestDraws: [],
-      lotteries: [],
-    };
-  }
+        return {
+          latestDraws: serializeData(latestDraws),
+          lotteries: serializeData(lotteries),
+        };
+      } catch (error) {
+        console.error('Error in getResultsHubData:', error);
+        return {
+          latestDraws: [],
+          lotteries: [],
+        };
+      }
+    },
+    { ttlMs: 60_000, swrMs: 300_000 }
+  );
 }
 
 export default async function ResultsHubPage() {

@@ -19,6 +19,8 @@ import {
 import { formatINR } from '@/lib/prisma';
 import { format } from 'date-fns';
 import { useLanguage } from '@/context/LanguageContext';
+import { useLotteryResults } from '@/hooks/queries/useLotteryResults';
+import { SyncIndicator } from '@/components/SyncIndicator';
 
 interface HeroTodayCardProps {
   initialData?: any;
@@ -26,9 +28,9 @@ interface HeroTodayCardProps {
 
 export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
   const { t } = useLanguage();
-  const [data, setData] = useState<any>(initialData);
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const { data: queryData, isFetching, error } = useLotteryResults({ initialData });
+  const data = queryData || initialData;
+  const errorMsg = error ? 'Temporarily unable to connect to results feed.' : null;
 
   // Time remaining in seconds until 3:00:00 PM IST
   const [secondsLeft, setSecondsLeft] = useState<number>(() => {
@@ -40,6 +42,13 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
   const draw = data?.todayDraw;
   const scheduledLottery = data?.scheduledLottery || draw?.lottery;
   const latestDraw = data?.latestDraw;
+
+  // Sync secondsLeft when fresh queryData arrives
+  useEffect(() => {
+    if (typeof queryData?.secondsUntilDraw === 'number') {
+      setSecondsLeft(queryData.secondsUntilDraw);
+    }
+  }, [queryData?.secondsUntilDraw]);
 
   // 1. SECOND-BY-SECOND COUNTDOWN TIMER (IST Based)
   useEffect(() => {
@@ -56,50 +65,6 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
 
     return () => clearInterval(timer);
   }, [isTodayAvailable, liveStatus]);
-
-  // 2. AUTOMATIC POLLING & STATE TRANSITIONS
-  useEffect(() => {
-    // Stop polling if today's result is published
-    if (isTodayAvailable || liveStatus === 'PUBLISHED') return;
-
-    const fetchLatestToday = async () => {
-      try {
-        setLoading(true);
-        setErrorMsg(null);
-        const res = await fetch('/api/results/today', { cache: 'no-store' });
-        const json = await res.json();
-        if (json.success) {
-          setData(json);
-          if (typeof json.secondsUntilDraw === 'number') {
-            setSecondsLeft(json.secondsUntilDraw);
-          }
-        } else {
-          if (liveStatus === 'CHECKING') {
-            setErrorMsg('Unable to retrieve latest draw proceedings.');
-          }
-        }
-      } catch {
-        if (liveStatus === 'CHECKING') {
-          setErrorMsg('Network error checking live draw records.');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // When countdown hits zero or liveStatus is CHECKING: Poll frequently every 12 seconds
-    // Before countdown reaches zero: Poll gently every 60 seconds
-    const pollIntervalMs = (secondsLeft === 0 || liveStatus === 'CHECKING') ? 12000 : 60000;
-
-    const interval = setInterval(fetchLatestToday, pollIntervalMs);
-
-    // If countdown just hit zero, do an immediate check
-    if (secondsLeft === 0 && liveStatus !== 'CHECKING') {
-      fetchLatestToday();
-    }
-
-    return () => clearInterval(interval);
-  }, [secondsLeft, liveStatus, isTodayAvailable]);
 
   // Format countdown into Hours, Minutes, Seconds
   const hours = Math.floor(secondsLeft / 3600);
@@ -126,9 +91,12 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
         {/* Top Header & Status */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div className="space-y-1">
-            <span className="text-[11px] font-bold text-[#C8A45D] uppercase tracking-wider block font-tabular">
-              {isTodayAvailable ? "TODAY'S VERIFIED RESULT" : "TODAY'S SCHEDULED DRAW"}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-[#C8A45D] uppercase tracking-wider block font-tabular">
+                {isTodayAvailable ? "TODAY'S VERIFIED RESULT" : "TODAY'S SCHEDULED DRAW"}
+              </span>
+              <SyncIndicator isFetching={isFetching} compact className="text-white bg-white/10 border-white/20" />
+            </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               {scheduledLottery?.name || 'Kerala State Lottery'}
             </h2>

@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PrizeTable } from '@/components/PrizeTable';
 import { OfficialSourceBadge } from '@/components/OfficialSourceBadge';
 import { ResultShareBar } from '@/components/ResultShareBar';
 import { NotificationModal } from '@/components/NotificationModal';
+import { SyncIndicator } from '@/components/SyncIndicator';
+import { useLiveResults } from '@/hooks/queries/useLiveResults';
 import { formatINR } from '@/lib/prisma';
 import {
   Clock,
@@ -23,58 +25,18 @@ import {
 } from 'lucide-react';
 
 export default function LiveDrawPage() {
-  const [liveData, setLiveData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { data: liveData, isLoading, isFetching, refetch } = useLiveResults();
   const [countdown, setCountdown] = useState<number>(0);
   const [showNotifyModal, setShowNotifyModal] = useState(false);
-  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
-  const fetchLiveStatus = useCallback(async (isManual = false) => {
-    if (isManual) setRefreshing(true);
-    try {
-      const res = await fetch('/api/live', { cache: 'no-store' });
-      if (res.ok) {
-        const json = await res.json();
-        setLiveData(json);
-        if (json.countdownSeconds) {
-          setCountdown(json.countdownSeconds);
-        }
-        setLastRefreshed(new Date());
-      }
-    } catch (err) {
-      console.error('Failed to fetch live draw data:', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  // Initial Load
+  // Sync local countdown with server countdown seconds
   useEffect(() => {
-    fetchLiveStatus();
-  }, [fetchLiveStatus]);
-
-  // Dynamic Polling Interval: 30s during active draw period, 90s otherwise
-  useEffect(() => {
-    if (!liveData) return;
-
-    const isLiveHours = liveData.status === 'CHECKING' || liveData.status === 'RESULT_PENDING';
-    const intervalMs = isLiveHours ? 30000 : 90000;
-
-    // Stop frequent polling once result is officially published
-    if (liveData.status === 'PUBLISHED') {
-      return;
+    if (liveData?.countdownSeconds !== undefined) {
+      setCountdown(liveData.countdownSeconds);
     }
+  }, [liveData?.countdownSeconds]);
 
-    const interval = setInterval(() => {
-      fetchLiveStatus();
-    }, intervalMs);
-
-    return () => clearInterval(interval);
-  }, [liveData, fetchLiveStatus]);
-
-  // Local Countdown Ticker
+  // Local 1-second countdown ticker
   useEffect(() => {
     if (countdown <= 0) return;
     const timer = setInterval(() => {
@@ -105,6 +67,17 @@ export default function LiveDrawPage() {
     if (typeof window !== 'undefined') window.print();
   };
 
+  // 1. Initial Skeleton only if no data exists at all on first cold load
+  if (isLoading && !liveData) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8 animate-pulse">
+        <div className="h-6 w-48 bg-[#E2E7E3] rounded-lg" />
+        <div className="h-28 bg-[#E2E7E3] rounded-3xl" />
+        <div className="h-96 bg-[#E2E7E3] rounded-3xl" />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8">
       <Breadcrumbs
@@ -122,37 +95,38 @@ export default function LiveDrawPage() {
               <span className="w-2 h-2 rounded-full bg-[#16845B]" />
               <span>LIVE RESULT SYNCHRONIZATION</span>
             </span>
+            <SyncIndicator isFetching={isFetching} />
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-[#17201D] mt-2 tracking-tight">
             Kerala Lottery Live Results
           </h1>
           <p className="text-xs sm:text-sm text-[#68736E] mt-1">
-            Real-time status monitoring, draw schedule countdown, and verified winning numbers directly from LOTIS.
+            Real-time status monitoring, draw schedule countdown, and verified winning numbers directly from database.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowNotifyModal(true)}
-            className="px-4 py-2.5 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-xs font-tabular"
+            className="px-4 py-2.5 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-xs font-tabular cursor-pointer"
           >
             <Bell className="w-4 h-4 text-[#C8A45D]" />
             <span>Notify Me</span>
           </button>
 
           <button
-            onClick={() => fetchLiveStatus(true)}
-            disabled={refreshing}
-            className="p-2.5 rounded-xl bg-white hover:bg-[#F7F7F4] text-[#17201D] border border-[#E2E7E3] transition-colors"
-            title="Refresh live status"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="p-2.5 rounded-xl bg-white hover:bg-[#F7F7F4] text-[#17201D] border border-[#E2E7E3] transition-colors cursor-pointer"
+            title="Refresh database records"
           >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-[#0B3B32]' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-[#0B3B32]' : ''}`} />
           </button>
 
           {status === 'PUBLISHED' && (
             <button
               onClick={handlePrint}
-              className="p-2.5 rounded-xl bg-white hover:bg-[#F7F7F4] text-[#17201D] border border-[#E2E7E3] transition-colors hidden sm:inline-flex"
+              className="p-2.5 rounded-xl bg-white hover:bg-[#F7F7F4] text-[#17201D] border border-[#E2E7E3] transition-colors hidden sm:inline-flex cursor-pointer"
               title="Print official result"
             >
               <Printer className="w-4 h-4" />
@@ -191,9 +165,9 @@ export default function LiveDrawPage() {
           </div>
 
           <div className="text-right text-xs text-[#68736E]">
-            <span className="block text-[10px] uppercase font-bold tracking-wide">Last Check</span>
+            <span className="block text-[10px] uppercase font-bold tracking-wide">Server Time (IST)</span>
             <span className="font-mono font-bold text-[#17201D] font-tabular">
-              {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              {liveData?.serverTimeIst || '3:00 PM IST'}
             </span>
           </div>
         </div>
@@ -203,7 +177,7 @@ export default function LiveDrawPage() {
           <div>
             <span className="text-xs font-bold text-[#0B3B32] uppercase font-tabular">Today's Lottery</span>
             <h3 className="text-2xl font-extrabold text-[#17201D] mt-0.5">
-              {draw?.lottery?.name || liveData?.scheduledScheme?.name || 'Kerala State Lottery'}
+              {draw?.lottery?.name || liveData?.scheduledLottery?.name || 'Kerala State Lottery'}
             </h3>
             <p className="text-xs text-[#68736E] mt-1">
               Draw Schedule: <strong>3:00 PM IST</strong> at Gorky Bhavan, Thiruvananthapuram.
@@ -214,13 +188,13 @@ export default function LiveDrawPage() {
             <div className="bg-white px-3.5 py-2 rounded-xl border border-[#E2E7E3]">
               <span className="text-[#68736E] block text-[10px] uppercase font-bold">Ticket Price</span>
               <span className="font-black text-[#17201D] text-sm font-tabular">
-                ₹{draw?.lottery?.ticketPrice || liveData?.scheduledScheme?.ticketPrice || 40}
+                ₹{draw?.lottery?.ticketPrice || liveData?.scheduledLottery?.ticketPrice || 40}
               </span>
             </div>
             <div className="bg-white px-3.5 py-2 rounded-xl border border-[#E2E7E3]">
               <span className="text-[#68736E] block text-[10px] uppercase font-bold">Draw Code</span>
               <span className="font-mono font-bold text-[#0B3B32] text-sm font-tabular">
-                {draw?.drawNumber || liveData?.scheduledScheme?.code || 'KL-TODAY'}
+                {draw?.drawNumber || liveData?.scheduledLottery?.code || 'KL-TODAY'}
               </span>
             </div>
           </div>

@@ -8,6 +8,7 @@ import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
 import { ForegroundNotificationToast } from '@/components/ForegroundNotificationToast';
 import { StructuredData } from '@/components/StructuredData';
 import { LanguageProvider } from '@/context/LanguageContext';
+import { QueryProvider } from '@/components/providers/QueryProvider';
 import {
   SITE_URL,
   SITE_NAME,
@@ -124,67 +125,69 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-[#F7F7F4] text-[#17201D] font-sans antialiased selection:bg-[#0B3B32] selection:text-white pb-14 xl:pb-0">
         <LanguageProvider>
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-[#0B3B32] focus:text-white focus:rounded-xl focus:shadow-xl focus:font-bold focus:text-xs"
-          >
-            Skip to main content
-          </a>
-          <OfflineBanner />
-          <Navbar />
-          <main id="main-content" className="flex-grow">
-            {children}
-          </main>
-          <Footer />
-          <PwaInstallPrompt />
-          <ForegroundNotificationToast />
-          <div id="google_translate_element" style={{ display: 'none' }} />
+          <QueryProvider>
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-[#0B3B32] focus:text-white focus:rounded-xl focus:shadow-xl focus:font-bold focus:text-xs"
+            >
+              Skip to main content
+            </a>
+            <OfflineBanner />
+            <Navbar />
+            <main id="main-content" className="flex-grow">
+              {children}
+            </main>
+            <Footer />
+            <PwaInstallPrompt />
+            <ForegroundNotificationToast />
+            <div id="google_translate_element" style={{ display: 'none' }} />
 
-          {/* Optional Google Analytics Script */}
-          {gaId && (
-            <>
-              <Script
-                strategy="afterInteractive"
-                src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-              />
-              <Script
-                id="ga-init"
-                strategy="afterInteractive"
-                dangerouslySetInnerHTML={{
-                  __html: `
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){dataLayer.push(arguments);}
-                    gtag('js', new Date());
-                    gtag('config', '${gaId}', { page_path: window.location.pathname });
-                  `,
-                }}
-              />
-            </>
-          )}
+            {/* Optional Google Analytics Script */}
+            {gaId && (
+              <>
+                <Script
+                  strategy="afterInteractive"
+                  src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+                />
+                <Script
+                  id="ga-init"
+                  strategy="afterInteractive"
+                  dangerouslySetInnerHTML={{
+                    __html: `
+                      window.dataLayer = window.dataLayer || [];
+                      function gtag(){dataLayer.push(arguments);}
+                      gtag('js', new Date());
+                      gtag('config', '${gaId}', { page_path: window.location.pathname });
+                    `,
+                  }}
+                />
+              </>
+            )}
 
-          {/* Google Translate Integration for Malayalam, Tamil, Hindi */}
-          <Script
-            id="google-translate-init"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-                function googleTranslateElementInit() {
-                  if (window.google && window.google.translate) {
-                    new window.google.translate.TranslateElement({
-                      pageLanguage: 'en',
-                      includedLanguages: 'en,ml,ta,hi',
-                      autoDisplay: false
-                    }, 'google_translate_element');
+            {/* Google Translate Integration for Malayalam, Tamil, Hindi */}
+            <Script
+              id="google-translate-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  function googleTranslateElementInit() {
+                    if (window.google && window.google.translate) {
+                      new window.google.translate.TranslateElement({
+                        pageLanguage: 'en',
+                        includedLanguages: 'en,ml,ta,hi',
+                        autoDisplay: false
+                      }, 'google_translate_element');
+                    }
                   }
-                }
-              `,
-            }}
-          />
-          <Script
-            id="google-translate-script"
-            strategy="afterInteractive"
-            src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-          />
+                `,
+              }}
+            />
+            <Script
+              id="google-translate-script"
+              strategy="afterInteractive"
+              src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+            />
+          </QueryProvider>
         </LanguageProvider>
       </body>
     </html>
