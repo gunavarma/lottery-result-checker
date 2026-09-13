@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Clock, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Clock, RefreshCw, CheckCircle2, AlertCircle, Radio } from 'lucide-react';
 
 interface ResultStatusBadgeProps {
-  status: 'PUBLISHED' | 'CHECKING' | 'WAITING' | 'FAILED';
+  status: 'PUBLISHED' | 'PROVISIONAL' | 'CHECKING' | 'WAITING' | 'FAILED';
   timeText?: string;
   theme?: 'dark' | 'light';
   size?: 'sm' | 'md';
@@ -32,6 +32,24 @@ export function ResultStatusBadge({
         >
           <span className="w-1.5 h-1.5 rounded-full bg-[#6CE5B4] animate-pulse" />
           <span>RESULT PUBLISHED</span>
+          {timeText && <span className="opacity-80 font-normal ml-1">({timeText})</span>}
+        </span>
+      );
+
+    case 'PROVISIONAL':
+      return (
+        <span
+          className={`inline-flex items-center gap-1.5 font-bold uppercase tracking-wider font-tabular ${
+            isSm ? 'text-[10px] px-2 py-0.5' : 'text-xs px-2.5 py-1'
+          } rounded-none border ${
+            theme === 'dark'
+              ? 'bg-[#C59B27]/20 text-[#F2CF66] border-[#C59B27]/40'
+              : 'bg-[#C59B27]/15 text-[#8F6D14] border-[#C59B27]/30'
+          }`}
+          title="Live numbers from an unofficial source; awaiting the official gazette"
+        >
+          <Radio className="w-3 h-3 text-[#F2CF66]" />
+          <span>LIVE • UNOFFICIAL</span>
           {timeText && <span className="opacity-80 font-normal ml-1">({timeText})</span>}
         </span>
       );

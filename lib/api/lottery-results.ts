@@ -1,10 +1,29 @@
 import { LotteryHistoryParams } from '../queries/keys';
 
+export interface LiveCompleteness {
+  tierCount: number;
+  expectedTierCount: number;
+  isComplete: boolean;
+}
+
 export interface LiveDrawResponse {
   success: boolean;
-  status: 'SCHEDULED' | 'CHECKING' | 'RESULT_PENDING' | 'PUBLISHED' | 'SOURCE_UNAVAILABLE' | 'SYNC_ERROR';
+  status:
+    | 'SCHEDULED'
+    | 'CHECKING'
+    | 'RESULT_PENDING'
+    | 'PUBLISHED'
+    | 'PROVISIONAL'
+    | 'SOURCE_UNAVAILABLE'
+    | 'SYNC_ERROR';
   statusMessage: string;
   isPublished: boolean;
+  /** True when the numbers come from the unofficial live source and await the gazette. */
+  isProvisional?: boolean;
+  verificationLevel?: 'OFFICIAL' | 'PROVISIONAL' | null;
+  sourceProvider?: string | null;
+  provisionalUpdatedAt?: string | null;
+  completeness?: LiveCompleteness | null;
   countdownSeconds: number;
   scheduledLottery: {
     id: string;

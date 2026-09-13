@@ -8,6 +8,7 @@ import { OfficialSourceBadge } from '@/components/OfficialSourceBadge';
 import { ResultShareBar } from '@/components/ResultShareBar';
 import { NotificationModal } from '@/components/NotificationModal';
 import { SyncIndicator } from '@/components/SyncIndicator';
+import { ProvisionalResultBanner } from '@/components/ProvisionalResultBanner';
 import { useLiveResults } from '@/hooks/queries/useLiveResults';
 import { formatINR } from '@/lib/prisma';
 import {
@@ -59,6 +60,8 @@ export default function LiveDrawPage() {
   const { hours, minutes, seconds } = formatCountdown(countdown);
 
   const status = liveData?.status || 'SCHEDULED';
+  const isProvisional = status === 'PROVISIONAL';
+  const hasResult = status === 'PUBLISHED' || isProvisional;
   const draw = liveData?.todayDraw || (status === 'PUBLISHED' ? liveData?.latestDraw : null);
   const firstPrize = draw?.prizes?.find((p: any) => p.tierNumber === 1 || p.orderIndex === 0);
   const firstWinner = firstPrize?.winningNumbers?.[0];
@@ -144,7 +147,7 @@ export default function LiveDrawPage() {
               className={`w-3 h-3 rounded-full ${
                 status === 'PUBLISHED'
                   ? 'bg-[#16845B]'
-                  : status === 'CHECKING'
+                  : status === 'CHECKING' || status === 'PROVISIONAL'
                   ? 'bg-[#A66A00] animate-pulse'
                   : 'bg-[#68736E]'
               }`}
@@ -156,6 +159,7 @@ export default function LiveDrawPage() {
               </span>
               <h2 className="text-xl font-black text-[#17201D] mt-0.5 font-tabular">
                 {status === 'PUBLISHED' && 'OFFICIAL RESULT PUBLISHED'}
+                {status === 'PROVISIONAL' && 'LIVE RESULT — UNOFFICIAL (AWAITING GAZETTE)'}
                 {status === 'CHECKING' && 'CHECKING OFFICIAL LOTIS SOURCE'}
                 {status === 'RESULT_PENDING' && 'DRAW UNDERWAY — WAITING FOR GAZETTE'}
                 {status === 'SCHEDULED' && 'SCHEDULED DRAW (TODAY 3:00 PM IST)'}
@@ -201,7 +205,7 @@ export default function LiveDrawPage() {
         </div>
 
         {/* Countdown Box (If draw is pending / scheduled) */}
-        {status !== 'PUBLISHED' && (
+        {!hasResult && (
           <div className="bg-[#10201D] text-white rounded-2xl p-6 sm:p-8 text-center space-y-4 border border-[#0B3B32]/40">
             <span className="text-xs uppercase font-bold tracking-widest text-[#C8A45D] font-tabular">
               {status === 'RESULT_PENDING' || countdown <= 0
@@ -240,8 +244,8 @@ export default function LiveDrawPage() {
           </div>
         )}
 
-        {/* 1st Prize Winner Showcase (When result is published) */}
-        {status === 'PUBLISHED' && draw && (
+        {/* 1st Prize Winner Showcase (When a result is available) */}
+        {hasResult && draw && (
           <div className="space-y-6">
             <div className="bg-[#10201D] text-white rounded-2xl p-6 sm:p-8 border border-[#0B3B32]/40 flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
@@ -269,23 +273,41 @@ export default function LiveDrawPage() {
               )}
             </div>
 
-            {/* Social Share Bar */}
-            <ResultShareBar
-              title={`Kerala Lottery Result — ${draw.lottery?.name} (${draw.drawNumber})`}
-              url={`/result/${new Date(draw.drawDate).toISOString().split('T')[0]}/${draw.lottery?.slug}`}
-            />
+            {/* Social sharing is offered only for gazette-verified results. */}
+            {status === 'PUBLISHED' ? (
+              <ResultShareBar
+                title={`Kerala Lottery Result — ${draw.lottery?.name} (${draw.drawNumber})`}
+                url={`/result/${new Date(draw.drawDate).toISOString().split('T')[0]}/${draw.lottery?.slug}`}
+              />
+            ) : (
+              <ProvisionalResultBanner
+                sourceUrl={draw.sourceDocumentUrl}
+                updatedAt={liveData?.provisionalUpdatedAt}
+                tierCount={liveData?.completeness?.tierCount}
+                isComplete={liveData?.completeness?.isComplete}
+              />
+            )}
           </div>
         )}
       </div>
 
       {/* Full Prize Table When Published */}
-      {status === 'PUBLISHED' && draw && (
+      {hasResult && draw && (
         <div className="space-y-6">
-          <OfficialSourceBadge
-            sourceUrl={draw.sourceUrl}
-            drawNumber={draw.drawNumber}
-            drawDate={new Date(draw.drawDate).toLocaleDateString('en-GB')}
-          />
+          {status === 'PUBLISHED' ? (
+            <OfficialSourceBadge
+              sourceUrl={draw.sourceUrl}
+              drawNumber={draw.drawNumber}
+              drawDate={new Date(draw.drawDate).toLocaleDateString('en-GB')}
+            />
+          ) : (
+            <ProvisionalResultBanner
+              sourceUrl={draw.sourceDocumentUrl}
+              updatedAt={liveData?.provisionalUpdatedAt}
+              tierCount={liveData?.completeness?.tierCount}
+              isComplete={liveData?.completeness?.isComplete}
+            />
+          )}
 
           <PrizeTable
             prizes={draw.prizes || []}

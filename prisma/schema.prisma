@@ -48,6 +48,13 @@ model Draw {
   rawText           String?        // Audit text
   publishedAt       DateTime?
   verifiedAt        DateTime?      // Timestamp when officially certified
+  // Trust tier. OFFICIAL = parsed from the official LOTIS gazette.
+  // PROVISIONAL = published from the unofficial live aggregator and awaiting
+  // gazette confirmation. OFFICIAL always outranks PROVISIONAL; a provisional
+  // write may never modify an official record.
+  verificationLevel String         @default("OFFICIAL")
+  sourceProvider    String         @default("LOTIS") // LOTIS | KERALALOTTERIES
+  provisionalUpdatedAt DateTime?
   lastCheckedAt     DateTime       @default(now())
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -62,6 +69,7 @@ model Draw {
   @@index([drawNumber])
   @@index([status])
   @@index([status, drawDate])
+  @@index([verificationLevel, drawDate])
 }
 
 model Prize {

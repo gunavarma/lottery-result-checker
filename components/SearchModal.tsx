@@ -67,50 +67,72 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  const handleSearch = async (q: string) => {
+  // Monotonic request id + abort controller: prevents out-of-order responses
+  // from overwriting newer results and cancels superseded in-flight requests.
+  const requestIdRef = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const handleSearch = (q: string) => {
     setQuery(q);
-    const trimmed = q.trim();
+  };
+
+  useEffect(() => {
+    const trimmed = query.trim();
+    const requestId = ++requestIdRef.current;
+
     if (!trimmed || trimmed.length < 2) {
+      abortRef.current?.abort();
+      setLoading(false);
       setResults({ lotteries: [], draws: [], winningTickets: [], news: [] });
       return;
     }
 
-    setLoading(true);
-    try {
-      // 1. Fetch API search results
-      const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`);
-      const json = await res.json();
+    const timer = setTimeout(async () => {
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
 
-      // 2. Filter news articles locally
-      const allNews = getAllNews();
-      const matchedNews = allNews.filter(
-        a =>
-          a.title.toLowerCase().includes(trimmed.toLowerCase()) ||
-          a.excerpt.toLowerCase().includes(trimmed.toLowerCase()) ||
-          a.category.toLowerCase().includes(trimmed.toLowerCase())
-      );
+      setLoading(true);
+      try {
+        // 1. Fetch API search results (debounced, single request per pause)
+        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, {
+          signal: controller.signal,
+        });
+        const json = await res.json();
 
-      if (json.success) {
-        setResults({
-          lotteries: json.results.lotteries || [],
-          draws: json.results.draws || [],
-          winningTickets: json.results.winningTickets || [],
-          news: matchedNews
-        });
-      } else {
-        setResults({
-          lotteries: [],
-          draws: [],
-          winningTickets: [],
-          news: matchedNews
-        });
+        if (requestId !== requestIdRef.current) return;
+
+        // 2. Filter news articles locally
+        const allNews = getAllNews();
+        const lower = trimmed.toLowerCase();
+        const matchedNews = allNews.filter(
+          (a) =>
+            a.title.toLowerCase().includes(lower) ||
+            a.excerpt.toLowerCase().includes(lower) ||
+            a.category.toLowerCase().includes(lower)
+        );
+
+        if (json.success) {
+          setResults({
+            lotteries: json.results.lotteries || [],
+            draws: json.results.draws || [],
+            winningTickets: json.results.winningTickets || [],
+            news: matchedNews,
+          });
+        } else {
+          setResults({ lotteries: [], draws: [], winningTickets: [], news: matchedNews });
+        }
+      } catch (err: any) {
+        if (err?.name !== 'AbortError') {
+          // Fallback on search network error: keep whatever is already shown
+        }
+      } finally {
+        if (requestId === requestIdRef.current) setLoading(false);
       }
-    } catch {
-      // Fallback on search network error
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [query]);
 
   const handleFullSubmit = (e: React.FormEvent) => {
     e.preventDefault();

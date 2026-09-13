@@ -7,6 +7,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { StructuredData } from '@/components/StructuredData';
 import { PrizeTable } from '@/components/PrizeTable';
 import { OfficialSourceBadge } from '@/components/OfficialSourceBadge';
+import { ProvisionalResultBanner } from '@/components/ProvisionalResultBanner';
 import { ResultShareBar } from '@/components/ResultShareBar';
 import { constructMetadata, getBreadcrumbSchema, getFAQSchema, SITE_URL } from '@/lib/seo';
 import { getOrSetCache } from '@/lib/cache';
@@ -99,6 +100,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     });
   }
 
+  // Provisional (unofficial live) results are not indexed until the official
+  // gazette confirms them, so search engines never rank unverified numbers.
+  const hasOfficialDraw = data.draws.some(
+    (d: any) => (d.verificationLevel ?? 'OFFICIAL') === 'OFFICIAL'
+  );
+
   const primaryDraw = data.draws[0];
   const firstPrize = primaryDraw.prizes?.find(
     (p: any) => p.orderIndex === 0 || p.tierNumber === 1 || p.category.toLowerCase().includes('1st')
@@ -114,6 +121,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     path: `/kerala-lottery-result/${dateStr}`,
+    noIndex: !hasOfficialDraw,
     keywords: [
       `${primaryDraw.lottery.name} result`,
       `${primaryDraw.lottery.name} ${primaryDraw.drawNumber}`,
@@ -137,6 +145,9 @@ export default async function KeralaLotteryResultDatePage({ params }: PageProps)
 
   const { dateFormatted, year, month, prevDate, nextDate, draws } = data;
   const mainDraw = draws[0];
+  const hasOfficialDraw = draws.some(
+    (d: any) => (d.verificationLevel ?? 'OFFICIAL') === 'OFFICIAL'
+  );
 
   const firstPrize = mainDraw.prizes?.find(
     (p: any) => p.orderIndex === 0 || p.tierNumber === 1 || p.category.toLowerCase().includes('1st')
@@ -199,10 +210,27 @@ export default async function KeralaLotteryResultDatePage({ params }: PageProps)
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8">
-      {/* Schema.org JSON-LD Structured Data */}
+      {/* Schema.org JSON-LD Structured Data.
+          Provisional pages only emit a minimal WebPage: we never publish
+          "official result" structured data for unverified numbers. */}
       <StructuredData data={breadcrumbSchema} />
-      <StructuredData data={webPageSchema} />
-      <StructuredData data={faqSchema} />
+      {hasOfficialDraw ? (
+        <>
+          <StructuredData data={webPageSchema} />
+          <StructuredData data={faqSchema} />
+        </>
+      ) : (
+        <StructuredData
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: `${mainDraw.lottery.name} (${mainDraw.drawNumber}) Live Result – ${dateFormatted}`,
+            description: `Live provisional winning numbers for ${dateFormatted}, pending official gazette confirmation.`,
+            url: `${SITE_URL}/kerala-lottery-result/${dateStr}`,
+            isAccessibleForFree: true,
+          }}
+        />
+      )}
 
       {/* Visible Breadcrumbs */}
       <Breadcrumbs
@@ -275,13 +303,19 @@ export default async function KeralaLotteryResultDatePage({ params }: PageProps)
       <div className="border-b border-[#E2E7E3] pb-6 space-y-2">
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider font-tabular">
-            Kerala State Lotteries Official Gazette
+            {hasOfficialDraw
+              ? 'Kerala State Lotteries Official Gazette'
+              : 'Live Result — Awaiting Official Gazette'}
           </span>
           <span className="text-[10px] font-mono font-bold bg-[#F1F4F2] text-[#0B3B32] px-2.5 py-0.5 rounded-md border border-[#E2E7E3]">
             {mainDraw.lottery.code}
           </span>
-          <span className="font-bold text-xs bg-[#0B3B32] text-white px-3 py-0.5 rounded-md">
-            CERTIFIED RESULT
+          <span
+            className={`font-bold text-xs px-3 py-0.5 rounded-md ${
+              hasOfficialDraw ? 'bg-[#0B3B32] text-white' : 'bg-[#8A6A24] text-white'
+            }`}
+          >
+            {hasOfficialDraw ? 'CERTIFIED RESULT' : 'LIVE • UNOFFICIAL'}
           </span>
         </div>
 
@@ -304,6 +338,7 @@ export default async function KeralaLotteryResultDatePage({ params }: PageProps)
             (p: any) => p.orderIndex === 0 || p.tierNumber === 1 || p.category.toLowerCase().includes('1st')
           );
           const drawFirstWinner = drawFirstPrize?.winningNumbers?.[0];
+          const drawIsProvisional = (draw.verificationLevel ?? 'OFFICIAL') === 'PROVISIONAL';
 
           return (
             <article
@@ -320,12 +355,18 @@ export default async function KeralaLotteryResultDatePage({ params }: PageProps)
                     <span className="text-xs text-[#68736E] font-medium">
                       Draw Number: <strong className="text-[#17201D]">{draw.drawNumber}</strong>
                     </span>
-                    {draw.sourceDocumentUrl && (
-                      <OfficialSourceBadge
-                        sourceUrl={draw.sourceDocumentUrl}
-                        drawNumber={draw.drawNumber}
-                        drawDate={dateFormatted}
-                      />
+                    {drawIsProvisional ? (
+                      <span className="text-[10px] font-bold text-[#8A6A24] bg-[#C8A45D]/15 px-2 py-0.5 rounded-md border border-[#C8A45D]/40 font-tabular">
+                        LIVE • UNOFFICIAL
+                      </span>
+                    ) : (
+                      draw.sourceDocumentUrl && (
+                        <OfficialSourceBadge
+                          sourceUrl={draw.sourceDocumentUrl}
+                          drawNumber={draw.drawNumber}
+                          drawDate={dateFormatted}
+                        />
+                      )
                     )}
                   </div>
 
@@ -374,10 +415,19 @@ export default async function KeralaLotteryResultDatePage({ params }: PageProps)
                   </span>
                 </div>
 
+                {drawIsProvisional && (
+                  <ProvisionalResultBanner
+                    sourceUrl={draw.sourceDocumentUrl}
+                    updatedAt={draw.provisionalUpdatedAt}
+                    tierCount={draw.prizes?.length}
+                  />
+                )}
+
                 <PrizeTable
                   lotteryName={draw.lottery.name}
                   drawNumber={draw.drawNumber}
                   prizes={draw.prizes}
+                  verificationLevel={drawIsProvisional ? 'PROVISIONAL' : 'OFFICIAL'}
                 />
               </div>
 
@@ -410,7 +460,9 @@ export default async function KeralaLotteryResultDatePage({ params }: PageProps)
         })}
       </div>
 
-      {/* Frequently Asked Questions Section */}
+      {/* FAQ content asserts certified facts, so it is rendered only once the
+          official gazette has confirmed this draw. */}
+      {hasOfficialDraw && (
       <section className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2E7E3] shadow-xs space-y-6">
         <div className="flex items-center gap-2 text-[#17201D]">
           <HelpCircle className="w-5 h-5 text-[#0B3B32]" />
@@ -432,6 +484,8 @@ export default async function KeralaLotteryResultDatePage({ params }: PageProps)
           ))}
         </div>
       </section>
+
+      )}
 
       {/* Authoritative Trust & Verification Notice */}
       <div className="bg-[#F7F7F4] rounded-3xl p-6 sm:p-8 border border-[#E2E7E3] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-[#68736E]">

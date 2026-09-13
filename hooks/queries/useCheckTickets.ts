@@ -6,7 +6,13 @@ export interface TicketMatchResult {
   inputTicket: string;
   normalizedDisplay: string;
   isMatch: boolean;
-  status: 'PRIZE_MATCH' | 'NO_MATCH';
+  /**
+   * PRIZE_MATCH   - a published winning number matched
+   * NO_MATCH      - checked against published results and did not win
+   * NOT_FOUND     - could not be checked (no published result, or the value was
+   *                 not a recognizable ticket number). Never means "did not win".
+   */
+  status: 'PRIZE_MATCH' | 'NO_MATCH' | 'NOT_FOUND';
   lotteryName?: string;
   drawNumber?: string;
   drawDate?: string | null;

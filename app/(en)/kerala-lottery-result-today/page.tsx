@@ -4,13 +4,14 @@ import Link from 'next/link';
 import { prisma, serializeData, formatINR } from '@/lib/prisma';
 import { PrizeTable } from '@/components/PrizeTable';
 import { OfficialSourceBadge } from '@/components/OfficialSourceBadge';
+import { ProvisionalResultBanner } from '@/components/ProvisionalResultBanner';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { ResultShareBar } from '@/components/ResultShareBar';
 import { NotificationBanner } from '@/components/NotificationBanner';
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema, getFAQSchema } from '@/lib/seo';
 import { startOfDay, endOfDay, format } from 'date-fns';
-import { Award, Clock, CheckCircle2, Search, MapPin, Ticket, ShieldCheck, FileText, ExternalLink, ArrowRight, HelpCircle } from 'lucide-react';
+import { Award, Clock, CheckCircle2, Search, MapPin, Ticket, ShieldCheck, FileText, ExternalLink, ArrowRight, HelpCircle, Radio } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,8 +19,14 @@ export async function generateMetadata(): Promise<Metadata> {
   const now = new Date();
   const dateFormatted = format(now, 'dd MMMM yyyy');
 
+  // A live-but-unverified result must not be indexed: search engines should
+  // only ever rank gazette-confirmed numbers.
+  const { draw } = await getTodayResultData();
+  const isProvisional = draw?.verificationLevel === 'PROVISIONAL';
+
   return constructMetadata({
     title: `Kerala Lottery Result Today (${dateFormatted}) | Winning Numbers`,
+    noIndex: isProvisional,
     description: `Check official Kerala lottery result today (${dateFormatted}). 1st prize winning ticket, consolation numbers, prize structure and LOTIS gazette verification on KeralaDraws.`,
     path: '/kerala-lottery-result-today',
     keywords: [
@@ -104,6 +111,7 @@ async function getTodayResultData() {
 
 export default async function TodayResultPage() {
   const { isFromToday, draw } = await getTodayResultData();
+  const isProvisional = draw?.verificationLevel === 'PROVISIONAL';
 
   const drawDateObj = draw?.drawDate ? new Date(draw.drawDate) : new Date();
   const drawDateFormatted = format(drawDateObj, 'dd MMMM yyyy');
@@ -141,17 +149,30 @@ export default async function TodayResultPage() {
       <div className="space-y-2 border-b border-[#E2E7E3] pb-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
-              Official LOTIS Publication
+            <span
+              className={`text-[11px] font-bold uppercase tracking-wider block font-tabular ${
+                isProvisional ? 'text-[#8A6A24]' : 'text-[#0B3B32]'
+              }`}
+            >
+              {isProvisional
+                ? 'Live Source Publication — Awaiting Official Gazette'
+                : 'Official LOTIS Publication'}
             </span>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-[#17201D] tracking-tight">
               Kerala Lottery Result Today
             </h1>
           </div>
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-[#16845B]/10 text-[#16845B] border border-[#16845B]/30 font-tabular">
-            <CheckCircle2 className="w-4 h-4" />
-            <span>RESULT PUBLISHED</span>
-          </span>
+          {isProvisional ? (
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-[#C8A45D]/15 text-[#8A6A24] border border-[#C8A45D]/40 font-tabular">
+              <Radio className="w-4 h-4" />
+              <span>LIVE • UNOFFICIAL</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-[#16845B]/10 text-[#16845B] border border-[#16845B]/30 font-tabular">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>RESULT PUBLISHED</span>
+            </span>
+          )}
         </div>
         <p className="text-xs sm:text-sm text-[#68736E]">
           Official winning numbers and complete prize tier breakdown for Kerala State Lotteries draw held today at Gorky Bhavan, Thiruvananthapuram.
@@ -238,18 +259,36 @@ export default async function TodayResultPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl sm:text-2xl font-extrabold text-[#17201D]">
-                Complete Prize Tiers & Winning Numbers
+                {isProvisional
+                  ? 'Live Prize Tiers & Winning Numbers'
+                  : 'Complete Prize Tiers & Winning Numbers'}
               </h2>
-              <OfficialSourceBadge
-                sourceUrl={draw.sourceDocumentUrl}
-                drawNumber={draw.drawNumber}
-                drawDate={drawDateFormatted}
-              />
+              {isProvisional ? (
+                <span className="text-[10px] font-bold text-[#8A6A24] bg-[#C8A45D]/15 px-2.5 py-1 rounded-md border border-[#C8A45D]/40 font-tabular">
+                  UNOFFICIAL
+                </span>
+              ) : (
+                <OfficialSourceBadge
+                  sourceUrl={draw.sourceDocumentUrl}
+                  drawNumber={draw.drawNumber}
+                  drawDate={drawDateFormatted}
+                />
+              )}
             </div>
+
+            {isProvisional && (
+              <ProvisionalResultBanner
+                sourceUrl={draw.sourceDocumentUrl}
+                updatedAt={draw.provisionalUpdatedAt}
+                tierCount={draw.prizes?.length}
+              />
+            )}
+
             <PrizeTable
               lotteryName={draw.lottery?.name || 'Kerala Lottery'}
               drawNumber={draw.drawNumber}
               prizes={draw.prizes}
+              verificationLevel={isProvisional ? 'PROVISIONAL' : 'OFFICIAL'}
             />
           </div>
         </div>

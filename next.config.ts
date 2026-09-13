@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['pdf-parse'],
   compress: true,
   poweredByHeader: false,
+  experimental: {
+    // Two root layouts exist (en route group + /[locale]); unmatched URLs must
+    // render app/global-not-found.tsx, which carries its own <html> document.
+    globalNotFound: true,
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
   },
@@ -34,7 +39,12 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()',
+            // `camera=(self)` allows our own origin to use the camera (required
+            // by the ticket scanner) while still blocking third-party iframes.
+            // An empty allowlist, `camera=()`, disables the camera for this
+            // site too and makes every `getUserMedia()` call fail with
+            // NotAllowedError before the user is ever prompted.
+            value: 'camera=(self), microphone=(), geolocation=(), browsing-topics=()',
           },
           {
             key: 'Cross-Origin-Opener-Policy',

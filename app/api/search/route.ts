@@ -22,13 +22,13 @@ export async function GET(request: NextRequest) {
 
     const cleanQuery = query.replace(/\s+/g, ' ');
 
-    // 1. Search by Lottery Name / Slug / Code
+    // 1. Search by Lottery Name / Slug / Code (case-insensitive)
     const matchingLotteries = await prisma.lottery.findMany({
       where: {
         OR: [
-          { name: { contains: cleanQuery } },
-          { slug: { contains: cleanQuery.toLowerCase() } },
-          { code: { contains: cleanQuery.toUpperCase() } },
+          { name: { contains: cleanQuery, mode: 'insensitive' } },
+          { slug: { contains: cleanQuery.toLowerCase(), mode: 'insensitive' } },
+          { code: { contains: cleanQuery.toUpperCase(), mode: 'insensitive' } },
         ],
       },
       take: 5,
@@ -53,14 +53,16 @@ export async function GET(request: NextRequest) {
       };
     }
 
+    const drawOrConditions: any[] = [
+      { drawNumber: { contains: cleanQuery.toUpperCase(), mode: 'insensitive' } },
+      { lottery: { name: { contains: cleanQuery, mode: 'insensitive' } } },
+    ];
+    if (dateFilter) drawOrConditions.push({ drawDate: dateFilter });
+
     const matchingDraws = await prisma.draw.findMany({
       where: {
         status: 'PUBLISHED',
-        OR: [
-          { drawNumber: { contains: cleanQuery.toUpperCase() } },
-          dateFilter ? { drawDate: dateFilter } : {},
-          { lottery: { name: { contains: cleanQuery } } },
-        ].filter((o) => Object.keys(o).length > 0),
+        OR: drawOrConditions,
       },
       take: 8,
       orderBy: { drawDate: 'desc' },
@@ -82,7 +84,7 @@ export async function GET(request: NextRequest) {
         where: {
           OR: [
             { number: numericOnly },
-            { displayNumber: { contains: cleanQuery.toUpperCase() } },
+            { displayNumber: { contains: cleanQuery.toUpperCase(), mode: 'insensitive' } },
           ],
         },
         take: 10,

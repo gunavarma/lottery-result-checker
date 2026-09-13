@@ -3,9 +3,35 @@ import { prisma } from '@/lib/prisma';
 import { SITE_URL } from '@/lib/seo';
 import { getAllNews } from '@/lib/news';
 import { getAllGuides } from '@/lib/guides';
-import { formatDateOnly } from '@/lib/date';
+import { formatDateOnly } from '@/lib/date';export const dynamic = 'force-dynamic';
 
-export const dynamic = 'force-dynamic';
+/**
+ * Gazette-verified draws only, with a deployment-order safety net: if the
+ * additive trust-tier migration has not been applied yet, fall back to the
+ * pre-migration semantics (every published draw is official) instead of
+ * emitting a sitemap that has lost every result URL.
+ */
+async function fetchOfficialDraws() {
+  const select = { drawDate: true, updatedAt: true, verifiedAt: true } as const;
+
+  try {
+    return await prisma.draw.findMany({
+      where: { status: 'PUBLISHED', verificationLevel: 'OFFICIAL' },
+      select,
+      orderBy: { drawDate: 'desc' },
+    });
+  } catch (error: any) {
+    console.warn(
+      '[Sitemap] verificationLevel filter unavailable; falling back to all published draws:',
+      error?.message
+    );
+    return await prisma.draw.findMany({
+      where: { status: 'PUBLISHED' },
+      select,
+      orderBy: { drawDate: 'desc' },
+    });
+  }
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_URL;
@@ -113,15 +139,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
     // 3. Canonical Date-Based Result Pages (/kerala-lottery-result/YYYY-MM-DD)
-    const draws = await prisma.draw.findMany({
-      where: { status: 'PUBLISHED' },
-      select: {
-        drawDate: true,
-        updatedAt: true,
-        verifiedAt: true,
-      },
-      orderBy: { drawDate: 'desc' },
-    });
+    // Only gazette-verified draws are listed. Provisional live results are
+    // deliberately excluded so search engines never index unverified numbers.
+    const draws = await fetchOfficialDraws();
 
     // Deduplicate dates for canonical date URLs
     const dateMap = new Map<string, Date>();

@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendResultPublishedPushNotification } from '@/lib/firebase/fcm';
 import { prisma } from '@/lib/prisma';
+import { denyUnauthorized } from '@/lib/security/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    const adminSecret = process.env.ADMIN_SECRET || 'admin-kerala-lottery-2026';
-
-    const token = authHeader?.replace('Bearer ', '');
-    if (token !== adminSecret) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    const denied = denyUnauthorized(request, 'admin');
+    if (denied) return denied;
 
     const body = await request.json().catch(() => ({}));
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com';

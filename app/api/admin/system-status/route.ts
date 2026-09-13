@@ -1,23 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/prisma';
+import { denyUnauthorized } from '@/lib/security/auth';
+import { getAutomationHealth } from '@/lib/lotis/health';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    const secretQuery = request.nextUrl.searchParams.get('secret');
-    const adminSecret = process.env.ADMIN_SECRET || 'password';
-
-    const token = authHeader?.replace('Bearer ', '') || secretQuery;
-
-    // Secure authentication
-    if (process.env.NODE_ENV === 'production' && token !== adminSecret) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const denied = denyUnauthorized(request, 'admin');
+    if (denied) return denied;
 
     // 1. Fetch counts in parallel
     const [
@@ -60,7 +51,10 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    // 3. Estimated database & storage footprint
+    // 3. Automation health / failure detection telemetry
+    const automationHealth = await getAutomationHealth();
+
+    // 4. Estimated database & storage footprint
     const estimatedDbBytes =
       lotteryCount * 300 +
       drawCount * 500 +
@@ -74,7 +68,8 @@ export async function GET(request: NextRequest) {
       serializeData({
         success: true,
         timestamp: new Date().toISOString(),
-        systemHealth: 'OPERATIONAL',
+        systemHealth: automationHealth.status,
+        automationHealth,
         automation: {
           continuousSyncEnabled: true,
           fcmNotificationsEnabled: true,

@@ -17,13 +17,14 @@ import {
   Image as ImageIcon,
 } from 'lucide-react';
 import { parseTicketCode, ParsedTicket } from '@/lib/lottery/normalize-ticket';
+import { parseKeralaLotteryTicketOcr } from '@/lib/ocr/ticket-ocr';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 export interface ScannedTicket {
   id: string;
   ticketNumber: string;
   rawValue?: string;
-  type: 'qr' | 'barcode' | 'slip';
+  type: 'qr' | 'barcode' | 'slip' | 'ocr';
   scannedAt: number;
 }
 
@@ -53,9 +54,22 @@ export function TicketScanner({
   } | null>(null);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  /** Separate instance used only for decoding an uploaded image. */
+  const fileScannerRef = useRef<Html5Qrcode | null>(null);
+  /** Lazily created Tesseract worker (only fetched when OCR is actually needed). */
+  const ocrWorkerRef = useRef<any>(null);
   const lastScannedTimeRef = useRef<Map<string, number>>(new Map());
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const containerId = 'kerala-lottery-scanner-viewport';
+  /**
+   * `Html5Qrcode.scanFile()` reads `document.getElementById(elementId)` and
+   * dereferences it without a null check, and it refuses to run while a camera
+   * scan is active on that same instance. So file decoding needs its own
+   * permanently mounted (but invisible) container and its own instance,
+   * otherwise photo scanning throws in both entry points.
+   */
+  const fileScanContainerId = 'kerala-lottery-file-scan-viewport';
+  const [isReadingPhoto, setIsReadingPhoto] = useState(false);
 
   // Trigger brief feedback toast
   const showToast = useCallback((text: string, type: 'success' | 'info' | 'warning' = 'success') => {
@@ -68,7 +82,7 @@ export function TicketScanner({
 
   // Handle incoming raw ticket code from camera or manual slip
   const handleDetectedCode = useCallback(
-    (rawValue: string, type: 'qr' | 'barcode' | 'slip' = 'barcode') => {
+    (rawValue: string, type: 'qr' | 'barcode' | 'slip' | 'ocr' = 'barcode') => {
       const parsed: ParsedTicket = parseTicketCode(rawValue);
 
       if (!parsed.valid || !parsed.ticketNumber) {
@@ -124,6 +138,50 @@ export function TicketScanner({
       } finally {
         scannerRef.current = null;
         setCameraState('IDLE');
+      }
+    }
+  }, []);
+
+  /**
+   * Returns the dedicated file-decoding instance. Kept separate from the camera
+   * instance so an active camera scan never blocks photo decoding.
+   */
+  const getFileScanner = useCallback(() => {
+    if (!fileScannerRef.current) {
+      fileScannerRef.current = new Html5Qrcode(fileScanContainerId, { verbose: false });
+    }
+    return fileScannerRef.current;
+  }, []);
+
+  const releaseFileScanner = useCallback(() => {
+    const instance = fileScannerRef.current;
+    fileScannerRef.current = null;
+    if (instance) {
+      try {
+        instance.clear();
+      } catch {
+        // Ignore clear errors on teardown
+      }
+    }
+  }, []);
+
+  /** Lazily creates the OCR worker; tesseract is only downloaded when needed. */
+  const getOcrWorker = useCallback(async () => {
+    if (!ocrWorkerRef.current) {
+      const { createWorker } = await import('tesseract.js');
+      ocrWorkerRef.current = await createWorker('eng');
+    }
+    return ocrWorkerRef.current;
+  }, []);
+
+  const terminateOcrWorker = useCallback(async () => {
+    const worker = ocrWorkerRef.current;
+    ocrWorkerRef.current = null;
+    if (worker) {
+      try {
+        await worker.terminate();
+      } catch {
+        // Ignore termination errors
       }
     }
   }, []);
@@ -214,7 +272,11 @@ export function TicketScanner({
       setCameraState('ERROR');
       const errStr = String(err?.message || err);
       if (err?.name === 'NotAllowedError' || errStr.includes('Permission denied') || errStr.includes('NotAllowedError')) {
-        setCameraError('Camera access was denied by browser or system settings.');
+        // A denial that arrives without a visible prompt almost always means
+        // the browser/site blocked the camera rather than the user declining.
+        setCameraError(
+          'The browser blocked camera access. Check the camera icon in the address bar, and the browser/OS camera permission for this site.'
+        );
       } else if (err?.name === 'NotFoundError' || errStr.includes('Requested device not found')) {
         setCameraError('No camera found on this device.');
       } else {
@@ -240,9 +302,19 @@ export function TicketScanner({
   useEffect(() => {
     return () => {
       stopCamera();
+      releaseFileScanner();
+      void terminateOcrWorker();
       if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     };
-  }, [stopCamera]);
+  }, [stopCamera, releaseFileScanner, terminateOcrWorker]);
+
+  // Modal closed: release the file decoder and the OCR worker so neither keeps
+  // holding memory or a worker thread while the scanner is not in use.
+  useEffect(() => {
+    if (open) return;
+    releaseFileScanner();
+    void terminateOcrWorker();
+  }, [open, releaseFileScanner, terminateOcrWorker]);
 
   // Keyboard accessibility: Escape to close
   useEffect(() => {
@@ -296,21 +368,58 @@ export function TicketScanner({
     }
   };
 
-  // Upload/Snap Photo Scan fallback
+  /**
+   * Upload / snap-photo path.
+   *
+   * Two stages, because a ticket photo frequently has no machine-readable code:
+   *   1. Decode a QR code or barcode from the image (fast, exact).
+   *   2. Fall back to OCR of the printed ticket number.
+   * OCR is the only way to read a photo of a ticket whose barcode is damaged,
+   * cropped or simply not in frame, so without stage 2 those photos fail.
+   */
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const input = e.target;
+    const file = input.files?.[0];
     if (!file) return;
 
     try {
-      showToast('Scanning ticket photo...', 'info');
-      const tempScanner = scannerRef.current || new Html5Qrcode(containerId, { verbose: false });
-      const decoded = await tempScanner.scanFile(file, false);
-      handleDetectedCode(decoded, 'barcode');
+      // Stage 1: machine-readable code.
+      try {
+        showToast('Scanning ticket photo...', 'info');
+        const decoded = await getFileScanner().scanFile(file, false);
+        if (handleDetectedCode(decoded, 'barcode')) return;
+      } catch (err) {
+        console.warn('No barcode decoded from photo, trying OCR:', err);
+      }
+
+      // Stage 2: OCR the printed number.
+      setIsReadingPhoto(true);
+      showToast('Reading ticket number from photo...', 'info');
+
+      const worker = await getOcrWorker();
+      const recognition = await worker.recognize(file);
+      const rawText = recognition?.data?.text || '';
+      const detected = parseKeralaLotteryTicketOcr(rawText);
+
+      if (!detected.ticketNumber) {
+        showToast('No readable ticket number found in that photo', 'warning');
+        return;
+      }
+
+      const candidate = detected.series
+        ? `${detected.series} ${detected.ticketNumber}`
+        : detected.ticketNumber;
+
+      if (!handleDetectedCode(candidate, 'ocr')) {
+        showToast('Ticket number detected but could not be read reliably', 'warning');
+      }
     } catch (err) {
-      console.warn('Scan file failed:', err);
-      showToast('No readable barcode or QR code found in photo', 'warning');
+      console.warn('Photo scan failed:', err);
+      showToast('Could not read that photo. Try a sharper image, or type the digits.', 'warning');
     } finally {
-      if (e.target) e.target.value = '';
+      setIsReadingPhoto(false);
+      // Reset so selecting the same file again re-triggers a scan.
+      if (input) input.value = '';
     }
   };
 
@@ -333,6 +442,19 @@ export function TicketScanner({
       aria-labelledby="scanner-modal-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
     >
+      {/*
+        Always-mounted decoding surface for uploaded photos. html5-qrcode's
+        `scanFile()` looks this element up by id and dereferences it without a
+        null check, so it must exist whenever a photo can be uploaded. It is
+        deliberately outside the tab panels (which unmount) and sized to zero
+        with `showImage: false`, so the decoder canvas never affects layout.
+      */}
+      <div
+        id={fileScanContainerId}
+        aria-hidden="true"
+        className="absolute w-0 h-0 overflow-hidden pointer-events-none opacity-0"
+      />
+
       <div className="relative w-full max-w-lg bg-[#10201D] text-white rounded-3xl border border-white/15 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-black/30">
@@ -392,6 +514,14 @@ export function TicketScanner({
             </button>
           </div>
         </div>
+
+        {/* Photo OCR progress (only shown while actually reading a photo) */}
+        {isReadingPhoto && (
+          <div className="mx-6 mt-3 flex items-center gap-2 rounded-xl border border-[#C8A45D]/40 bg-[#C8A45D]/10 px-3 py-2 text-[11px] font-bold text-[#C8A45D]">
+            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            <span>Reading the ticket number from your photo...</span>
+          </div>
+        )}
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto px-6 py-3 space-y-4">

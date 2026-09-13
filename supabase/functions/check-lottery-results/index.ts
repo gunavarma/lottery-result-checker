@@ -1,7 +1,14 @@
 // Supabase Edge Function: check-lottery-results
-// Scheduled via Supabase Cron (pg_cron) every 15 minutes
+//
+// DEPRECATED — DO NOT SCHEDULE.
+// The authoritative synchronization pipeline is the Next.js route
+// /api/cron/sync-results (Prisma + shared parser + Zod validation + audit
+// tables + FCM dispatch). This edge function duplicates that work with a
+// separate, weaker regex parser and is a data-accuracy risk.
+// It is retained only as a manual emergency fallback. Migration
+// 20260913000000_consolidate_cron_pipeline.sql unschedules it.
+//
 // Authoritative Data Source: Official LOTIS Portal (Directorate of Kerala State Lotteries)
-// Zero-Emoji & Idempotent Execution
 
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
@@ -230,16 +237,18 @@ function parseResultText(text: string, defaultName: string, defaultNumber: strin
 Deno.serve(async (req: Request) => {
   const startedAt = new Date();
 
-  // Authentication validation
+  // Authentication validation (fail closed: an unset secret must never make
+  // this endpoint publicly triggerable).
   const authHeader = req.headers.get('Authorization');
-  if (CRON_SECRET) {
-    const token = authHeader ? authHeader.replace('Bearer ', '').trim() : '';
-    if (token !== CRON_SECRET && token !== SUPABASE_SERVICE_ROLE_KEY) {
-      return new Response(JSON.stringify({ error: 'Unauthorized: Invalid authentication credentials' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+  const token = authHeader ? authHeader.replace('Bearer ', '').trim() : '';
+  const authorized =
+    !!CRON_SECRET && (token === CRON_SECRET || token === SUPABASE_SERVICE_ROLE_KEY);
+
+  if (!authorized) {
+    return new Response(JSON.stringify({ error: 'Unauthorized: Invalid authentication credentials' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {

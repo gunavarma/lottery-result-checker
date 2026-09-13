@@ -1,12 +1,14 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Language,
   SUPPORTED_LANGUAGES,
   LanguageOption,
   getTranslation,
 } from '@/lib/translations';
+import { isLocale } from '@/lib/i18n/config';
 
 interface LanguageContextType {
   language: Language;
@@ -27,58 +29,57 @@ const LanguageContext = createContext<LanguageContextType>({
 const STORAGE_KEY = 'keraladraws_lang';
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('en');
-  const [isInitialized, setIsInitialized] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  // Keep state so consumers re-render on navigation, but the URL segment is
+  // the single source of truth for the active language.
+  const [, setLanguageState] = useState<Language>('en');
 
-  useEffect(() => {
-    try {
-      const savedLang = localStorage.getItem(STORAGE_KEY) as Language;
-      if (savedLang && ['en', 'ml', 'ta', 'hi'].includes(savedLang)) {
-        setLanguageState(savedLang);
+  // /ml/... renders Malayalam, /ta/... Tamil, /hi/... Hindi; everything else
+  // (the unprefixed en route group) is English. Derived synchronously from the
+  // pathname on server and client alike, so there is no hydration mismatch.
+  const language: Language = useMemo(() => {
+    const seg = (pathname || '').split('/')[1];
+    return seg && isLocale(seg) ? seg : 'en';
+  }, [pathname]);
+
+  // Keep state in sync after client-side navigations.
+  useState(() => {
+    setLanguageState(language);
+  });
+
+  const setLanguage = useCallback(
+    (lang: Language) => {
+      if (!SUPPORTED_LANGUAGES.some((l) => l.code === lang)) return;
+
+      setLanguageState(lang);
+
+      try {
+        localStorage.setItem(STORAGE_KEY, lang);
+        document.cookie = `NEXT_LOCALE=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+      } catch {
+        // Ignore storage exceptions
       }
-    } catch {
-      // Ignore localStorage errors
-    } finally {
-      setIsInitialized(true);
-    }
-  }, []);
 
-  const setLanguage = (lang: Language) => {
-    if (!['en', 'ml', 'ta', 'hi'].includes(lang)) return;
-
-    setLanguageState(lang);
-
-    try {
-      localStorage.setItem(STORAGE_KEY, lang);
-      document.cookie = `NEXT_LOCALE=${lang}; path=/; max-age=31536000; SameSite=Lax`;
-
-      // Sync with Google Translate cookie for dynamic body text translation
-      if (lang === 'en') {
-        document.cookie = `googtrans=/en/en; path=/; max-age=31536000; SameSite=Lax`;
-        document.cookie = `googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
-      } else {
-        document.cookie = `googtrans=/en/${lang}; path=/; max-age=31536000; SameSite=Lax`;
-      }
+      // Native i18n: navigate to the locale-prefixed route (en stays unprefixed).
+      // Swapping state alone would leave the URL on the old locale's server copy.
+      const target =
+        (pathname || '/').replace(/^\/(en|ml|ta|hi)(?=\/|$)/, lang === 'en' ? '' : `/${lang}`) ||
+        '/';
+      router.push(target, { scroll: false });
 
       // Dispatch event for any non-react listeners
       window.dispatchEvent(
         new CustomEvent('keraladraws_language_changed', { detail: { language: lang } })
       );
+    },
+    [router, pathname]
+  );
 
-      // Trigger Google Translate frame if present
-      const selectElem = document.querySelector<HTMLSelectElement>('.goog-te-combo');
-      if (selectElem) {
-        selectElem.value = lang;
-        selectElem.dispatchEvent(new Event('change'));
-      }
-    } catch {
-      // Ignore cookie / storage exceptions
-    }
-  };
-
-  const t = (key: string, fallback?: string): string => {
-    return getTranslation(language, key, fallback);
-  };
+  const t = useCallback(
+    (key: string, fallback?: string): string => getTranslation(language, key, fallback),
+    [language]
+  );
 
   const currentOption =
     SUPPORTED_LANGUAGES.find((opt) => opt.code === language) || SUPPORTED_LANGUAGES[0];

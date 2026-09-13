@@ -1,6 +1,6 @@
 # Kerala Lottery Results Platform
 
-A production-ready Kerala lottery results platform built with **Next.js 16 (App Router)**, **TypeScript**, **PostgreSQL (Supabase)**, **Prisma ORM**, **Supabase Cron (`pg_cron`)**, **Supabase Edge Functions**, and **Firebase Cloud Messaging (FCM)**.
+A production-ready Kerala lottery results platform built with **Next.js 16 (App Router)**, **TypeScript**, **PostgreSQL (Supabase)**, **Prisma ORM**, **Supabase Cron (`pg_cron`)**, **TanStack Query**, and **Firebase Cloud Messaging (FCM)**.
 
 The website automatically retrieves and verifies official lottery results directly from the **Lottery Information and Management System (LOTIS)** operated by the **Directorate of Kerala State Lotteries, Government of Kerala**, and dispatches automated browser push notifications to subscribed users upon official result publication.
 
@@ -8,47 +8,91 @@ The website automatically retrieves and verifies official lottery results direct
 
 ## 1. System Architecture
 
+There is exactly **one** synchronization pipeline. It is owned by the Next.js
+application so that the parser, Zod validation, audit tables, cache
+invalidation, and notification dispatch cannot drift apart:
+
 ```
-                                  USERS
-                                    |
-                                    v
-                                VERCEL
-                          (Frontend & UI)
-                                    |
-                                    v
-                            SUPABASE DATABASE
-                              (PostgreSQL)
-                                    ^
-                                    |
-                          Supabase Edge Function
-                          (check-lottery-results)
-                                    ^
-                                    |
-                            Supabase pg_cron
-                          (Runs every 15 mins)
-                                    |
-                                    v
-                        Official LOTIS Source
+                        Official LOTIS Portal
                     (lotteryagent.kerala.gov.in)
-                                    |
-                                    v
-                             Result Validation
-                                    |
-                               New Result?
-                                /       \
-                              NO         YES
-                              |           |
-                             STOP         v
-                                      DATABASE
-                                          |
-                                +---------+---------+
-                                |                   |
-                                v                   v
-                             WEBSITE               FCM
-                                                    |
-                                                    v
-                                                  USERS
+                                 ^
+                                 |
+                    Supabase pg_cron (every 15 min)
+                    + Vercel Cron (daily safety net)
+                                 |
+                                 v
+                GET /api/cron/sync-results   <-- Bearer CRON_SECRET
+                                 |
+                                 v
+                 lib/lotis/sync.ts
+                   - LOTIS listing  -> source item id
+                   - Gazette PDF    -> SHA-256 hash
+                   - parser         -> structured tiers
+                   - Zod validation -> reject incomplete/unsafe data
+                   - prisma.$transaction -> atomic UPSERT (idempotent)
+                                 |
+                                 v
+                          PostgreSQL  (source of truth)
+                                 |
+                    +------------+------------+
+                    |                         |
+                    v                         v
+          in-memory SWR cache             FCM notifications
+             (optimization)              (only after commit)
+                    |
+                    v
+              API routes  ->  TanStack Query  ->  UI
 ```
+
+**Read path (what users experience):** the browser only ever calls our own
+API routes, which read from PostgreSQL. A user session never triggers a LOTIS
+fetch, never downloads a gazette, and never parses a PDF. Expensive work only
+happens in the background pipeline, and the UI always renders stored data first
+before revalidating in the background.
+
+> The Supabase Edge Function `check-lottery-results` is **deprecated**: it is an
+> older duplicate of this pipeline with a weaker parser. Migration
+> `20260913000000_consolidate_cron_pipeline.sql` removes it from the schedule.
+
+### 1.1 Two-tier trust model (live vs official)
+
+Kerala lottery numbers appear on third-party live sites (notably
+`keralalotteries.net`) from about **2:55 PM IST**, well before the official
+gazette is published around **4:30 PM IST**. KeralaDraws uses that source to be
+fast, while guaranteeing it can never be mistaken for the official record:
+
+| Tier | Source | Written as | Indexed | Notified | Authoritative |
+|---|---|---|---|---|---|
+| **OFFICIAL** | LOTIS gazette PDF | `verificationLevel: 'OFFICIAL'` | yes | yes | yes |
+| **PROVISIONAL** | keralalotteries.net (unofficial) | `verificationLevel: 'PROVISIONAL'` | no (`noindex`) | no | no |
+
+Rules enforced in one place, `lib/results/persist.ts`:
+
+1. **OFFICIAL always outranks PROVISIONAL.** A provisional write can never
+   create, modify or downgrade an official row — not even with `force`.
+2. **`PROVISIONAL → OFFICIAL` is an in-place upgrade of the same row**, so the
+   live source never produces duplicate historical records.
+3. A provisional row may be rewritten repeatedly while it stays provisional,
+   because tiers are published incrementally (1st prize first, 4th–9th later).
+4. **Prize amounts are never taken from the unofficial source.** They are
+   derived from the scheme's most recent official draw; a disagreement is
+   logged as an `ImportError` instead of being published.
+5. Provisional results are **excluded from the sitemap**, marked `noindex`, and
+   **never trigger a push notification**.
+6. Provisional results are clearly labelled in the UI (`LIVE • UNOFFICIAL`) and
+   are never described as certified.
+
+**Freshness:** the live poller runs every minute during 14:30–18:29 IST, so our
+database is at most ~60s behind the source, and the live page polls our own API
+every 10s during the window. Typical end-to-end latency is ~30s; worst case is
+just over a minute. A truly instantaneous update would require a push feed from
+the source, which it does not provide.
+
+**Attribution and legality:** `keralalotteries.net/robots.txt` explicitly allows
+crawling (only `/search` and `/share-widget` are disallowed). The crawler
+identifies itself, times out, backs off, and uses conditional GETs. The source
+can be disabled instantly with `KERALALOTTERIES_ENABLED=false`, after which only
+the official gazette pipeline runs.
 
 ### Result Notification Flow & Safeguards
 - **Zero Fabrication**: Notifications are triggered **only** after an official signed gazette is retrieved from LOTIS, parsed, schema-validated, and committed to PostgreSQL.
@@ -59,26 +103,49 @@ The website automatically retrieves and verifies official lottery results direct
 
 ---
 
-## 2. Supabase Cron & Edge Function Setup
+## 2. Automated Scheduling Setup
 
-### Step 1: Deploy Database Migration
-Run the SQL migration in `supabase/migrations/20260828000000_supabase_cron_and_watchlist.sql` using Supabase SQL Editor or Supabase CLI:
+The authoritative scheduler is **Supabase `pg_cron`**, which calls the
+Next.js pipeline every 15 minutes. This is what covers the actual result
+publication window (approximately 3:00 PM – 5:00 PM IST) with repeated,
+idempotent checks.
+
+The **Vercel Cron** entries in `vercel.json` are a daily safety net only: the
+Hobby plan restricts cron to once per day and two jobs, so it cannot provide
+the required intra-day cadence on its own. On a Vercel Pro plan you may tighten
+`/api/cron/sync-results` to `*/15 9-14 * * *` (UTC = IST − 5:30) and keep
+`pg_cron` as the redundancy.
+
+### Step 1: Deploy Database Migrations
 ```bash
 supabase db push
 ```
+This applies the watchlist schema, the `sync_runs` audit table, and
+`20260913000000_consolidate_cron_pipeline.sql`, which retires the deprecated
+edge-function job.
 
-### Step 2: Deploy Edge Function
-```bash
-supabase functions deploy check-lottery-results --no-verify-jwt
+### Step 2: Configure the sync jobs
+Two jobs share the same configuration: the official gazette sync every 15
+minutes, and the provisional live poller every minute during the publication
+window. `pg_cron` refuses to schedule either until these are set, so a
+misconfigured project fails loudly instead of silently never syncing:
+```sql
+ALTER DATABASE postgres SET app.settings.keraladraws_app_url = 'https://<your-domain>';
+ALTER DATABASE postgres SET app.settings.keraladraws_cron_secret = '<same value as CRON_SECRET>';
 ```
 
-### Step 3: Set Edge Function Secrets
+### Step 3: Generate the automation secrets
+Never use the previously documented placeholder values — they are public and
+are rejected in production. Generate strong secrets locally and copy them into
+Vercel / Supabase:
 ```bash
-supabase secrets set SUPABASE_URL="https://<YOUR_PROJECT_REF>.supabase.co"
-supabase secrets set SUPABASE_SERVICE_ROLE_KEY="<YOUR_SERVICE_ROLE_KEY>"
-supabase secrets set CRON_SECRET="kerala-lottery-cron-secure-token-2026"
-supabase secrets set LOTIS_BASE_URL="https://www.lotteryagent.kerala.gov.in"
+npm run generate-secrets
 ```
+
+> The deprecated `check-lottery-results` edge function is no longer scheduled.
+> If you keep it deployed as an emergency manual fallback, redeploy it as-is
+> (`supabase functions deploy check-lottery-results --no-verify-jwt`); it now
+> fails closed unless a valid `CRON_SECRET` or service-role key is presented.
 
 ---
 
@@ -90,10 +157,18 @@ Create `.env` based on `.env.example`:
 # ==========================================
 # Database & Core Application Secrets
 # ==========================================
+# Generate with: npm run generate-secrets  (never commit real values)
 DATABASE_URL="postgresql://postgres:password@localhost:5432/kerala_lottery?schema=public"
-CRON_SECRET="kerala-lottery-cron-secure-token-2026"
-ADMIN_SECRET="admin-kerala-lottery-2026"
+CRON_SECRET="<generated-32-byte-random-secret>"
+ADMIN_SECRET="<generated-32-byte-random-secret>"
 NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+
+# ==========================================
+# Unofficial live result source (optional)
+# ==========================================
+# Set ENABLED=false to fall back to the official gazette pipeline only.
+KERALALOTTERIES_ENABLED="true"
+KERALALOTTERIES_BASE_URL="https://www.keralalotteries.net"
 
 # ==========================================
 # Supabase Edge Functions Configuration
@@ -126,7 +201,9 @@ FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFA
 
 | Route | Method | Description |
 |---|---|---|
-| `/api/cron/sync-results` | `GET` | Next.js fallback / manual cron synchronization runner |
+| `/api/cron/sync-results` | `GET` | Official gazette synchronization (15-minute scheduler / Vercel Cron) |
+| `/api/cron/sync-live` | `GET` | Provisional live poller (`?force=true`, `?date=YYYY-MM-DD`); runs every minute in-window |
+| `/api/cron/keralalotteries-backfill` | `GET` | Resumable gap backfill from the live source (`?from`, `?to`, `?batch`, `?restart`) |
 | `/api/admin/sync` | `POST` | Protected manual sync trigger for administrative users |
 | `/api/notifications/register` | `POST` | Register FCM registration token & selected lotteries |
 | `/api/notifications/register` | `PUT` | Update selected lottery preferences for an FCM token |

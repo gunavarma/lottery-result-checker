@@ -1,23 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { syncRealLotteryNews } from '@/lib/news/news-engine';
+import { denyUnauthorized } from '@/lib/security/auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    const secretQuery = request.nextUrl.searchParams.get('secret');
-    const cronSecret = process.env.CRON_SECRET || 'kerala-lottery-cron-secure-token-2026';
-
-    const token = authHeader?.replace('Bearer ', '') || secretQuery;
-
-    if (process.env.NODE_ENV === 'production' && token !== cronSecret) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const denied = denyUnauthorized(request, 'cron');
+    if (denied) return denied;
 
     const result = await syncRealLotteryNews();
 

@@ -9,11 +9,19 @@ interface PrizeTableProps {
   prizes: any[];
   lotteryName?: string;
   drawNumber?: string;
+  /** 'PROVISIONAL' renders live-source wording instead of gazette wording. */
+  verificationLevel?: 'OFFICIAL' | 'PROVISIONAL';
 }
 
-export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps) {
+export function PrizeTable({
+  prizes,
+  lotteryName,
+  drawNumber,
+  verificationLevel = 'OFFICIAL',
+}: PrizeTableProps) {
   const { t } = useLanguage();
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const isProvisional = verificationLevel === 'PROVISIONAL';
 
   const handleCopyNumber = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -53,11 +61,23 @@ export function PrizeTable({ prizes, lotteryName, drawNumber }: PrizeTableProps)
       {/* Table Header Action Bar */}
       <div className="flex items-center justify-between no-print border-b border-[#E2E7E3] pb-3">
         <div>
-          <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
-            {t('ui.certified_result', 'Full Gazette Breakdown')}
+          <span
+            className={`text-[11px] font-bold uppercase tracking-wider block font-tabular ${
+              isProvisional ? 'text-[#8A6A24]' : 'text-[#0B3B32]'
+            }`}
+          >
+            {t(
+              'ui.certified_result',
+              isProvisional ? 'Live Result Breakdown (Unofficial)' : 'Full Gazette Breakdown'
+            )}
           </span>
           <h2 className="text-xl font-extrabold text-[#17201D] tracking-tight">
-            {t('ui.winning_numbers', 'Official Prize Tiers & Winning Numbers')}
+            {t(
+              'ui.winning_numbers',
+              isProvisional
+                ? 'Live Prize Tiers & Winning Numbers'
+                : 'Official Prize Tiers & Winning Numbers'
+            )}
           </h2>
         </div>
         <button

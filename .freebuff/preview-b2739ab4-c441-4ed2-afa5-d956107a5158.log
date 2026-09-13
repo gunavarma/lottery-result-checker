@@ -1,0 +1,1444 @@
+▲ Next.js 16.3.3
+- Local:         http://localhost:3401
+- Network:       http://172.26.248.62:3401
+✓ Ready in 160ms
+✓ Running next.config.ts took 72ms
+▲ Next.js 16.3.3
+- Local:         http://localhost:3401
+- Network:       http://172.26.248.62:3401
+✓ Ready in 130ms
+✓ Running next.config.ts took 25ms
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+[Cache SWR Refresh Error for key: api_results_today_2026-09-13] 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error 
+Invalid `prisma.lottery.findFirst()` invocation:
+
+
+Timed out fetching a new connection from the connection pool. More info: http://pris.ly/d/connection-pool (Current connection pool timeout: 15, connection limit: 10)
+[Cache SWR Refresh Error for key: api_results_today_2026-09-13] 
+Invalid `prisma.lottery.findFirst()` invocation:
+
+
+Timed out fetching a new connection from the connection pool. More info: http://pris.ly/d/connection-pool (Current connection pool timeout: 15, connection limit: 10)
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:466)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+Error in getLotterySchemeData: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async ttlMs (.next/server/chunks/ssr/_04fikdo._.js:1:431)
+    at async c (.next/server/chunks/ssr/_1fqdh29._.js:1:15765)
+    at async Module.w [as generateMetadata] (.next/server/chunks/ssr/_04fikdo._.js:1:831) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Lottery',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+Error in getLotterySchemeData: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async ttlMs (.next/server/chunks/ssr/_04fikdo._.js:1:431)
+    at async c (.next/server/chunks/ssr/_1fqdh29._.js:1:15765)
+    at async Module.w [as generateMetadata] (.next/server/chunks/ssr/_04fikdo._.js:1:831) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Lottery',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+Error in getLotterySchemeData: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async ttlMs (.next/server/chunks/ssr/_04fikdo._.js:1:431)
+    at async c (.next/server/chunks/ssr/_1fqdh29._.js:1:15765)
+    at async Module.w [as generateMetadata] (.next/server/chunks/ssr/_04fikdo._.js:1:831) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Lottery',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+Error in getLotterySchemeData: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async ttlMs (.next/server/chunks/ssr/_04fikdo._.js:1:431)
+    at async c (.next/server/chunks/ssr/_1fqdh29._.js:1:15765)
+    at async Module.w [as generateMetadata] (.next/server/chunks/ssr/_04fikdo._.js:1:831) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Lottery',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+[Cache SWR Refresh Error for key: api_results_today_2026-09-13] 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+[Cache SWR Refresh Error for key: api_results_today_2026-09-13] 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+[Cache SWR Refresh Error for key: api_results_today_2026-09-13] 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+API /results/today error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+    at async o.ttlMs (.next/server/chunks/_1wp4hpn._.js:1:290)
+    at async r (.next/server/chunks/[root-of-the-server]__07ol2hz._.js:1:2020)
+    at async s (.next/server/chunks/_1wp4hpn._.js:1:223)
+    at async Z (.next/server/chunks/_1wp4hpn._.js:1:5010) {
+  code: 'P1001',
+  clientVersion: '6.4.1',
+  meta: {
+    modelName: 'Draw',
+    database_host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+    database_port: 6543
+  }
+}
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation:
+
+
+Can't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.

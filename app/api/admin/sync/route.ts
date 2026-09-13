@@ -1,23 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { syncOfficialResults } from '@/lib/lotis/sync';
+import { denyUnauthorized } from '@/lib/security/auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    const secretQuery = request.nextUrl.searchParams.get('secret');
-    const adminSecret = process.env.ADMIN_SECRET || 'admin-kerala-lottery-2026';
-
-    const token = authHeader?.replace('Bearer ', '') || secretQuery;
-
-    if (token !== adminSecret) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized: Invalid admin credentials' },
-        { status: 401 }
-      );
-    }
+    const denied = denyUnauthorized(request, 'admin');
+    if (denied) return denied;
 
     const body = await request.json().catch(() => ({}));
     const limit = body.limit ? parseInt(body.limit, 10) : 10;

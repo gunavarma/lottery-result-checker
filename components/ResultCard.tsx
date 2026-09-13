@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Award, Calendar, ArrowRight, CheckCircle2, ShieldCheck, MapPin } from 'lucide-react';
+import { Award, Calendar, ArrowRight, CheckCircle2, ShieldCheck, MapPin, Radio } from 'lucide-react';
 import { formatINR } from '@/lib/prisma';
 import { format } from 'date-fns';
 
@@ -11,6 +11,7 @@ interface ResultCardProps {
 export function ResultCard({ draw }: ResultCardProps) {
   const firstPrize = draw.prizes?.find((p: any) => p.tierNumber === 1 || p.orderIndex === 0);
   const firstPrizeWinner = firstPrize?.winningNumbers?.[0];
+  const isProvisional = (draw.verificationLevel ?? 'OFFICIAL') === 'PROVISIONAL';
 
   const drawDateFormatted = draw.drawDate
     ? format(new Date(draw.drawDate), 'dd MMMM yyyy')
@@ -35,10 +36,20 @@ export function ResultCard({ draw }: ResultCardProps) {
             </h3>
           </div>
 
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#075338] bg-[#E8F4F0] px-2 py-0.5 rounded-full font-tabular border border-[#16845B]/20">
-            <CheckCircle2 className="w-3 h-3 text-[#075338]" />
-            <span>Published</span>
-          </span>
+          {isProvisional ? (
+            <span
+              className="inline-flex items-center gap-1 text-[10px] font-bold text-[#8A6A24] bg-[#C8A45D]/15 px-2 py-0.5 rounded-full font-tabular border border-[#C8A45D]/40"
+              title="Live result from an unofficial source; awaiting official gazette confirmation"
+            >
+              <Radio className="w-3 h-3 text-[#8A6A24]" />
+              <span>Live</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#075338] bg-[#E8F4F0] px-2 py-0.5 rounded-full font-tabular border border-[#16845B]/20">
+              <CheckCircle2 className="w-3 h-3 text-[#075338]" />
+              <span>Published</span>
+            </span>
+          )}
         </div>
 
         {/* Date & Draw Info */}
@@ -71,7 +82,9 @@ export function ResultCard({ draw }: ResultCardProps) {
 
       {/* Footer CTA */}
       <div className="pt-4 mt-4 border-t border-[#E2E7E3] flex items-center justify-between text-xs">
-        <span className="text-[11px] text-[#68736E]">Official LOTIS Record</span>
+        <span className="text-[11px] text-[#68736E]">
+          {isProvisional ? 'Live Source Record (Unverified)' : 'Official LOTIS Record'}
+        </span>
         <Link
           href={resultUrl}
           aria-label={`View complete results for ${draw.lottery?.name || 'Kerala Lottery'} draw ${draw.drawNumber}`}

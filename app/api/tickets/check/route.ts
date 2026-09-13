@@ -45,15 +45,25 @@ export async function checkTicketsHandler(params: {
   });
 
   if (draws.length === 0) {
+    // Nothing to check against. This is distinct from "checked and lost":
+    // reporting these as NO_MATCH would tell a user their ticket did not win
+    // when in fact no result was available to compare against.
     return {
       success: true,
       drawFound: false,
+      drawsEvaluated: [],
       message: 'No published official draw results found for the selected criteria.',
-      results: tickets.map((t) => ({
-        inputTicket: t,
-        isMatch: false,
-        message: 'No draw result found to check against.',
-      })),
+      results: tickets.map((t) => {
+        const normalized = normalizeTicketInput(t);
+        return {
+          inputTicket: t,
+          normalizedDisplay: normalized.display,
+          isMatch: false,
+          status: 'NOT_FOUND' as const,
+          message:
+            'No published result was available to check this ticket against. The draw may not be published yet.',
+        };
+      }),
     };
   }
 
@@ -62,6 +72,22 @@ export async function checkTicketsHandler(params: {
 
   for (const rawTicket of tickets) {
     const normalized = normalizeTicketInput(rawTicket);
+
+    // A value that cannot be reduced to at least a 4-digit ending cannot be
+    // matched against any prize tier. Report that honestly instead of implying
+    // the ticket was checked and did not win.
+    if (!/^\d{4,6}$/.test(normalized.number)) {
+      evaluatedResults.push({
+        inputTicket: rawTicket,
+        normalizedDisplay: normalized.display,
+        isMatch: false,
+        status: 'NOT_FOUND' as const,
+        message:
+          'This value was not recognizable as a Kerala lottery ticket number, so it could not be checked.',
+      });
+      continue;
+    }
+
     let matchFound = false;
     let matchedPrize: any = null;
     let matchedWinningNumber: any = null;

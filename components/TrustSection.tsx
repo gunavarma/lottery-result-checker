@@ -12,13 +12,13 @@ export function TrustSection() {
     {
       num: '02',
       title: 'Automated Retrieval',
-      desc: 'Our ingestion service connects directly to the official LOTIS publication feed to capture verified draw records.',
+      desc: 'Our ingestion service connects directly to the official LOTIS publication feed to capture verified draw records. Winning numbers are also shown live from the public source keralalotteries.net the moment they are announced — always labelled unofficial until verified.',
       icon: RefreshCw,
     },
     {
       num: '03',
       title: 'Data Integrity Audit',
-      desc: 'Winning numbers, series distributions, and prize structures are verified against official Gazette PDF documents.',
+      desc: 'Winning numbers, series distributions, and prize structures are verified against official Gazette PDF documents. Live (unverified) numbers are replaced by the gazette record and can never overwrite it.',
       icon: ShieldCheck,
     },
     {

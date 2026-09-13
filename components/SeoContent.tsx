@@ -27,7 +27,7 @@ const FAQS = [
   {
     question: 'Is this an official government website?',
     answer:
-      'No. This website is an independent digital information service. All data is automatically synchronized from public notifications on the official LOTIS portal (lotteryagent.kerala.gov.in) operated by the Directorate of Kerala State Lotteries, Government of Kerala. Winners must always cross-verify results in the official Kerala Government Gazette.',
+      'No. This website is an independent digital information service. Verified result data is automatically synchronized from public notifications on the official LOTIS portal (lotteryagent.kerala.gov.in) operated by the Directorate of Kerala State Lotteries, Government of Kerala. As a courtesy, live winning numbers are also shown the moment they are announced on the public source keralalotteries.net; those numbers are always labelled unofficial and unverified until the official gazette confirms them, and they can never replace the gazette record. Winners must always cross-verify results in the official Kerala Government Gazette.',
   },
 ];
 

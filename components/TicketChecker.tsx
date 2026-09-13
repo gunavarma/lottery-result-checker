@@ -44,6 +44,7 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
     total: number;
     winning: number;
     nonWinning: number;
+    notFound: number;
   } | null>(null);
 
   const checkTicketsMutation = useCheckTickets();
@@ -120,13 +121,17 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
         onSuccess: (data) => {
           if (data.results) {
             const winning = data.results.filter((r) => r.isMatch).length;
-            const nonWinning = data.results.length - winning;
+            // "Could not be checked" is tracked separately from "checked and
+            // did not win" so a missing result is never reported as a loss.
+            const notFound = data.results.filter((r) => r.status === 'NOT_FOUND').length;
+            const nonWinning = data.results.length - winning - notFound;
 
             setBatchResults(data.results);
             setBatchSummary({
               total: data.results.length,
               winning,
               nonWinning,
+              notFound,
             });
             setHasSearchedSingle(false);
             setSingleResults(null);
@@ -300,6 +305,14 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
                 <span className="text-slate-300 block text-[10px] uppercase font-bold">No Prize</span>
                 <span className="text-lg font-black text-slate-300">{batchSummary.nonWinning}</span>
               </div>
+              {batchSummary.notFound > 0 && (
+                <div className="bg-white/10 px-3.5 py-2 rounded-xl border border-amber-400/40">
+                  <span className="text-amber-200 block text-[10px] uppercase font-bold">Not Found</span>
+                  <span className="text-lg font-black text-amber-300">
+                    {batchSummary.notFound}
+                  </span>
+                </div>
+              )}
               <button
                 onClick={() => setScannerOpen(true)}
                 className="px-4 py-2.5 rounded-xl bg-[#16845B] hover:bg-[#16845B]/90 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
@@ -318,7 +331,9 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
                 className={`rounded-2xl p-5 border space-y-3 transition-all ${
                   item.isMatch
                     ? 'bg-emerald-50/70 border-emerald-300 shadow-sm'
-                    : 'bg-[#F7F7F4] border-[#E2E7E3]'
+                    : item.status === 'NOT_FOUND'
+                      ? 'bg-amber-50/60 border-amber-300'
+                      : 'bg-[#F7F7F4] border-[#E2E7E3]'
                 }`}
               >
                 {/* Header Badge */}
@@ -331,6 +346,11 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-[#16845B] text-white font-tabular">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>WINNING TICKET</span>
+                    </span>
+                  ) : item.status === 'NOT_FOUND' ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 font-tabular">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Not found</span>
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-200 text-slate-700 font-tabular">
@@ -375,6 +395,11 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
                       )}
                     </div>
                   </div>
+                ) : item.status === 'NOT_FOUND' ? (
+                  <p className="text-xs text-amber-800 leading-relaxed pt-1">
+                    {item.message ||
+                      'No published result was available to check this ticket against yet. It has not been marked as a loss.'}
+                  </p>
                 ) : (
                   <p className="text-xs text-[#68736E] leading-relaxed pt-1">
                     This ticket number does not match any currently published winning number in official records.

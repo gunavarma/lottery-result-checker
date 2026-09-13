@@ -27,6 +27,10 @@ interface DrawResult {
   status: string;
   sourceUrl: string;
   sourceDocumentUrl?: string | null;
+  /** 'PROVISIONAL' means unofficial live source, pending gazette. */
+  verificationLevel?: 'OFFICIAL' | 'PROVISIONAL' | null;
+  sourceProvider?: string | null;
+  provisionalUpdatedAt?: string | null;
   lottery: {
     id: string;
     name: string;
@@ -364,7 +368,10 @@ export default function PreviousResultsPage() {
                         {draw.lottery.name} ({draw.drawNumber})
                       </h2>
                       <p className="text-xs text-[#68736E]">
-                        Held on {draw.drawDate} at {draw.drawTime} | Official Gazette Certified
+                        Held on {draw.drawDate} at {draw.drawTime} |{' '}
+                        {(draw.verificationLevel ?? 'OFFICIAL') === 'PROVISIONAL'
+                          ? 'Live source — awaiting gazette'
+                          : 'Official Gazette Certified'}
                       </p>
                     </div>
 

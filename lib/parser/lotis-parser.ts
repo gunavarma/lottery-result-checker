@@ -1,16 +1,17 @@
 import { parse, isValid } from 'date-fns';
 
 export interface ParsedWinningNumber {
-  series: string | null;
+  // Optional mirrors the Zod schema, which normalises missing values.
+  series?: string | null;
   number: string;
   displayNumber: string;
-  location: string | null;
+  location?: string | null;
 }
 
 export interface ParsedPrize {
   category: string;
-  tierNumber: number | null;
-  description: string | null;
+  tierNumber?: number | null;
+  description?: string | null;
   amount: number;
   orderIndex: number;
   winningNumbers: ParsedWinningNumber[];
@@ -23,7 +24,7 @@ export interface ParsedDrawResult {
   drawDate: Date;
   drawDateFormatted: string; // YYYY-MM-DD
   drawTime: string;
-  venue: string | null;
+  venue?: string | null;
   prizes: ParsedPrize[];
   totalWinningNumbers: number;
   rawText: string;

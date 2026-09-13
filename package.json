@@ -8,7 +8,8 @@
     "start": "next start",
     "postinstall": "prisma generate",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "generate-secrets": "node scripts/generate-secrets.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",

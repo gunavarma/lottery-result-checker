@@ -1,13 +1,14 @@
 import { PDFParse } from 'pdf-parse';
 import crypto from 'crypto';
-import { prisma, formatINR } from '../prisma';
+import type { Prisma } from '@prisma/client';
+import { prisma } from '../prisma';
 import {
   parseLotisPdfText,
   standardizeLotteryName,
   getLotterySlug,
 } from '../parser/lotis-parser';
 import { ParsedDrawResultSchema } from '../validation/lottery';
-import { sendResultPublishedPushNotification } from '../firebase/fcm';
+import { persistParsedDraw } from '../results/persist';
 import { invalidateCache } from '../cache';
 
 export const LOTIS_BASE_URL = 'https://www.lotteryagent.kerala.gov.in';
@@ -254,18 +255,35 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
 
     for (const item of itemsToProcess) {
       try {
-        // Duplicate check
-        const existingDraw = await prisma.draw.findFirst({
-          where: {
-            OR: [
-              { sourceItemId: item.itemId },
-              { drawNumber: item.drawNumber },
-            ],
-          },
-          include: { prizes: { include: { winningNumbers: true } } },
+        // Idempotency check. Draw uniqueness is [lotteryId, drawNumber], so a
+        // bare drawNumber match across schemes could wrongly skip a legitimate
+        // new draw. Scope the match to the scheme that owns this item.
+        const candidateSlug = getLotterySlug(item.lotteryName, item.drawCode);
+        const candidateLottery = await prisma.lottery.findUnique({
+          where: { slug: candidateSlug },
+          select: { id: true },
         });
 
-        if (existingDraw && !options.forceRefresh && existingDraw.prizes.length > 0) {
+        const duplicateConditions: Prisma.DrawWhereInput[] = [
+          { sourceItemId: item.itemId },
+        ];
+        if (candidateLottery && item.drawNumber) {
+          duplicateConditions.push({
+            lotteryId: candidateLottery.id,
+            drawNumber: item.drawNumber,
+          });
+        }
+
+        const existingDraw = await prisma.draw.findFirst({
+          where: { OR: duplicateConditions },
+          select: { id: true, verificationLevel: true },
+        });
+
+        // Skip only a gazette-verified record. A PROVISIONAL row published by
+        // the live aggregator must NOT be skipped: the official gazette has to
+        // be able to upgrade it. Skipping here also avoids downloading and
+        // parsing a PDF we already hold officially.
+        if (existingDraw?.verificationLevel === 'OFFICIAL' && !options.forceRefresh) {
           skippedResults++;
           continue;
         }
@@ -286,97 +304,27 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
         }
 
         const validData = validationResult.data;
-        const slug = getLotterySlug(validData.lotteryName, validData.lotteryCode);
-        const isBumper = slug.includes('bumper');
 
-        // Upsert Lottery Scheme
-        const lottery = await prisma.lottery.upsert({
-          where: { slug },
-          update: {
-            name: validData.lotteryName,
-            code: validData.lotteryCode,
-            isBumper,
-          },
-          create: {
-            name: validData.lotteryName,
-            slug,
-            code: validData.lotteryCode,
-            drawDay: getDayFromDate(validData.drawDate),
-            drawTime: validData.drawTime || '3:00 PM',
-            isBumper,
-            ticketPrice: isBumper ? 300 : 40,
-            description: `Official Kerala State Lottery ${validData.lotteryName} (${validData.lotteryCode}) results and prize breakdown.`,
-          },
+        // Single shared writer: trust-tier rules, transactional prize
+        // replacement and notification dispatch all live in one place.
+        const outcome = await persistParsedDraw({
+          parsed: validData,
+          provider: 'LOTIS',
+          verificationLevel: 'OFFICIAL',
+          sourceUrl,
+          sourceDocumentUrl,
+          sourceItemId,
+          sourceHash,
+          forceRefresh: options.forceRefresh,
+          notify: true,
         });
 
-        if (existingDraw) {
-          // Clean existing prizes for atomic re-insertion
-          await prisma.prize.deleteMany({ where: { drawId: existingDraw.id } });
-
-          await prisma.draw.update({
-            where: { id: existingDraw.id },
-            data: {
-              lotteryId: lottery.id,
-              drawNumber: validData.drawNumber,
-              drawDate: validData.drawDate,
-              drawTime: validData.drawTime,
-              status: 'PUBLISHED',
-              sourceUrl,
-              sourceDocumentUrl,
-              sourceItemId,
-              sourceHash,
-              rawText: validData.rawText,
-              publishedAt: validData.drawDate,
-              verifiedAt: new Date(),
-              lastCheckedAt: new Date(),
-            },
-          });
-
-          await insertPrizesForDraw(existingDraw.id, validData.prizes);
-          updatedResults++;
-        } else {
-          const newDraw = await prisma.draw.create({
-            data: {
-              lotteryId: lottery.id,
-              drawNumber: validData.drawNumber,
-              drawDate: validData.drawDate,
-              drawTime: validData.drawTime,
-              status: 'PUBLISHED',
-              sourceUrl,
-              sourceDocumentUrl,
-              sourceItemId,
-              sourceHash,
-              rawText: validData.rawText,
-              publishedAt: validData.drawDate,
-              verifiedAt: new Date(),
-              lastCheckedAt: new Date(),
-            },
-          });
-
-          await insertPrizesForDraw(newDraw.id, validData.prizes);
+        if (outcome.status === 'SKIPPED') {
+          skippedResults++;
+        } else if (outcome.status === 'CREATED') {
           newResults++;
-
-          // Dispatch FCM notification ONLY for genuinely new real-time draw
-          try {
-            const firstPrize = validData.prizes.find((p) => p.orderIndex === 0 || p.tierNumber === 1);
-            const firstWinner = firstPrize?.winningNumbers?.[0];
-            const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com';
-
-            await sendResultPublishedPushNotification({
-              drawId: newDraw.id,
-              lotteryId: lottery.id,
-              lotteryName: validData.lotteryName,
-              lotteryCode: validData.lotteryCode,
-              drawNumber: validData.drawNumber,
-              drawDate: validData.drawDateFormatted,
-              drawTime: validData.drawTime || '3:00 PM',
-              firstPrizeAmountFormatted: firstPrize ? formatINR(firstPrize.amount) : '₹1,00,00,000',
-              firstPrizeTicket: firstWinner?.displayNumber,
-              resultUrl: `${siteUrl}/result/${validData.drawDateFormatted}/${slug}`,
-            });
-          } catch (dispatchErr) {
-            console.warn('Failed to dispatch FCM draw notifications:', dispatchErr);
-          }
+        } else {
+          updatedResults++;
         }
       } catch (itemErr: any) {
         console.error(`Error processing LOTIS item ${item.itemId} (${item.title}):`, itemErr);
@@ -484,33 +432,4 @@ export async function syncOfficialResults(options: { maxItemsToSync?: number; fo
   }
 }
 
-async function insertPrizesForDraw(drawId: string, parsedPrizes: any[]) {
-  for (const p of parsedPrizes) {
-    const prize = await prisma.prize.create({
-      data: {
-        drawId,
-        category: p.category,
-        description: p.description,
-        amount: BigInt(p.amount),
-        orderIndex: p.orderIndex,
-      },
-    });
 
-    if (p.winningNumbers && p.winningNumbers.length > 0) {
-      await prisma.winningNumber.createMany({
-        data: p.winningNumbers.map((w: any) => ({
-          prizeId: prize.id,
-          series: w.series,
-          number: w.number,
-          displayNumber: w.displayNumber,
-          location: w.location,
-        })),
-      });
-    }
-  }
-}
-
-function getDayFromDate(d: Date): string {
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  return days[d.getUTCDay()];
-}

@@ -1,22 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendResultPublishedPushNotification } from '@/lib/firebase/fcm';
 import { DrawPublishedEvent } from '@/lib/notifications/types';
+import { denyUnauthorizedAny } from '@/lib/security/auth';
 
 export const dynamic = 'force-dynamic';
-
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET || 'kerala-lottery-cron-secure-token-2026';
-    const adminSecret = process.env.ADMIN_SECRET || 'admin-kerala-lottery-2026';
-
-    const token = authHeader?.replace('Bearer ', '').trim();
-    if (token !== cronSecret && token !== adminSecret) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized: Invalid credentials' },
-        { status: 401 }
-      );
-    }
+    // Dispatch is triggered by the sync pipeline (cron secret) or an operator
+    // (admin secret). Both are validated fail-closed and constant-time.
+    const denied = denyUnauthorizedAny(request, ['cron', 'admin']);
+    if (denied) return denied;
 
     const body = await request.json().catch(() => ({}));
     const {

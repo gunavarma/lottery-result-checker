@@ -41,6 +41,7 @@ export default function AdminPage() {
   const [syncLogs, setSyncLogs] = useState<any[]>([]);
   const [deliveries, setDeliveries] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
+  const [automationHealth, setAutomationHealth] = useState<any>(null);
   const [liveStatus, setLiveStatus] = useState<any>(null);
   const [growthData, setGrowthData] = useState<any>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -79,6 +80,7 @@ export default function AdminPage() {
         setSyncLogs(data.logs || []);
         setDeliveries(data.deliveries || []);
         setStats(data.stats || null);
+        setAutomationHealth(data.automationHealth || null);
         localStorage.setItem('kl_admin_token', authToken);
       }
 
@@ -350,6 +352,35 @@ export default function AdminPage() {
         })}
       </div>
 
+      {/* Automation failure detection — never fail silently */}
+      {automationHealth && automationHealth.alerts?.length > 0 && (
+        <div
+          className={`p-4 rounded-2xl text-xs space-y-2 border ${
+            automationHealth.status === 'CRITICAL'
+              ? 'bg-[#B54747]/10 border-[#B54747]/25 text-[#B54747]'
+              : 'bg-[#C8A45D]/10 border-[#C8A45D]/25 text-[#8A6A24]'
+          }`}
+          role="alert"
+        >
+          <span className="font-black uppercase tracking-wide">
+            Automation Health: {automationHealth.status}
+          </span>
+          <ul className="space-y-1 list-disc pl-4 font-semibold">
+            {automationHealth.alerts.map((alert: any) => (
+              <li key={alert.code}>
+                <strong className="font-mono">{alert.code}</strong>: {alert.message}
+              </li>
+            ))}
+          </ul>
+          <div className="text-[11px] font-medium text-[#68736E]">
+            Last attempt: {automationHealth.lastAttemptedSync || 'never'} • Last success:{' '}
+            {automationHealth.lastSuccessfulSync || 'never'} • Consecutive failures:{' '}
+            {automationHealth.consecutiveFailures} • Live source check:{' '}
+            {automationHealth.lastLiveSourceCheck || 'never'}
+          </div>
+        </div>
+      )}
+
       {message && (
         <div
           className={`p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 ${
@@ -376,7 +407,7 @@ export default function AdminPage() {
                 Database Certified Draws
               </span>
               <div className="text-3xl font-black text-[#17201D] font-tabular">
-                {stats?.database?.totalDraws ?? '—'}
+                {stats?.totalDraws ?? '—'}
               </div>
               <p className="text-xs text-[#68736E]">Across all 7 weekly + seasonal bumper schemes</p>
             </div>
