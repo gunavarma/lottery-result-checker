@@ -204,13 +204,13 @@ describe('Trust gating in the read surfaces', () => {
 
   it('keeps provisional results out of search-engine indexing', () => {
     const datePage = fs.readFileSync(
-      path.join(projectRoot, 'app/kerala-lottery-result/[date]/page.tsx'),
+      path.join(projectRoot, 'app/(en)/kerala-lottery-result/[date]/page.tsx'),
       'utf8'
     );
     expect(datePage).toContain('noIndex: !hasOfficialDraw');
 
     const todayPage = fs.readFileSync(
-      path.join(projectRoot, 'app/kerala-lottery-result-today/page.tsx'),
+      path.join(projectRoot, 'app/(en)/kerala-lottery-result-today/page.tsx'),
       'utf8'
     );
     expect(todayPage).toContain('noIndex: isProvisional');

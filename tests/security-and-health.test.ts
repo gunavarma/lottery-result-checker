@@ -173,7 +173,7 @@ describe('Security regression guards', () => {
 
   it('keeps the /api/live response contract aligned with the client hook usage', () => {
     const route = fs.readFileSync(path.join(projectRoot, 'app/api/live/route.ts'), 'utf8');
-    const page = fs.readFileSync(path.join(projectRoot, 'app/live/page.tsx'), 'utf8');
+    const page = fs.readFileSync(path.join(projectRoot, 'app/(en)/live/page.tsx'), 'utf8');
 
     const usedFields = Array.from(page.matchAll(/liveData\?\.([A-Za-z0-9_]+)/g)).map((m) => m[1]);
     expect(usedFields.length).toBeGreaterThan(0);

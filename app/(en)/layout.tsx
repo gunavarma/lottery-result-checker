@@ -10,6 +10,7 @@ import {
   getOrganizationSchema,
   getWebSiteSchema,
 } from '@/lib/seo';
+import { languageAlternates } from '@/lib/i18n/config';
 
 let safeMetadataBase: URL;
 try {
@@ -80,6 +81,10 @@ export const metadata: Metadata = {
     title: `${SITE_NAME} | Kerala Lottery Results Today`,
     description: SITE_DESCRIPTION,
     images: [`${SITE_URL}/logo.svg`],
+  },
+  alternates: {
+    canonical: '/',
+    languages: languageAlternates('/'),
   },
   robots: {
     index: true,

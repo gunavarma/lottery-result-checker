@@ -123,7 +123,7 @@ async function getArchiveData(lotterySlug?: string, pageNumber: number = 1) {
         activeMonths: Array.from(monthMap.values()),
       });
     },
-    { ttlMs: 60_000, swrMs: 600_000 }
+    { ttlMs: 30_000, swrMs: 120_000 }
   );
 }
 

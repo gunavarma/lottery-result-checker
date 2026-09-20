@@ -71,7 +71,7 @@ async function getMonthArchiveData(yearStr: string, monthStr: string) {
         totalCount: draws.length,
       });
     },
-    { ttlMs: 300_000, swrMs: 86400_000 }
+    { ttlMs: 60_000, swrMs: 300_000 }
   );
 }
 

@@ -17,6 +17,7 @@ import {
   formatDateOnly,
   getIstDateRange,
   getAdjacentAvailableDates,
+  getTodayIstStr,
 } from '@/lib/date';
 import {
   Calendar as CalendarIcon,
@@ -42,6 +43,7 @@ async function getHistoricalDrawData(dateStr: string) {
   if (!isValidDateFormat(dateStr)) return null;
 
   const cacheKey = `kerala_lottery_result_page_${dateStr}`;
+  const isToday = dateStr === getTodayIstStr();
 
   return getOrSetCache(
     cacheKey,
@@ -83,7 +85,9 @@ async function getHistoricalDrawData(dateStr: string) {
         draws,
       });
     },
-    { ttlMs: 300_000, swrMs: 86400_000 }
+    // Never keep an empty/provisional draw page cached for a whole day: the
+    // importer can publish or correct a result moments after the first visit.
+    { ttlMs: isToday ? 5_000 : 60_000, swrMs: isToday ? 15_000 : 300_000 }
   );
 }
 
@@ -455,6 +459,30 @@ export default async function KeralaLotteryResultDatePage({ params }: PageProps)
                   url={`/kerala-lottery-result/${dateStr}`}
                 />
               </div>
+
+              {/* Answer-shaped summary (GEO): a single quotable paragraph with
+                  the exact facts answer engines look for. Rendered only for
+                  gazette-verified draws so we never assert unverified numbers. */}
+              {!drawIsProvisional &&
+                (() => {
+                  const fp = draw.prizes?.find((p: { orderIndex: number }) => p.orderIndex === 0);
+                  const fw = fp?.winningNumbers?.[0]?.displayNumber;
+                  return (
+                    <div className="bg-[#F7F7F4] rounded-2xl p-5 border border-[#E2E7E3] space-y-1.5">
+                      <h2 className="text-sm font-extrabold text-[#17201D]">
+                        {draw.lottery.name} ({draw.drawNumber}) result for {dateFormatted}
+                      </h2>
+                      <p className="text-xs text-[#17201D] leading-relaxed">
+                        The 1st prize of {fp ? formatINR(fp.amount) : '₹1 Crore'} in the{' '}
+                        {draw.lottery.name} {draw.drawNumber} draw held on {dateFormatted} was won
+                        by ticket {fw ?? '(see table below)'}. Winning numbers for every prize
+                        tier — consolation, 2nd, 3rd and down to the last tier — are listed in
+                        the table below. This result is verified against the official Kerala
+                        Government Gazette (LOTIS).
+                      </p>
+                    </div>
+                  );
+                })()}
             </article>
           );
         })}

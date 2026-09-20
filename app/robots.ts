@@ -1,6 +1,16 @@
 import { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/seo';
 
+const PRIVATE_PATHS = [
+  '/admin/',
+  '/api/',
+  '/search',
+  '/search/',
+  '/my-lotteries',
+  '/my-tickets',
+  '/notification-settings',
+];
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
@@ -37,6 +47,26 @@ export default function robots(): MetadataRoute.Robots {
           '/search',
           '/notification-settings',
         ],
+      },
+      // Answer engines / AI assistants (GEO): explicitly welcome them to read
+      // everything public so result answers can be quoted with attribution.
+      {
+        userAgent: [
+          'GPTBot',
+          'OAI-SearchBot',
+          'ChatGPT-User',
+          'ClaudeBot',
+          'Claude-SearchBot',
+          'anthropic-ai',
+          'PerplexityBot',
+          'Google-Extended',
+          'Applebot',
+          'Applebot-Extended',
+          'meta-externalagent',
+          'Bytespider',
+        ],
+        allow: '/',
+        disallow: PRIVATE_PATHS,
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

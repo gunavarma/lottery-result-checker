@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   Language,
@@ -31,28 +31,19 @@ const STORAGE_KEY = 'keraladraws_lang';
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  // Keep state so consumers re-render on navigation, but the URL segment is
-  // the single source of truth for the active language.
-  const [, setLanguageState] = useState<Language>('en');
 
   // /ml/... renders Malayalam, /ta/... Tamil, /hi/... Hindi; everything else
   // (the unprefixed en route group) is English. Derived synchronously from the
   // pathname on server and client alike, so there is no hydration mismatch.
+  // No separate state: usePathname triggers re-render on navigation.
   const language: Language = useMemo(() => {
     const seg = (pathname || '').split('/')[1];
-    return seg && isLocale(seg) ? seg : 'en';
+    return seg && isLocale(seg) ? (seg as Language) : 'en';
   }, [pathname]);
-
-  // Keep state in sync after client-side navigations.
-  useState(() => {
-    setLanguageState(language);
-  });
 
   const setLanguage = useCallback(
     (lang: Language) => {
       if (!SUPPORTED_LANGUAGES.some((l) => l.code === lang)) return;
-
-      setLanguageState(lang);
 
       try {
         localStorage.setItem(STORAGE_KEY, lang);

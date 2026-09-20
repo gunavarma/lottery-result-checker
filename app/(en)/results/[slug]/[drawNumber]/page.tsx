@@ -181,7 +181,7 @@ async function getDrawResultData(slug: string, drawNumber: string) {
         return null;
       }
     },
-    { ttlMs: 3600_000, swrMs: 86400_000 }
+    { ttlMs: 60_000, swrMs: 300_000 }
   );
 }
 

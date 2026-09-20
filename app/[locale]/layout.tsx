@@ -2,11 +2,9 @@ import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
 import '../globals.css';
 import { RootChrome } from '@/components/layout/RootChrome';
-import { LocaleDictionaryProvider } from '@/components/layout/LocaleDictionaryProvider';
 import { StructuredData } from '@/components/StructuredData';
 import { Language, SUPPORTED_LANGUAGES } from '@/lib/translations';
 import { isLocale, LOCALE_HTML_LANG, languageAlternates } from '@/lib/i18n/config';
-import { getDictionary } from '@/lib/i18n/server';
 import {
   SITE_URL,
   SITE_NAME,
@@ -121,7 +119,6 @@ export default async function LocaleRootLayout({
   if (!isLocale(locale) || locale === 'en') notFound();
 
   const htmlLang = LOCALE_HTML_LANG[locale];
-  const dict = getDictionary(locale);
   const organizationSchema = getOrganizationSchema();
   const webSiteSchema = getWebSiteSchema();
 
@@ -132,11 +129,7 @@ export default async function LocaleRootLayout({
         <StructuredData data={[organizationSchema, webSiteSchema]} />
       </head>
       <body className="min-h-screen flex flex-col bg-[#F7F7F4] text-[#17201D] font-sans antialiased selection:bg-[#0B3B32] selection:text-white pb-14 xl:pb-0">
-        <RootChrome>
-          <LocaleDictionaryProvider dictionary={dict} locale={locale}>
-            {children}
-          </LocaleDictionaryProvider>
-        </RootChrome>
+        <RootChrome>{children}</RootChrome>
       </body>
     </html>
   );

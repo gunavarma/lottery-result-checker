@@ -28,12 +28,12 @@ export async function GET() {
           earliestDate: dates[dates.length - 1] || null,
         };
       },
-      { ttlMs: 120_000, swrMs: 300_000 }
+      { ttlMs: 10_000, swrMs: 30_000 }
     );
 
     return NextResponse.json(data, {
       headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
       },
     });
   } catch (error: any) {

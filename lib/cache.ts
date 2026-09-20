@@ -11,6 +11,29 @@ interface CacheEntry<T> {
 }
 
 const memoryCache = new Map<string, CacheEntry<any>>();
+// When a cold or expired key is requested concurrently, all callers should
+// share one database read instead of stampeding the database.
+const inFlightFetches = new Map<string, Promise<unknown>>();
+
+function refreshCache<T>(
+  key: string,
+  fetcher: () => Promise<T>,
+  ttlMs: number,
+  swrMs: number
+): Promise<T> {
+  const activeFetch = inFlightFetches.get(key) as Promise<T> | undefined;
+  if (activeFetch) return activeFetch;
+
+  const refresh = fetcher()
+    .then((freshData) => {
+      memoryCache.set(key, { data: freshData, cachedAt: Date.now(), ttlMs, swrMs });
+      return freshData;
+    })
+    .finally(() => inFlightFetches.delete(key));
+
+  inFlightFetches.set(key, refresh);
+  return refresh;
+}
 
 export interface CacheOptions {
   ttlMs?: number; // Time in ms before considered stale (default: 30 seconds)
@@ -42,15 +65,8 @@ export async function getOrSetCache<T>(
     // 2. Stale hit (within SWR window): Return stale data immediately, refresh in background
     if (age < entry.ttlMs + entry.swrMs) {
       // Background revalidation without blocking caller
-      fetcher()
-        .then((freshData) => {
-          memoryCache.set(key, {
-            data: freshData,
-            cachedAt: Date.now(),
-            ttlMs,
-            swrMs,
-          });
-        })
+      refreshCache(key, fetcher, ttlMs, swrMs)
+        .then(() => undefined)
         .catch((err) => {
           console.warn(`[Cache SWR Refresh Error for key: ${key}]`, err?.message);
         });
@@ -59,16 +75,10 @@ export async function getOrSetCache<T>(
     }
   }
 
-  // 3. Cache miss or expired beyond SWR: Fetch fresh synchronously
-  const freshData = await fetcher();
-  memoryCache.set(key, {
-    data: freshData,
-    cachedAt: Date.now(),
-    ttlMs,
-    swrMs,
-  });
-
-  return freshData;
+  // 3. Cache miss or expired beyond SWR: share one synchronous refresh among
+  // all concurrent callers. This is important for result pages after a cache
+  // expiry, when many visitors may arrive at once.
+  return refreshCache(key, fetcher, ttlMs, swrMs);
 }
 
 /**

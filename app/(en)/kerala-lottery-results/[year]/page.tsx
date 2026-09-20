@@ -78,7 +78,7 @@ async function getYearArchiveData(yearStr: string) {
         months: Array.from(monthMap.values()),
       });
     },
-    { ttlMs: 300_000, swrMs: 86400_000 }
+    { ttlMs: 60_000, swrMs: 300_000 }
   );
 }
 

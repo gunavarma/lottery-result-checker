@@ -68,4 +68,17 @@ describe('Performance & In-Memory SWR Cache Architecture', () => {
     invalidateCache();
     expect(getCacheStats().totalEntries).toBe(0);
   });
+
+  it('coalesces simultaneous cache misses into one fetch', async () => {
+    const fetcher = vi.fn(
+      () => new Promise((resolve) => setTimeout(() => resolve({ value: 'fresh' }), 20))
+    );
+
+    const results = await Promise.all(
+      Array.from({ length: 8 }, () => getOrSetCache('shared_miss', fetcher))
+    );
+
+    expect(results).toEqual(Array.from({ length: 8 }, () => ({ value: 'fresh' })));
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { NotificationModal } from '@/components/NotificationModal';
@@ -42,7 +42,7 @@ export default function MyTicketsPage() {
     return id;
   };
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const devId = getDeviceId();
@@ -54,8 +54,8 @@ export default function MyTicketsPage() {
       if (lotteriesRes.ok) {
         const lotData = await lotteriesRes.json();
         setLotteries(lotData.lotteries || []);
-        if (lotData.lotteries?.length > 0 && !selectedLottery) {
-          setSelectedLottery(lotData.lotteries[0].id);
+        if (lotData.lotteries?.length > 0) {
+          setSelectedLottery((current) => current || lotData.lotteries[0].id);
         }
       }
 
@@ -68,11 +68,11 @@ export default function MyTicketsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const handleAddTicket = async (e: React.FormEvent) => {
     e.preventDefault();

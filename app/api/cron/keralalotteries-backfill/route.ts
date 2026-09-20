@@ -12,6 +12,7 @@ export const maxDuration = 60;
  *
  * Query params:
  *   ?from=YYYY-MM-DD&to=YYYY-MM-DD   explicit range (default: last 14 days)
+ *   ?full=true                         import the complete source archive
  *   ?batch=5                         pages per invocation (1-20)
  *   ?restart=true                    ignore the saved cursor and start over
  */
@@ -27,6 +28,7 @@ export async function GET(request: NextRequest) {
       toDate: params.get('to') || undefined,
       batchSize: params.get('batch') ? parseInt(params.get('batch') as string, 10) : undefined,
       restart: params.get('restart') === 'true',
+      fullArchive: params.get('full') === 'true',
     });
 
     return NextResponse.json(result, {

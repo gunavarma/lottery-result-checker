@@ -48,6 +48,8 @@ export interface BackfillOptions {
   toDate?: string;
   batchSize?: number;
   restart?: boolean;
+  /** Import every result page the source currently exposes. */
+  fullArchive?: boolean;
 }
 
 function addDays(dateStr: string, delta: number): string {
@@ -97,7 +99,7 @@ export async function discoverAllDrawPages(): Promise<DrawPageRef[]> {
 
 export async function runAggregatorBackfill(options: BackfillOptions = {}): Promise<BackfillResult> {
   const today = getTodayIstStr();
-  const from = options.fromDate || addDays(today, -DEFAULT_LOOKBACK_DAYS);
+  const from = options.fromDate || (options.fullArchive ? '2000-01-01' : addDays(today, -DEFAULT_LOOKBACK_DAYS));
   const to = options.toDate || today;
   const batchSize = Math.min(Math.max(options.batchSize ?? 5, 1), 20);
 

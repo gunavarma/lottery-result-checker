@@ -58,7 +58,9 @@ export async function GET(
           draw,
         });
       },
-      { ttlMs: 300_000, swrMs: 86400_000 }
+      // Official documents occasionally receive corrections. A short cache
+      // keeps reads fast without leaving an old result visible for a day.
+      { ttlMs: 60_000, swrMs: 300_000 }
     );
 
     if (!data) {
@@ -73,7 +75,7 @@ export async function GET(
 
     return NextResponse.json(data, {
       headers: {
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
       },
     });
   } catch (error: any) {

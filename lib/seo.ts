@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { languageAlternates } from '@/lib/i18n/config';
 
 function getSafeSiteUrl(): string {
   const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
@@ -75,6 +76,8 @@ export function constructMetadata({
     keywords: allKeywords,
     alternates: {
       canonical,
+      // hreflang alternates for the native locale mirrors (/ml, /ta, /hi).
+      languages: languageAlternates(path || '/'),
     },
     metadataBase: new URL(SITE_URL),
     authors: [{ name: SITE_NAME, url: SITE_URL }],

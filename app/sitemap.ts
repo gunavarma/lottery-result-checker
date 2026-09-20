@@ -3,7 +3,20 @@ import { prisma } from '@/lib/prisma';
 import { SITE_URL } from '@/lib/seo';
 import { getAllNews } from '@/lib/news';
 import { getAllGuides } from '@/lib/guides';
-import { formatDateOnly } from '@/lib/date';export const dynamic = 'force-dynamic';
+import { formatDateOnly } from '@/lib/date';
+import { languageAlternates } from '@/lib/i18n/config';
+
+export const dynamic = 'force-dynamic';
+
+// Wrap a sitemap entry with hreflang alternates for the locale mirrors.
+function withAlternates(entry: MetadataRoute.Sitemap[number]): MetadataRoute.Sitemap[number] {
+  try {
+    const u = new URL(entry.url);
+    return { ...entry, alternates: { languages: languageAlternates(u.pathname) } };
+  } catch {
+    return entry;
+  }
+}
 
 /**
  * Gazette-verified draws only, with a deployment-order safety net: if the
@@ -160,12 +173,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     const dateResultRoutes: MetadataRoute.Sitemap = Array.from(dateMap.entries()).map(
-      ([dateStr, lastmod]) => ({
-        url: `${baseUrl}/kerala-lottery-result/${dateStr}`,
-        lastModified: lastmod,
-        changeFrequency: 'monthly',
-        priority: 0.8,
-      })
+      ([dateStr, lastmod]) =>
+        withAlternates({
+          url: `${baseUrl}/kerala-lottery-result/${dateStr}`,
+          lastModified: lastmod,
+          changeFrequency: 'monthly',
+          priority: 0.8,
+        })
     );
 
     // 4. Canonical Monthly Archive Pages (/kerala-lottery-results/YYYY/MM)

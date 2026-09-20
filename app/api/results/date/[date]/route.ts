@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/prisma';
-import { isValidDateFormat, parseDateOnlyUtc } from '@/lib/date';
+import { getTodayIstStr, isValidDateFormat, parseDateOnlyUtc } from '@/lib/date';
 import { getOrSetCache } from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
@@ -21,6 +21,10 @@ export async function GET(
 
     const targetDate = parseDateOnlyUtc(date);
     const cacheKey = `api_results_date_${date}`;
+    // A draw can move from provisional to official, or receive corrected
+    // historical data. Keep the current date especially fresh, and cap
+    // historical staleness so corrections become visible promptly.
+    const isToday = date === getTodayIstStr();
 
     const data = await getOrSetCache(
       cacheKey,
@@ -51,12 +55,14 @@ export async function GET(
           draws,
         });
       },
-      { ttlMs: 300_000, swrMs: 86400_000 } // Historical dates can be cached aggressively
+      { ttlMs: isToday ? 5_000 : 60_000, swrMs: isToday ? 15_000 : 300_000 }
     );
 
     return NextResponse.json(data, {
       headers: {
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        'Cache-Control': isToday
+          ? 'public, s-maxage=5, stale-while-revalidate=15'
+          : 'public, s-maxage=60, stale-while-revalidate=300',
       },
     });
   } catch (error: any) {

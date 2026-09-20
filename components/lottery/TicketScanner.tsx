@@ -316,6 +316,13 @@ export function TicketScanner({
     void terminateOcrWorker();
   }, [open, releaseFileScanner, terminateOcrWorker]);
 
+  // Close handler with camera tear down. Keep this stable so the keyboard
+  // listener always calls the current function rather than a stale closure.
+  const handleClose = useCallback(async () => {
+    await stopCamera();
+    onOpenChange(false);
+  }, [onOpenChange, stopCamera]);
+
   // Keyboard accessibility: Escape to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -325,13 +332,7 @@ export function TicketScanner({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [open]);
-
-  // Close handler with camera tear down
-  const handleClose = async () => {
-    await stopCamera();
-    onOpenChange(false);
-  };
+  }, [open, handleClose]);
 
   // Done button handler
   const handleDone = async () => {
