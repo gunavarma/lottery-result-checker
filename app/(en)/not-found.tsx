@@ -11,7 +11,7 @@ export default function NotFound() {
 
       <div className="space-y-3">
         <span className="text-xs font-bold text-[#C8A45D] uppercase tracking-wider font-tabular block">
-          Error 404 • Page Not Found
+          Error 404 • Page Not Found.
         </span>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[#17201D] tracking-tight">
           The requested page could not be found

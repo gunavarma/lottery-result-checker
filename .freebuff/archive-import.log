@@ -321,3 +321,13 @@ Unique constraint failed on the fields: (`code`)
 [90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
 [22m[39m[iter 37] status=PAUSED cursor=2024-03-26 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 58s
 
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 38] status=PAUSED cursor=2024-04-18 processed=20/1872 created=19 updated=0 skipped=0 failed=1 verified=0 mismatches=0 56s
+   errors(sample): 2024-04-17 FF-92: could not parse page (no plausible 1st-prize series ticket)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 39] status=PAUSED cursor=2024-05-12 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 56s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 40] status=PAUSED cursor=2024-06-05 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 55s
+
