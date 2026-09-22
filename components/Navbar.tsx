@@ -17,7 +17,6 @@ import {
   Home,
   Award,
   Newspaper,
-  User,
 } from 'lucide-react';
 import { SearchModal } from './SearchModal';
 import { NotificationModal } from './NotificationModal';
@@ -57,12 +56,6 @@ export function Navbar() {
                 <Clock className="w-3 h-3 text-[#C8A45D]" />{' '}
                 {t('ui.daily_draw_time', 'Daily Draw: 3:00 PM IST')}
               </span>
-              <Link
-                href="/admin"
-                className="hover:text-white transition-colors underline text-[11px]"
-              >
-                {t('nav.admin', 'Admin Center')}
-              </Link>
             </div>
           </div>
         </div>
@@ -138,15 +131,6 @@ export function Navbar() {
               >
                 <Bell className="w-4 h-4" />
               </button>
-
-              <Link
-                href="/admin"
-                aria-label="Admin Portal"
-                className="p-2.5 rounded-xl text-[#17201D] hover:text-[#0B3B32] hover:bg-[#F7F7F4] border border-transparent hover:border-[#E2E7E3] transition-colors"
-                title="Admin Account"
-              >
-                <User className="w-4 h-4" />
-              </Link>
             </div>
 
             {/* Mobile Header Right Icons */}
@@ -213,13 +197,6 @@ export function Navbar() {
                 <ShieldCheck className="w-4 h-4 text-[#16845B]" />
                 <span>LOTIS Synchronized</span>
               </span>
-              <Link
-                href="/admin"
-                onClick={() => setMobileMenuOpen(false)}
-                className="underline text-[#0B3B32] font-semibold"
-              >
-                {t('nav.admin', 'Admin Center')}
-              </Link>
             </div>
           </div>
         )}

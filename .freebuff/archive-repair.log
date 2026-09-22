@@ -1,0 +1,351 @@
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/Users/guna/Documents/lottery-result-checker[39m
+
+[90mstdout[2m | tests/_archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39mrepair candidates: 70 distinct draws from 76 failures
+
+[90mstdout[2m | tests/_archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  still failing BR-65 (2018-01-23): Could not parse https://www.keralalotteries.net/2019/01/christmas-new-year-bumper-kerala-lottery-result-BR-65-today-23-01-2018.html (page date 2019-01-23 != expected).
+
+[90mstdout[2m | tests/_archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39mprisma:error 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+ [31m❯[39m tests/_archive-repair.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 6046[2mms[22m[39m
+[31m     [31m×[31m re-ingests every date recorded as a parse failure[39m[33m 6044[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/_archive-repair.test.ts[2m > [22mrepair failed archive dates[2m > [22mre-ingests every date recorded as a parse failure
+[31m[1mPrismaClientKnownRequestError[22m: 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)[39m
+[90m [2m❯[22m Un.handleRequestError node_modules/@prisma/client/runtime/library.js:[2m121:7447[22m[39m
+[90m [2m❯[22m Un.handleAndLogRequestError node_modules/@prisma/client/runtime/library.js:[2m121:6771[22m[39m
+[90m [2m❯[22m Un.request node_modules/@prisma/client/runtime/library.js:[2m121:6478[22m[39m
+[90m [2m❯[22m l node_modules/@prisma/client/runtime/library.js:[2m130:9644[22m[39m
+[36m [2m❯[22m persistParsedDraw lib/results/persist.ts:[2m229:19[22m[39m
+    [90m227|[39m
+    [90m228|[39m   [90m// 1. Upsert the scheme (never destructive; only refreshes metadata).[39m
+    [90m229|[39m   [35mconst[39m lottery [33m=[39m [35mawait[39m prisma[33m.[39mlottery[33m.[39m[34mupsert[39m({
+    [90m   |[39m                   [31m^[39m
+    [90m230|[39m     where[33m:[39m { slug }[33m,[39m
+    [90m231|[39m     update[33m:[39m {
+[90m [2m❯[22m backfillOneDate lib/sources/keralalotteries/backfill.ts:[2m470:19[22m[39m
+[90m [2m❯[22m tests/_archive-repair.test.ts:[2m38:24[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 13:05:58
+[2m   Duration [22m 7.23s[2m (transform 98ms, setup 0ms, import 1.00s, tests 6.05s, environment 0ms)[22m
+
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/Users/guna/Documents/lottery-result-checker[39m
+
+[31mNo test files found, exiting with code 1
+[39m
+[2mfilter: [22m[33mtests/_archive-repair.test.ts[39m
+[2minclude: [22m[33m**/*.{test,spec}.?(c|m)[jt]s?(x)[39m
+[2mexclude:  [22m[33mnode_modules/**[2m, [22mdist/**[2m, [22m.next/**[2m, [22mtests/_*.test.ts[39m
+
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/Users/guna/Documents/lottery-result-checker[39m
+
+[31mNo test files found, exiting with code 1
+[39m
+[2mfilter: [22m[33mtests/_archive-repair.test.ts[39m
+[2minclude: [22m[33m**/*.{test,spec}.?(c|m)[jt]s?(x)[39m
+[2mexclude:  [22m[33mnode_modules/**[2m, [22mdist/**[2m, [22m.next/**[2m, [22mtests/_*.test.ts[2m, [22m**/node_modules/**[2m, [22m**/.next/**[2m, [22m**/dist/**[39m
+
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.runners.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/Users/guna/Documents/lottery-result-checker[39m
+
+ [31m❯[39m tests/runners/archive-repair.test.ts [2m([22m[2m0 test[22m[2m)[22m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/runners/archive-repair.test.ts[2m [ tests/runners/archive-repair.test.ts ][22m
+[31m[1mError[22m: Cannot find module '../lib/prisma' imported from /Users/guna/Documents/lottery-result-checker/tests/runners/archive-repair.test.ts[39m
+[36m [2m❯[22m tests/runners/archive-repair.test.ts:[2m2:1[22m[39m
+    [90m  1|[39m [35mimport[39m { describe[33m,[39m it } [35mfrom[39m [32m'vitest'[39m[33m;[39m
+    [90m  2|[39m [35mimport[39m { prisma } [35mfrom[39m [32m'../lib/prisma'[39m[33m;[39m
+    [90m   |[39m [31m^[39m
+    [90m  3|[39m import { backfillOneDate } from '../lib/sources/keralalotteries/backfi…
+    [90m  4|[39m [35mimport[39m { toDrawPageRef } [35mfrom[39m [32m'../lib/sources/keralalotteries/client'[39m[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [2mno tests[22m
+[2m   Start at [22m 13:12:49
+[2m   Duration [22m 166ms[2m (transform 20ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)[22m
+
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.runners.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/Users/guna/Documents/lottery-result-checker[39m
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39mrepair candidates: 74 distinct draws from 80 failures
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  still failing BR-65 (2018-01-23): Could not parse https://www.keralalotteries.net/2019/01/christmas-new-year-bumper-kerala-lottery-result-BR-65-today-23-01-2018.html (page date 2019-01-23 != expected).
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired BR-64 (2018-11-30)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  still failing BR-70 (2019-11-30): Could not parse https://www.keralalotteries.net/2019/11/pooja-bumper-kerala-lottery-result-BR-70-today-30-11-2019.html (no lottery name on page).
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired RN-423 (2019-12-22)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired RN-424 (2019-12-29)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired RN-425 (2020-01-05)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired RN-426 (2020-01-12)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired RN-427 (2020-01-19)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired RN-428 (2020-02-02)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired RN-429 (2020-02-09)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  still failing BR-71 (2020-02-10): Could not parse https://www.keralalotteries.net/2020/02/christmas-new-year-bumper-kerala-lottery-result-BR-71-today-10-02-2020.html (page date 2026-09-22 != expected).
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired RN-430 (2020-02-16)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired RN-431 (2020-02-23)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired BM-1 (2020-12-06)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired NR-205 (2021-01-01)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KR-480 (2021-01-02)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired BM-2 (2021-01-03)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired SS-243 (2021-01-05)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired AK-479 (2021-01-06)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired NR-206 (2021-01-08)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KR-481 (2021-01-09)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired SS-244 (2021-01-12)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired AK-480 (2021-01-13)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired NR-207 (2021-01-15)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KR-482 (2021-01-16)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired SS-245 (2021-01-19)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired AK-481 (2021-01-20)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired NR-208 (2021-01-22)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KR-483 (2021-01-23)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired AK-482 (2021-01-27)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired NR-209 (2021-01-29)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KR-484 (2021-01-30)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired SS-246 (2021-02-02)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired AK-483 (2021-02-03)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KN-354 (2021-02-04)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired NR-210 (2021-02-05)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KR-485 (2021-02-06)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired BM-3 (2021-02-07)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired SS-247 (2021-02-09)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired AK-484 (2021-02-10)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KN-355 (2021-02-11)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired NR-211 (2021-02-12)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KR-486 (2021-02-13)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired SS-248 (2021-02-16)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired AK-485 (2021-02-17)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KN-356 (2021-02-18)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired NR-212 (2021-02-19)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KR-487 (2021-02-20)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired SS-249 (2021-02-23)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired AK-486 (2021-02-24)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KN-357 (2021-02-25)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired NR-213 (2021-02-26)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KR-488 (2021-02-27)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired SS-250 (2021-03-02)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired AK-487 (2021-03-03)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KN-358 (2021-03-04)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  still failing NR-214 (2021-03-05): Could not parse https://www.keralalotteries.net/2021/03/nirmal-kerala-lottery-result-nr-214-today-05-03-2021.html (no prize tiers or winning numbers parsed).
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KR-489 (2021-03-06)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired SS-251 (2021-03-09)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired AK-488 (2021-03-10)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KN-359 (2021-03-11)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired NR-215 (2021-03-12)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired KR-490 (2021-03-13)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired BM-5 (2021-04-04)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  repaired BM-6 (2021-05-02)
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  still failing KR-514 (2021-09-04): Could not parse https://www.keralalotteries.net/2021/09/karunya-kerala-lottery-result-kr-514-today-04-09-2021.html (page date 2021-04-24 != expected).
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  still failing KN-385 (2021-09-09): Could not parse https://www.keralalotteries.net/2021/09/karunya-plus-kerala-lottery-result-kn-385-today-09-09-2021.html (page draw KN-384 != expected).
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  still failing KR-515 (2021-09-11): Could not parse https://www.keralalotteries.net/2021/09/karunya-kerala-lottery-result-kr-515-today-11-09-2021.html (page draw KR-51 != expected).
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  still failing AK-522 (2021-10-03): Could not parse https://www.keralalotteries.net/2021/11/akshaya-kerala-lottery-result-ak-522-today-03-10-2021.html (page date 2021-11-03 != expected).
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  still failing AK-622 (2021-10-22): Could not parse https://www.keralalotteries.net/2023/10/akshaya-kerala-lottery-result-ak-622-today-22-10-2021.html (page date 2023-10-22 != expected).
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  still failing SS-291 (2021-12-21): Could not parse https://www.keralalotteries.net/2021/12/sthree-sakthi-kerala-lottery-result-ss-291-today-21-12-2021.html (page draw SS-292 != expected).
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  still failing AK-534 (2022-01-02): Could not parse https://www.keralalotteries.net/2022/02/akshaya-kerala-lottery-result-ak-534-today-02-01-2022.html (page date 2022-02-02 != expected).
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  still failing KR-546 (2022-04-23): Could not parse https://www.keralalotteries.net/2022/04/karunya-kerala-lottery-result-kr-546-today-23-04-2022.html (page date 2022-04-16 != expected).
+
+[90mstdout[2m | tests/runners/archive-repair.test.ts[2m > [22m[2mrepair failed archive dates[2m > [22m[2mre-ingests every date recorded as a parse failure
+[22m[39m  still failing AK-550 (2022-05-25): Could not parse https://www.keralalotteries.net/2022/05/akshaya-kerala-lottery-result-ak-550-today-25-05-2022.html (page date 2022-05-18 != expected).
+TOTALS repaired=61 stillFailing=13
+
+ [32m✓[39m tests/runners/archive-repair.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 315620[2mms[22m[39m
+     [33m[2m✓[22m[39m re-ingests every date recorded as a parse failure [33m 315619[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 13:14:18
+[2m   Duration [22m 317.35s[2m (transform 106ms, setup 0ms, import 1.57s, tests 315.62s, environment 0ms)[22m
+

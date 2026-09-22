@@ -44,7 +44,11 @@ export function getLotterySlug(name: string, code?: string): string {
   if (clean.includes('sthree') || clean.includes('sakthi')) return 'sthree-sakthi';
   if (clean.includes('karunya-plus') || (code && code.startsWith('KN'))) return 'karunya-plus';
   if (clean.includes('karunya') || (code && code.startsWith('KR'))) return 'karunya';
+  // "Bhagyamithra" also contains "bhagya", so it must be matched before the
+  // generic Bhagya/Bhagyathara rule or its draws are filed under Bhagya Thara.
+  if (clean.includes('bhagyamithra') || (code && code.startsWith('BM'))) return 'bhagyamithra';
   if (clean.includes('bhagya') || clean.includes('thara')) return 'bhagya-thara';
+  if (clean.includes('pournami') || (code && code.startsWith('RN'))) return 'pournami';
   if (clean.includes('dhanalekshmi') || clean.includes('dhana')) return 'dhanalekshmi';
   if (clean.includes('samrudhi')) return 'samrudhi';
   if (clean.includes('fifty') || clean.includes('50-50')) return 'fifty-fifty';
@@ -70,7 +74,9 @@ export function standardizeLotteryName(rawName: string): string {
   if (upper.includes('STHREE') || upper.includes('SAKTHI')) return 'Sthree Sakthi';
   if (upper.includes('KARUNYA PLUS')) return 'Karunya Plus';
   if (upper.includes('KARUNYA')) return 'Karunya';
+  if (upper.includes('BHAGYAMITHRA')) return 'Bhagyamithra';
   if (upper.includes('BHAGYATHARA') || upper.includes('BHAGYA')) return 'Bhagya Thara';
+  if (upper.includes('POURNAMI')) return 'Pournami';
   if (upper.includes('DHANALEKSHMI') || upper.includes('DHANA')) return 'Dhanalekshmi';
   if (upper.includes('SAMRUDHI')) return 'Samrudhi';
   if (upper.includes('FIFTY') || upper.includes('50-50')) return 'Fifty-Fifty';

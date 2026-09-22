@@ -4,7 +4,9 @@ import {
   parseKeralaLotteriesHtml,
   inspectKeralaLotteriesPage,
   decodeEntities,
+  resolveLotteryName,
 } from '@/lib/sources/keralalotteries/parser';
+import { getLotterySlug } from '@/lib/parser/lotis-parser';
 import {
   parseDrawPageRefs,
   toDrawPageRef,
@@ -319,5 +321,193 @@ describe('keralalotteries.net draw-page discovery', () => {
   it('rejects unrelated URLs', () => {
     expect(toDrawPageRef('https://www.keralalotteries.net/about-us.html')).toBeNull();
     expect(toDrawPageRef('/search?q=karunya')).toBeNull();
+  });
+});
+
+/**
+ * Legacy publication format (verified against the real SS-189 and NR-180 pages):
+ *   - "Date of Draw" with no colon, sometimes with the code on a later line
+ *   - the tier name and its amount on separate lines ("1st Prize-" / "Rs :7,000,000/-")
+ *   - the 3rd prize published as 4-digit endings instead of a series ticket
+ *   - a "today's draw" widget in the page chrome that names a DIFFERENT draw
+ */
+const LEGACY_RESULT_HTML = `
+<html><body>
+<div>Kerala Lottery Results: 24-12-2019 Sthree Sakthi SS-189 Lottery Result ~ LIVE | Kerala Lottery Result 22.09.2026 Sthree Sakthi SS-538 Results Today</div>
+<p>Kerala State Lotteries Results</p>
+<div>Kerala Lottery Result Sthree Sakthi (SS.189)</div>
+<div>Date of Draw 24.12.2019</div>
+<div>1st Prize-</div>
+<div>Rs :7,000,000/-</div>
+<div>SB 726505 (KOLLAM)</div>
+<div>----</div>
+<div>Consolation Prize-</div>
+<div>Rs. 8,000/-</div>
+<div>SA 726505 SC 726505</div>
+<div>2nd Prize-</div>
+<div>Rs :500,000/-</div>
+<div>SA 893285 (PALAKKAD)</div>
+<div>For The Tickets Ending With</div>
+<div>The Following Numbers</div>
+<div>3rd Prize-</div>
+<div>Rs. 5,000/-</div>
+<div>2290 2633 3037 4535</div>
+<div>4th Prize-</div>
+<div>Rs. 2,000/-</div>
+<div>3013 5974 6339 6770</div>
+<p>The prize winners are advised to verify the winning numbers with the results published in the Kerala Government Gazette</p>
+</body></html>
+`;
+
+describe('Legacy publication formats (historical archive)', () => {
+  const inspect = (expectedDate: string, expectedDrawNumber: string) =>
+    inspectKeralaLotteriesPage(LEGACY_RESULT_HTML, {
+      sourceUrl: `https://www.keralalotteries.net/2019/12/sthree-sakthi-${expectedDrawNumber.toLowerCase()}.html`,
+      expectedDate,
+      expectedDrawNumber,
+    });
+
+  it('parses an era whose "Date of Draw" line has no colon and no code', () => {
+    const outcome = inspect('2019-12-24', 'SS-189');
+    expect(outcome.kind).toBe('RESULT');
+    if (outcome.kind !== 'RESULT') return;
+
+    const { parsed, tierCount } = outcome.result;
+    expect(parsed.drawNumber).toBe('SS-189');
+    expect(parsed.drawDateFormatted).toBe('2019-12-24');
+    expect(parsed.lotteryName).toBe('Sthree Sakthi');
+    expect(tierCount).toBe(5);
+    expect(parsed.prizes[0].winningNumbers[0].displayNumber).toBe('SB 726505');
+  });
+
+  it('reads tier amounts published on the line after the tier name', () => {
+    const outcome = inspect('2019-12-24', 'SS-189');
+    if (outcome.kind !== 'RESULT') throw new Error('expected a parsed result');
+
+    const amounts = Object.fromEntries(
+      outcome.result.parsed.prizes.map((prize) => [prize.category, prize.amount])
+    );
+    expect(amounts['1st Prize']).toBe(7000000);
+    expect(amounts['Consolation Prize']).toBe(8000);
+    expect(amounts['2nd Prize']).toBe(500000);
+    expect(amounts['3rd Prize']).toBe(5000);
+  });
+
+  it('accepts 4-digit early tiers only when the line is purely 4-digit groups', () => {
+    const outcome = inspect('2019-12-24', 'SS-189');
+    if (outcome.kind !== 'RESULT') throw new Error('expected a parsed result');
+
+    const third = outcome.result.parsed.prizes.find((p) => p.category === '3rd Prize');
+    expect(third?.winningNumbers.map((w) => w.number)).toEqual([
+      '2290',
+      '2633',
+      '3037',
+      '4535',
+    ]);
+  });
+
+  it('never lets a "today\'s draw" widget in the chrome assert a different draw', () => {
+    // The page chrome advertises today's SS-538; the URL says SS-189.
+    const mismatched = inspect('2019-12-24', 'SS-538');
+    expect(mismatched.kind).toBe('UNIDENTIFIED');
+
+    const wrongDate = inspect('2026-09-22', 'SS-189');
+    expect(wrongDate.kind).toBe('UNIDENTIFIED');
+  });
+
+  it('reads amounts written as "₹.7000000/-" (2021-era pages)', () => {
+    const html = `
+<html><body>
+<div>Kerala Lotteries Result 01-01-2021 Nirmal Lottery NR-205 ~ LIVE | Kerala Lottery Result 22.09.2026 Sthree Sakthi SS-538 Results Today</div>
+<div>1st Prize ₹.7000000/-</div>
+<div>NR 673025 (KATTAPPANA)</div>
+<div>Consolation Prize ₹.8000/-</div>
+<div>NN 673025 NO 673025</div>
+<div>2nd Prize ₹.1000000/-</div>
+<div>NU 753005 (KARUNAGAPALLY)</div>
+<p>The prize winners are advised to verify the winning numbers with the results published in the Kerala Government Gazette</p>
+</body></html>`;
+
+    const outcome = inspectKeralaLotteriesPage(html, {
+      sourceUrl: 'https://www.keralalotteries.net/2021/01/nr-205.html',
+      expectedDate: '2021-01-01',
+      expectedDrawNumber: 'NR-205',
+    });
+
+    expect(outcome.kind).toBe('RESULT');
+    if (outcome.kind !== 'RESULT') return;
+
+    const amounts = Object.fromEntries(
+      outcome.result.parsed.prizes.map((prize) => [prize.category, prize.amount])
+    );
+    expect(amounts['1st Prize']).toBe(7000000);
+    expect(amounts['Consolation Prize']).toBe(8000);
+    expect(outcome.result.parsed.prizes[0].winningNumbers[0].displayNumber).toBe('NR 673025');
+  });
+
+  it('accepts a monthly draw with several 1st prizes without weakening the gate', () => {
+    const html = `
+<html><body>
+<div>Kerala Lottery Results: 03-01-2021 Bhagyamithra BM-2 Lottery Result ~ LIVE | Kerala Lottery Result 22.09.2026 Sthree Sakthi SS-538 Results Today</div>
+<div>Kerala Lottery Result Date of Draw: 03/01/2021 Bhagyamithra Lottery Result BM-2</div>
+<div>1st Prize Rs.1,00,00,000/- [1 crore]</div>
+<div>1) BJ 382963 (KANHANGAD)</div>
+<div>2) BK 297436 (PAYYANUR)</div>
+<div>3) BM 429076 (MALAPPURAM)</div>
+<div>Consolation Prize Rs :25000/-</div>
+<div>BK 382963 BL 382963</div>
+<div>2nd Prize Rs.500000/-</div>
+<div>BJ 297436 (PAYYANUR)</div>
+<p>The prize winners are advised to verify the winning numbers with the results published in the Kerala Government Gazette</p>
+</body></html>`;
+
+    const outcome = inspectKeralaLotteriesPage(html, {
+      sourceUrl: 'https://www.keralalotteries.net/2021/01/bm-2.html',
+      expectedDate: '2021-01-03',
+      expectedDrawNumber: 'BM-2',
+    });
+
+    expect(outcome.kind).toBe('RESULT');
+    if (outcome.kind !== 'RESULT') return;
+
+    expect(outcome.result.parsed.lotteryName).toBe('Bhagyamithra');
+    const first = outcome.result.parsed.prizes.find((prize) => prize.tierNumber === 1);
+    expect(first?.winningNumbers).toHaveLength(3);
+    // The monthly scheme awards ₹25,000 in consolation, not the weekly ₹5,000.
+    const consolation = outcome.result.parsed.prizes.find(
+      (prize) => prize.category === 'Consolation Prize'
+    );
+    expect(consolation?.amount).toBe(25000);
+  });
+
+  it('never derives a draw number from surrounding prose', () => {
+    // A case-insensitive code match would read "AW-24" out of "Draw 24.12.2019".
+    const outcome = inspect('2019-12-24', 'SS-189');
+    if (outcome.kind !== 'RESULT') throw new Error('expected a parsed result');
+    expect(outcome.result.parsed.drawNumber).not.toContain('AW');
+  });
+});
+
+describe('Scheme resolution for historical draws', () => {
+  it('maps legacy codes to their canonical scheme names when the page omits the name', () => {
+    expect(resolveLotteryName(null, 'RN')).toBe('Pournami');
+    expect(resolveLotteryName(null, 'BM')).toBe('Bhagyamithra');
+    expect(resolveLotteryName(null, 'NR')).toBe('Nirmal');
+    expect(resolveLotteryName(null, 'AK')).toBe('Akshaya');
+    expect(resolveLotteryName(null, 'FF')).toBe('Fifty-Fifty');
+  });
+
+  it('strips chrome words from headings instead of publishing them as a scheme', () => {
+    expect(resolveLotteryName('Today pournami', 'RN')).toBe('pournami');
+    expect(resolveLotteryName('Live Karunya', 'KR')).toBe('Karunya');
+    // A pure chrome word is not a name, so the code mapping takes over.
+    expect(resolveLotteryName('Kerala', 'SS')).toBe('Sthree Sakthi');
+    expect(resolveLotteryName('Today', 'ZZ')).toBeNull();
+  });
+
+  it('files Bhagyamithra under its own scheme, not Bhagya Thara', () => {
+    expect(getLotterySlug('Bhagyamithra', 'BM')).toBe('bhagyamithra');
+    expect(getLotterySlug('Bhagya Thara', 'BT')).toBe('bhagya-thara');
+    expect(getLotterySlug('Pournami', 'RN')).toBe('pournami');
   });
 });

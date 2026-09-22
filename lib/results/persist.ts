@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import type { Prisma } from '@prisma/client';
 import { prisma, formatINR } from '../prisma';
 import { getLotterySlug, type ParsedDrawResult, type ParsedPrize } from '../parser/lotis-parser';
@@ -167,28 +168,37 @@ export async function insertPrizesForDraw(
   drawId: string,
   parsedPrizes: ParsedPrize[]
 ) {
-  for (const p of parsedPrizes) {
-    const prize = await tx.prize.create({
-      data: {
-        drawId,
-        category: p.category,
-        description: p.description,
-        amount: BigInt(Math.round(p.amount)),
-        orderIndex: p.orderIndex,
-      },
-    });
+  if (parsedPrizes.length === 0) return;
 
-    if (p.winningNumbers && p.winningNumbers.length > 0) {
-      await tx.winningNumber.createMany({
-        data: p.winningNumbers.map((w) => ({
-          prizeId: prize.id,
-          series: w.series,
-          number: w.number,
-          displayNumber: w.displayNumber,
-          location: w.location,
-        })),
-      });
-    }
+  // Prize ids are generated client-side so the tiers and every winning number
+  // can be written with two statements in total. Creating each tier one at a
+  // time cost ~20 round-trips per draw, which dominated both the archive
+  // import and the per-minute live poller on a remote (pooled) database.
+  const prizeRows = parsedPrizes.map((prize) => ({ id: crypto.randomUUID(), prize }));
+
+  await tx.prize.createMany({
+    data: prizeRows.map(({ id, prize }) => ({
+      id,
+      drawId,
+      category: prize.category,
+      description: prize.description,
+      amount: BigInt(Math.round(prize.amount)),
+      orderIndex: prize.orderIndex,
+    })),
+  });
+
+  const winningRows = prizeRows.flatMap(({ id, prize }) =>
+    (prize.winningNumbers ?? []).map((winner) => ({
+      prizeId: id,
+      series: winner.series,
+      number: winner.number,
+      displayNumber: winner.displayNumber,
+      location: winner.location,
+    }))
+  );
+
+  if (winningRows.length > 0) {
+    await tx.winningNumber.createMany({ data: winningRows });
   }
 }
 

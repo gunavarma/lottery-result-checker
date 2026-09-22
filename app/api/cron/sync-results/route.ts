@@ -3,6 +3,7 @@ import { syncOfficialResults } from '@/lib/lotis/sync';
 import { denyUnauthorized } from '@/lib/security/auth';
 import { prisma } from '@/lib/prisma';
 import { formatDateOnly } from '@/lib/date';
+import { getAutomationHealth } from '@/lib/lotis/health';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // 60 seconds execution time on Vercel Functions
@@ -32,7 +33,28 @@ export async function GET(request: NextRequest) {
       errors: result.errors?.slice(0, 5),
       timestamp: result.timestamp,
       indexNow: undefined as { submitted: number; ok: boolean } | undefined,
+      // Automation failure detection travels with the automation itself. There
+      // is no admin dashboard, so the scheduler's own response is where a stalled
+      // pipeline or a missing result has to surface.
+      health: undefined as
+        | { status: string; alerts: { code: string; severity: string; message: string }[] }
+        | undefined,
     };
+
+    try {
+      const health = await getAutomationHealth();
+      response.health = { status: health.status, alerts: health.alerts };
+
+      if (health.status === 'CRITICAL') {
+        console.error(
+          `[sync-results] Automation health CRITICAL: ${health.alerts
+            .map((alert) => `${alert.code} (${alert.message})`)
+            .join(' | ')}`
+        );
+      }
+    } catch (healthErr) {
+      console.warn('[sync-results] Automation health unavailable:', healthErr);
+    }
 
     // Search-engine pings: when gazette-verified pages changed, tell IndexNow
     // (Bing's index — which several AI answer engines read) so new/updated

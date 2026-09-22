@@ -13,9 +13,14 @@ datasource db {
 
 model Lottery {
   id          String   @id @default(cuid())
-  name        String   @unique
+  // `slug` is the scheme identity. `name` and `code` are display metadata and
+  // are deliberately NOT unique: Kerala's seasonal bumpers reuse one code
+  // (BR is used by the Christmas/New Year, Monsoon and Summer bumpers), so a
+  // unique constraint there crashes ingestion outright at every bumper season.
+  // `name` is unconstrained for the same reason — it is derived from page text.
+  name        String
   slug        String   @unique
-  code        String   @unique
+  code        String
   description String?
   drawDay     String   // e.g. "Monday", "Tuesday", "Seasonal Bumper"
   drawTime    String   @default("3:00 PM")
@@ -32,6 +37,7 @@ model Lottery {
 
   @@index([slug])
   @@index([code])
+  @@index([name])
 }
 
 model Draw {

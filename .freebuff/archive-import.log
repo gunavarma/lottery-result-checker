@@ -1,0 +1,320 @@
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/Users/guna/Documents/lottery-result-checker[39m
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39mprisma:error 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 1] status=PAUSED cursor=2020-10-09 processed=20/1872 created=19 updated=0 skipped=0 failed=1 verified=0 mismatches=0 58s
+   errors(sample): 2020-09-20 BR-75: 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39mprisma:error 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 2] status=PAUSED cursor=2020-12-05 processed=20/1872 created=19 updated=0 skipped=0 failed=1 verified=0 mismatches=0 54s
+   errors(sample): 2020-11-15 BR-76: 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/Users/guna/Documents/lottery-result-checker[39m
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39mprisma:error 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 1] status=PAUSED cursor=2021-02-07 processed=20/1872 created=0 updated=0 skipped=0 failed=20 verified=0 mismatches=0 16s
+   errors(sample): 2021-01-08 NR-206: could not parse page (page date 2026-09-22 != expected) | 2021-01-09 KR-481: could not parse page (page date 2026-09-22 != expected) | 2021-01-12 SS-244: could not parse page (page date 2026-09-22 != expected)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 2] status=PAUSED cursor=2021-03-06 processed=20/1872 created=0 updated=0 skipped=0 failed=20 verified=0 mismatches=0 23s
+   errors(sample): 2021-02-09 SS-247: could not parse page (page date 2026-09-22 != expected) | 2021-02-10 AK-484: could not parse page (page date 2026-09-22 != expected) | 2021-02-11 KN-355: could not parse page (page date 2026-09-22 != expected)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39mprisma:error 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 3] status=PAUSED cursor=2021-04-01 processed=20/1872 created=14 updated=0 skipped=0 failed=6 verified=0 mismatches=0 45s
+   errors(sample): 2021-03-09 SS-251: could not parse page (page date 2026-09-22 != expected) | 2021-03-10 AK-488: could not parse page (page date 2026-09-22 != expected) | 2021-03-11 KN-359: could not parse page (page date 2026-09-22 != expected)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 4] status=PAUSED cursor=2021-04-29 processed=20/1872 created=19 updated=0 skipped=0 failed=1 verified=0 mismatches=0 55s
+   errors(sample): 2021-04-04 BM-5: could not parse page (no 1st-prize series ticket)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39mprisma:error 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/Users/guna/Documents/lottery-result-checker[39m
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 5] status=PAUSED cursor=2021-08-27 processed=20/1872 created=18 updated=0 skipped=0 failed=2 verified=0 mismatches=0 51s
+   errors(sample): 2021-05-02 BM-6: could not parse page (no 1st-prize series ticket) | 2021-05-23 BR-79: 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39mprisma:error 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 1] status=PAUSED cursor=2021-08-27 processed=20/1872 created=1 updated=0 skipped=18 failed=1 verified=0 mismatches=0 29s
+   errors(sample): 2021-05-23 BR-79: 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39mprisma:error 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 6] status=PAUSED cursor=2021-09-25 processed=20/1872 created=16 updated=0 skipped=0 failed=4 verified=0 mismatches=0 48s
+   errors(sample): 2021-09-04 KR-514: could not parse page (page date 2021-04-24 != expected) | 2021-09-09 KN-385: could not parse page (page draw KN-384 != expected) | 2021-09-11 KR-515: could not parse page (page draw KR-51 != expected)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39mprisma:error 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 2] status=PAUSED cursor=2021-09-25 processed=20/1872 created=0 updated=0 skipped=16 failed=4 verified=0 mismatches=0 25s
+   errors(sample): 2021-09-04 KR-514: could not parse page (page date 2021-04-24 != expected) | 2021-09-09 KN-385: could not parse page (page draw KN-384 != expected) | 2021-09-11 KR-515: could not parse page (page draw KR-51 != expected)
+
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/Users/guna/Documents/lottery-result-checker[39m
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 1] status=PAUSED cursor=2021-10-22 processed=20/1872 created=0 updated=0 skipped=18 failed=2 verified=0 mismatches=0 27s
+   errors(sample): 2021-10-03 AK-522: could not parse page (page date 2021-11-03 != expected) | 2021-10-22 AK-622: could not parse page (page date 2023-10-22 != expected)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 2] status=PAUSED cursor=2021-11-20 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 58s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39mprisma:error 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 3] status=PAUSED cursor=2021-12-17 processed=20/1872 created=19 updated=0 skipped=0 failed=1 verified=0 mismatches=0 56s
+   errors(sample): 2021-11-21 BR-82: 
+Invalid `prisma.lottery.upsert()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/persist.ts:229:40
+
+  226 };
+  227 
+  228 // 1. Upsert the scheme (never destructive; only refreshes metadata).
+→ 229 const lottery = await prisma.lottery.upsert(
+Unique constraint failed on the fields: (`code`)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 4] status=PAUSED cursor=2022-01-13 processed=20/1872 created=18 updated=0 skipped=0 failed=2 verified=0 mismatches=0 52s
+   errors(sample): 2021-12-21 SS-291: could not parse page (page draw SS-292 != expected) | 2022-01-02 AK-534: could not parse page (page date 2022-02-02 != expected)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 5] status=PAUSED cursor=2022-02-11 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 57s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 6] status=PAUSED cursor=2022-03-11 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 57s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 7] status=PAUSED cursor=2022-04-07 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 58s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 8] status=PAUSED cursor=2022-05-05 processed=20/1872 created=19 updated=0 skipped=0 failed=1 verified=0 mismatches=0 55s
+   errors(sample): 2022-04-23 KR-546: could not parse page (page date 2022-04-16 != expected)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 9] status=PAUSED cursor=2022-05-31 processed=20/1872 created=19 updated=0 skipped=0 failed=1 verified=0 mismatches=0 58s
+   errors(sample): 2022-05-25 AK-550: could not parse page (page date 2022-05-18 != expected)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 10] status=PAUSED cursor=2022-06-23 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 67s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 11] status=PAUSED cursor=2022-07-16 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 63s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 12] status=PAUSED cursor=2022-08-07 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 67s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 13] status=PAUSED cursor=2022-08-31 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 60s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 14] status=PAUSED cursor=2022-09-25 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 70s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 15] status=PAUSED cursor=2022-10-20 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 61s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 16] status=PAUSED cursor=2022-11-12 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 62s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 17] status=PAUSED cursor=2022-12-06 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 59s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 18] status=PAUSED cursor=2022-12-29 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 66s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 19] status=PAUSED cursor=2023-01-22 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 55s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 20] status=PAUSED cursor=2023-02-16 processed=20/1872 created=19 updated=0 skipped=0 failed=1 verified=0 mismatches=0 55s
+   errors(sample): 2023-02-01 FF-35: could not parse page (page date 2023-02-00 != expected)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 21] status=PAUSED cursor=2023-03-11 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 62s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 22] status=PAUSED cursor=2023-04-04 processed=20/1872 created=18 updated=0 skipped=0 failed=2 verified=0 mismatches=0 60s
+   errors(sample): 2023-03-19 BR-90: could not parse page (page date 2023-03-20 != expected) | 2023-04-02 AK-593: could not parse page (page date 2023-04-01 != expected)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 23] status=PAUSED cursor=2023-04-27 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 58s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 24] status=PAUSED cursor=2023-05-20 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 57s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 25] status=PAUSED cursor=2023-06-13 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 56s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 26] status=PAUSED cursor=2023-07-06 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 57s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 27] status=PAUSED cursor=2023-07-29 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 56s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 28] status=PAUSED cursor=2023-08-23 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 58s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 29] status=PAUSED cursor=2023-09-16 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 58s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 30] status=PAUSED cursor=2023-10-11 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 58s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 31] status=PAUSED cursor=2023-11-05 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 59s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 32] status=PAUSED cursor=2023-11-29 processed=20/1872 created=19 updated=0 skipped=0 failed=1 verified=0 mismatches=0 56s
+   errors(sample): 2023-11-29 FF-74: could not parse page (page date 2023-11-22 != expected)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 33] status=PAUSED cursor=2023-12-22 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 65s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 34] status=PAUSED cursor=2024-01-14 processed=20/1872 created=18 updated=0 skipped=0 failed=2 verified=0 mismatches=0 87s
+   errors(sample): 2023-12-23 KR-633: could not parse page (page date 2023-12-12 != expected) | 2024-01-04 KN-503: could not parse page (page draw KN-504 != expected)
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 35] status=PAUSED cursor=2024-02-08 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 66s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 36] status=PAUSED cursor=2024-03-02 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 64s
+

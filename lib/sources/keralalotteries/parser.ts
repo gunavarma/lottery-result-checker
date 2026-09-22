@@ -39,6 +39,9 @@ const IGNORED_LINE_PATTERNS: RegExp[] = [
   /^\(?\s*remaining all series\s*\)?$/i,
   /^\(?\s*last four digits to be drawn/i,
   /^for the tickets ending with the following numbers$/i,
+  // Older layouts split that heading across two lines.
+  /^for the tickets ending with$/i,
+  /^the following numbers$/i,
   /^-+$/,
   /^page \d+/i,
   /^advertisement$/i,
@@ -175,72 +178,346 @@ function toIsoDate(day: string, month: string, year: string): string {
   return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 }
 
+interface HeaderCandidate extends PageHeader {
+  /** Lower is a stronger source: the "Date of Draw" line beats the heading. */
+  priority: number;
+}
+
+/** "Date of Draw" is punctuated differently across publication eras. */
+const FULL_HEADER_LINE = new RegExp(
+  String.raw`Date of Draw\s*:?\s*` +
+    DATE_PART +
+    String.raw`\s+([A-Za-z][A-Za-z\s]{2,30}?)\s+Lottery Result\s+` +
+    CODE_PART,
+  'i'
+);
+const DATE_OF_DRAW_LINE = new RegExp(String.raw`Date of Draw\s*:?\s*` + DATE_PART, 'i');
+
 /**
- * Reads the draw identity strictly from the page's own "Date of Draw" line,
- * falling back to the page heading. Deliberately never scans the whole page:
- * these posts embed other draws' dates and numbers in their chrome.
+ * The 2020-2021 posts state their identity only in the title, as
+ * "Kerala Lotteries Result 01-01-2021 Nirmal Lottery NR-205 ~ LIVE".
+ *
+ * The ordering is what makes this safe: the date must be followed by the scheme
+ * name *and* the words "Lottery <CODE>", so the "today's draw" widget that shares
+ * that same line ("| Kerala Lottery Result 22.09.2026 Sthree Sakthi SS-538
+ * Results Today") cannot match it.
  */
-export function extractPageHeader(lines: string[]): PageHeader {
-  const fullHeader = new RegExp(
-    String.raw`Date of Draw\s*:\s*` + DATE_PART + String.raw`\s+([A-Za-z][A-Za-z\s]{2,30}?)\s+Lottery Result\s+` + CODE_PART,
-    'i'
-  );
-  const dateOnly = new RegExp(String.raw`Date of Draw\s*:\s*` + DATE_PART, 'i');
-  const codeOnly = new RegExp(CODE_PART, 'i');
-  const heading = new RegExp(
-    String.raw`([A-Za-z][A-Za-z\s]{2,30}?)\s+Lottery Result\s+` + DATE_PART,
-    'i'
-  );
+const TITLE_IDENTITY_LINE = new RegExp(
+  String.raw`Kerala\s+Lotter(?:y|ies)\s+Results?\s*:?\s*` +
+    DATE_PART +
+    String.raw`\s+([A-Za-z][A-Za-z\s]{2,20}?)\s+Lottery\s+` +
+    CODE_PART,
+  'i'
+);
+const RESULT_HEADING_LINE = new RegExp(
+  String.raw`([A-Za-z][A-Za-z\s]{2,30}?)\s+Lottery Result\s+` + DATE_PART,
+  'i'
+);
+/**
+ * Scheme codes are genuinely upper-case, and the search is deliberately case
+ * SENSITIVE with word boundaries. A case-insensitive version of this pattern
+ * silently reads "AW-24" out of the phrase "Draw 24.12.2019" (the trailing
+ * "aw" plus the day), which is how an earlier revision mis-identified pages.
+ */
+const CODE_ANYWHERE = /\b([A-Z]{2})[-.\s]\s*(\d{1,4})\b/;
+
+/**
+ * A draw code introduced by a result heading, e.g.
+ *   "Sthree Sakthi Lottery Result SS-189 Today"
+ *   "Kerala Lottery Result Nirmal (NR.180)"
+ * The heading anchor is what distinguishes the draw's own identity from an
+ * arbitrary code-shaped token elsewhere on the page.
+ */
+const CODE_STATED_BY_RESULT_HEADING =
+  /Lottery\s+Result[^\d\n]{0,40}?\b([A-Z]{2})[-.\s]\s*(\d{1,4})\b/g;
+
+/**
+ * Canonical names for the scheme codes used by the weekly draws.
+ *
+ * Used only as a fallback when a page states its code but not its scheme name
+ * (legacy posts published before the name was part of the "Date of Draw"
+ * line). Bumper codes are intentionally absent: "BR" is reused by different
+ * bumpers in different seasons, so the page itself must name those.
+ */
+const SCHEME_NAME_BY_CODE: Record<string, string> = {
+  SS: 'Sthree Sakthi',
+  KR: 'Karunya',
+  KN: 'Karunya Plus',
+  SM: 'Samrudhi',
+  BT: 'Bhagya Thara',
+  SK: 'Suvarna Keralam',
+  DL: 'Dhanalekshmi',
+  AK: 'Akshaya',
+  NR: 'Nirmal',
+  FF: 'Fifty-Fifty',
+  // Both confirmed from the pages themselves ("Kerala Lottery Result
+  // Pournami (RN.423)", "Kerala Lottery Result Bhagyamithra (BM.1)").
+  RN: 'Pournami',
+  BM: 'Bhagyamithra',
+};
+
+/** Chrome words that are never a lottery name. */
+const GENERIC_LOTTERY_NAMES = new Set([
+  'kerala',
+  'kerala state',
+  'kerala state lotteries',
+  'kerala lotteries',
+  'today',
+  'live',
+  'result',
+  'results',
+  'lottery',
+  'lotteries',
+  'state',
+]);
+
+/**
+ * Removes leading chrome words from a heading like "Today POURNAMI Lottery" or
+ * "Live Karunya Lottery Result", which would otherwise be published as the
+ * scheme name (that is how a scheme called "Today pournami" got created once).
+ */
+function sanitizeLotteryName(name: string | null | undefined): string {
+  if (!name) return '';
+  let clean = name.trim();
+  for (let pass = 0; pass < 3; pass++) {
+    const next = clean
+      .replace(/^(?:today|live|kerala|state|lotteries|lottery|results|result)\s+/i, '')
+      .trim();
+    if (next === clean) break;
+    clean = next;
+  }
+  return clean;
+}
+
+function isUsableLotteryName(name: string | null | undefined): boolean {
+  const clean = sanitizeLotteryName(name).toLowerCase();
+  return clean.length >= 3 && !GENERIC_LOTTERY_NAMES.has(clean);
+}
+
+function normalizeDrawNumber(value: string | null | undefined): string | null {
+  return value ? value.replace(/\s+/g, '').toUpperCase() : null;
+}
+
+/**
+ * Collects every plausible identity line on the page, tagged with the strength
+ * of the pattern it came from. Older posts carry several (a sidebar widget for
+ * today's draw, a legacy heading, then the real "Date of Draw" line), so the
+ * caller — not the line order — decides which one is authoritative.
+ */
+function collectHeaderCandidates(lines: string[]): HeaderCandidate[] {
+  const candidates: HeaderCandidate[] = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    const full = line.match(fullHeader);
+    const full = line.match(FULL_HEADER_LINE);
     if (full) {
-      return {
+      candidates.push({
         dateLabel: toIsoDate(full[1], full[2], full[3]),
         lotteryName: full[4].trim(),
         lotteryCode: full[5].toUpperCase(),
         drawNumber: `${full[5].toUpperCase()}-${full[6]}`,
         headerLineIndex: i,
-      };
+        priority: 0,
+      });
+      continue;
     }
 
-    const dateMatch = line.match(dateOnly);
+    const dateMatch = line.match(DATE_OF_DRAW_LINE);
     if (dateMatch) {
-      const codeMatch = line.match(codeOnly);
-      return {
+      const codeMatch = line.match(CODE_ANYWHERE);
+      candidates.push({
         dateLabel: toIsoDate(dateMatch[1], dateMatch[2], dateMatch[3]),
         lotteryName: null,
         lotteryCode: codeMatch ? codeMatch[1].toUpperCase() : null,
         drawNumber: codeMatch ? `${codeMatch[1].toUpperCase()}-${codeMatch[2]}` : null,
         headerLineIndex: i,
-      };
+        priority: 1,
+      });
+      continue;
     }
-  }
 
-  // Fallback: the post heading, e.g. "Today Karunya Lottery Result 12-09-2026".
-  for (let i = 0; i < lines.length; i++) {
-    const match = lines[i].match(heading);
-    if (match) {
-      const codeMatch = lines[i].match(codeOnly);
-      return {
-        dateLabel: toIsoDate(match[2], match[3], match[4]),
-        lotteryName: match[1].trim(),
+    const title = line.match(TITLE_IDENTITY_LINE);
+    if (title) {
+      candidates.push({
+        dateLabel: toIsoDate(title[1], title[2], title[3]),
+        lotteryName: title[4].trim(),
+        lotteryCode: title[5].toUpperCase(),
+        drawNumber: `${title[5].toUpperCase()}-${title[6]}`,
+        headerLineIndex: i,
+        priority: 1,
+      });
+      continue;
+    }
+
+    const heading = line.match(RESULT_HEADING_LINE);
+    if (heading) {
+      const codeMatch = line.match(CODE_ANYWHERE);
+      candidates.push({
+        dateLabel: toIsoDate(heading[2], heading[3], heading[4]),
+        lotteryName: heading[1].trim(),
         lotteryCode: codeMatch ? codeMatch[1].toUpperCase() : null,
         drawNumber: codeMatch ? `${codeMatch[1].toUpperCase()}-${codeMatch[2]}` : null,
         headerLineIndex: i,
-      };
+        priority: 2,
+      });
     }
   }
 
-  return {
-    dateLabel: null,
-    drawNumber: null,
-    lotteryName: null,
-    lotteryCode: null,
-    headerLineIndex: 0,
+  return candidates;
+}
+
+/**
+ * Finds a missing draw number near a candidate line.
+ *
+ * The URL that produced this page is authoritative for identity, so a recovered
+ * code is accepted ONLY when it names the draw the URL already promised. That is
+ * what keeps sidebars, "today's result" widgets and other posts' links from ever
+ * asserting a different draw.
+ */
+function recoverDrawNumber(
+  lines: string[],
+  headerLineIndex: number,
+  expectedDrawNumber?: string | null
+): { drawNumber: string; code: string } | null {
+  const expected = normalizeDrawNumber(expectedDrawNumber);
+  if (!expected) return null;
+
+  const matchIn = (line: string): { drawNumber: string; code: string } | null => {
+    CODE_STATED_BY_RESULT_HEADING.lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = CODE_STATED_BY_RESULT_HEADING.exec(line)) !== null) {
+      const code = match[1].toUpperCase();
+      const drawNumber = `${code}-${match[2]}`;
+      if (drawNumber === expected) return { drawNumber, code };
+    }
+    return null;
   };
+
+  const nearby: string[] = [];
+  for (let offset = 1; offset <= 3; offset++) {
+    const before = lines[headerLineIndex - offset];
+    const after = lines[headerLineIndex + offset];
+    if (before) nearby.push(before);
+    if (after) nearby.push(after);
+  }
+
+  // The identity may sit further from the date line in older layouts, so the
+  // whole page is searched too. A code is only accepted when the page STATES it
+  // as a result heading ("... Lottery Result SS-189 Today"), never merely when
+  // the digits happen to appear somewhere in the chrome.
+  for (const line of [...nearby, ...lines]) {
+    const found = matchIn(line);
+    if (found) return found;
+  }
+
+  return null;
+}
+
+/**
+ * Reads the draw identity from the page, preferring whichever candidate agrees
+ * with the date and draw number the URL already promised. Never scans the page
+ * for prize content: these posts embed other draws' dates and numbers in their
+ * chrome, so identity is cross-checked by the caller against the source URL.
+ */
+export function extractPageHeader(
+  lines: string[],
+  expected: { date?: string | null; drawNumber?: string | null } = {}
+): PageHeader {
+  const candidates = collectHeaderCandidates(lines);
+
+  if (candidates.length === 0) {
+    return {
+      dateLabel: null,
+      drawNumber: null,
+      lotteryName: null,
+      lotteryCode: null,
+      headerLineIndex: 0,
+    };
+  }
+
+  for (const candidate of candidates) {
+    if (candidate.drawNumber) continue;
+    const recovered = recoverDrawNumber(lines, candidate.headerLineIndex, expected.drawNumber);
+    if (recovered) {
+      candidate.drawNumber = recovered.drawNumber;
+      candidate.lotteryCode = candidate.lotteryCode || recovered.code;
+    }
+  }
+
+  // Only compare against an expectation that was actually supplied: comparing
+  // two absent draw numbers would otherwise look like a match and hand every
+  // nameless candidate a bonus.
+  const expectedDate = expected.date ?? null;
+  const expectedDraw = normalizeDrawNumber(expected.drawNumber);
+
+  const score = (candidate: HeaderCandidate): number => {
+    let value = 0;
+    if (expectedDate && candidate.dateLabel === expectedDate) value += 1000;
+    if (expectedDraw && normalizeDrawNumber(candidate.drawNumber) === expectedDraw) value += 500;
+    if (candidate.drawNumber) value += 20;
+    return value;
+  };
+
+  /**
+   * Source strength dominates, and the URL expectation only breaks ties within
+   * the same kind of source. This ordering is deliberate: the page's own
+   * "Date of Draw" line must never be overruled by a heading in the page chrome
+   * that happens to mention the requested date (these posts carry "today's
+   * result" widgets for a different draw).
+   */
+  const isBetter = (candidate: HeaderCandidate, than: HeaderCandidate): boolean => {
+    if (candidate.priority !== than.priority) return candidate.priority < than.priority;
+    return score(candidate) > score(than);
+  };
+
+  let best = candidates[0];
+  for (const candidate of candidates.slice(1)) {
+    if (isBetter(candidate, best)) best = candidate;
+  }
+
+  // A legacy "Date of Draw" line often carries no scheme name, while a sibling
+  // heading on the same post does. Take the nearest usable name, and otherwise
+  // let the caller fall back to the code.
+  let lotteryName = sanitizeLotteryName(best.lotteryName);
+  if (!isUsableLotteryName(lotteryName)) {
+    const byDistance = [...candidates].sort(
+      (a, b) =>
+        Math.abs(a.headerLineIndex - best.headerLineIndex) -
+        Math.abs(b.headerLineIndex - best.headerLineIndex)
+    );
+    const named = byDistance.find((candidate) => isUsableLotteryName(candidate.lotteryName));
+    lotteryName = named ? sanitizeLotteryName(named.lotteryName) : '';
+  }
+
+  return {
+    dateLabel: best.dateLabel,
+    drawNumber: best.drawNumber,
+    lotteryName,
+    lotteryCode: best.lotteryCode,
+    headerLineIndex: best.headerLineIndex,
+  };
+}
+
+/**
+ * Resolves the scheme name for a page: the page's own name when it states one,
+ * otherwise the canonical name for its (already URL-verified) scheme code.
+ * Returns null when neither is trustworthy, so the caller can refuse the page
+ * rather than publish a result under the wrong scheme.
+ */
+export function resolveLotteryName(
+  pageName: string | null,
+  lotteryCode: string | null
+): string | null {
+  const cleaned = sanitizeLotteryName(pageName);
+  if (isUsableLotteryName(cleaned)) return cleaned;
+
+  if (lotteryCode) {
+    const mapped = SCHEME_NAME_BY_CODE[lotteryCode.toUpperCase()];
+    if (mapped) return mapped;
+  }
+
+  return null;
 }
 
 interface TierState {
@@ -251,9 +528,27 @@ interface TierState {
   winningNumbers: ParsedWinningNumber[];
 }
 
+// The `[:.]?` group matters: several eras write the amount as "₹.7000000/-" or
+// "Rs :7,000,000/-", and without it the tier amount is unreadable and the whole
+// tier (including its winning numbers) would be dropped.
 const TIER_HEADER =
-  /^(?:for the tickets ending with the following numbers\s*)?(\d{1,2})(?:st|nd|rd|th)\s+Prize\s*[:\-]?\s*(?:₹|Rs\.?)?\s*([\d,]+)/i;
-const CONSOLATION_HEADER = /^Consolation\s+Prize\s*[:\-]?\s*(?:₹|Rs\.?)?\s*([\d,]+)/i;
+  /^(?:for the tickets ending with the following numbers\s*)?(\d{1,2})(?:st|nd|rd|th)\s+Prize\s*[:\-]?\s*(?:₹|Rs\.?)?\s*[:.]?\s*([\d,]+)?/i;
+const CONSOLATION_HEADER =
+  /^Consolation\s+Prize\s*[:\-]?\s*(?:₹|Rs\.?)?\s*[:.]?\s*([\d,]+)?/i;
+
+/**
+ * Earlier publication eras put the tier name and its amount on separate lines
+ * ("1st Prize-" then "Rs :7,000,000/-"), so the amount is read from the next
+ * line when the header line does not carry one.
+ */
+const AMOUNT_LINE = /^(?:Rs\.?|₹)\s*[:.]?\s*([\d,]+)/i;
+
+/**
+ * A line made of nothing but 4-digit groups. Used to accept early-tier ending
+ * numbers from older layouts (which listed the 3rd prize as 4-digit endings)
+ * without ever mistaking a modern series/amount line for one.
+ */
+const PURE_FOUR_DIGIT_LINE = /^(?:\d{4}\s+)*\d{4}$/;
 const TICKET_WITH_SERIES = /\b([A-Z]{2})\s+(\d{6})\b(?:\s*\(([^)]{2,40})\))?/g;
 const FOUR_DIGIT_GROUP = /\b(\d{4})\b/g;
 
@@ -282,7 +577,10 @@ export function inspectKeralaLotteriesPage(
   if (text.length < 80) return { kind: 'UNIDENTIFIED', reason: 'page text too short' };
 
   const lines = text.split('\n');
-  const header = extractPageHeader(lines);
+  const header = extractPageHeader(lines, {
+    date: options.expectedDate ?? null,
+    drawNumber: options.expectedDrawNumber ?? null,
+  });
 
   // The draw number is mandatory and must come from the page itself. If the
   // page omits it, refuse rather than guessing from surrounding chrome.
@@ -321,8 +619,8 @@ export function inspectKeralaLotteriesPage(
   // as "not drawn yet" rather than as an unreadable page.
   if (hasPreDrawPlaceholder(body)) return preDraw();
 
-  const lotteryName = header.lotteryName;
-  if (!lotteryName || lotteryName.trim().length < 3) {
+  const lotteryName = resolveLotteryName(header.lotteryName, header.lotteryCode);
+  if (!lotteryName) {
     return { kind: 'UNIDENTIFIED', reason: 'no lottery name on page' };
   }
 
@@ -343,7 +641,27 @@ export function inspectKeralaLotteriesPage(
     current = null;
   };
 
-  for (const line of body) {
+  /**
+   * Resolves a tier amount, falling back to the following line for layouts that
+   * publish the name and amount separately. Reports whether that line was
+   * consumed so it cannot be re-read as winning numbers.
+   */
+  const readAmount = (
+    inline: string | undefined,
+    nextLine: string | undefined
+  ): { amount: number; consumedNextLine: boolean } => {
+    const inlineAmount = parseAmount(inline);
+    if (inlineAmount >= 100) return { amount: inlineAmount, consumedNextLine: false };
+
+    const nextMatch = nextLine ? nextLine.match(AMOUNT_LINE) : null;
+    const nextAmount = parseAmount(nextMatch?.[1]);
+    if (nextAmount >= 100) return { amount: nextAmount, consumedNextLine: true };
+
+    return { amount: inlineAmount, consumedNextLine: false };
+  };
+
+  for (let index = 0; index < body.length; index++) {
+    const line = body[index];
     if (STOP_LINE_PATTERNS.some((pattern) => pattern.test(line))) break;
     if (IGNORED_LINE_PATTERNS.some((pattern) => pattern.test(line))) continue;
 
@@ -356,8 +674,9 @@ export function inspectKeralaLotteriesPage(
     if (tierMatch) {
       flush();
       const tierNumber = parseInt(tierMatch[1], 10);
-      const amount = parseAmount(tierMatch[2]);
+      const { amount, consumedNextLine } = readAmount(tierMatch[2], body[index + 1]);
       if (amount < 100) continue;
+      if (consumedNextLine) index++;
 
       current = {
         category: `${tierNumber}${ordinalSuffix(tierNumber)} Prize`,
@@ -371,7 +690,8 @@ export function inspectKeralaLotteriesPage(
 
     if (consolationMatch) {
       flush();
-      const amount = parseAmount(consolationMatch[1]);
+      const { amount, consumedNextLine } = readAmount(consolationMatch[1], body[index + 1]);
+      if (consumedNextLine) index++;
       current = {
         category: 'Consolation Prize',
         tierNumber: null,
@@ -403,9 +723,15 @@ export function inspectKeralaLotteriesPage(
 
     if (foundSeries) continue;
 
-    // 4-digit ending groups (4th-9th prize). Only for ending-based tiers so a
-    // stray year or count is never captured.
-    if (current.tierNumber !== null && current.tierNumber >= 4) {
+    // 4-digit ending groups. Always for the ending-based tiers (4th-9th), plus
+    // the early tiers of older layouts that published the 3rd prize as 4-digit
+    // endings — but only when the line is *exclusively* 4-digit groups, so a
+    // stray year or count can never be captured.
+    const isEndingTier = current.tierNumber !== null && current.tierNumber >= 4;
+    const isOldStyleEndingTier =
+      current.tierNumber !== null && PURE_FOUR_DIGIT_LINE.test(line);
+
+    if (isEndingTier || isOldStyleEndingTier) {
       FOUR_DIGIT_GROUP.lastIndex = 0;
       let numMatch: RegExpExecArray | null;
       while ((numMatch = FOUR_DIGIT_GROUP.exec(line)) !== null) {
@@ -433,19 +759,28 @@ export function inspectKeralaLotteriesPage(
   // Before a draw, the page still contains a prize-structure block ("1st Prize
   // ₹1,00,00,000", "4th Prize ₹5,000", "(Last four digits to be drawn 19
   // times)") plus unrelated 4-digit numbers such as the year. Without this
-  // gate an idle page would be parsed into a fake result. Every genuine Kerala
-  // result declares exactly one 1st-prize winning ticket as a 2-letter series
-  // plus 6 digits, and that exists only once the draw has actually happened.
+  // gate an idle page would be parsed into a fake result. What distinguishes a
+  // real draw is a *drawn* 1st-prize ticket (a 2-letter series plus 6 digits);
+  // a structure block never contains one.
+  //
+  // The count is deliberately not fixed at one: the weekly draws award a single
+  // 1st prize, but the monthly Bhagyamithra awards five ("1) BJ 382963 ...").
+  // Requiring at least one still refuses every pre-draw page, and the upper
+  // bound catches a runaway match rather than accepting nonsense.
+  const MAX_PLAUSIBLE_FIRST_PRIZE_TICKETS = 20;
   const firstPrize = prizes.find((p) => p.tierNumber === 1);
   const firstPrizeTickets =
     firstPrize?.winningNumbers.filter((w) => /^\d{6}$/.test(w.number) && !!w.series) ?? [];
 
-  if (firstPrizeTickets.length !== 1) {
+  if (
+    firstPrizeTickets.length === 0 ||
+    firstPrizeTickets.length > MAX_PLAUSIBLE_FIRST_PRIZE_TICKETS
+  ) {
     // A draw page with no 1st-prize ticket is either still pre-draw (ellipsis
     // placeholder) or genuinely unparseable — never treated as a result.
     return hasPreDrawPlaceholder(body)
       ? preDraw()
-      : { kind: 'UNIDENTIFIED', reason: 'no 1st-prize series ticket' };
+      : { kind: 'UNIDENTIFIED', reason: 'no plausible 1st-prize series ticket' };
   }
 
   const tierNumbers = new Set(prizes.map((p) => p.tierNumber));

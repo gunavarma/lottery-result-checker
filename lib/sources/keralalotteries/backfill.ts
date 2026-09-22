@@ -13,8 +13,9 @@ import {
   KERALALOTTERIES_LIVE_HUB_URL,
   type DrawPageRef,
 } from './client';
-import { inspectKeralaLotteriesPage } from './parser';
+import { inspectKeralaLotteriesPage, type AggregatorParseResult } from './parser';
 import { computeResultFingerprint } from './sync';
+import { compareParsedToOfficial, isHighStakesCategory } from './verify';
 
 /**
  * Resumable historical backfill from the unofficial live aggregator.
@@ -39,6 +40,10 @@ export interface BackfillResult {
   updated: number;
   skipped: number;
   failed: number;
+  /** Gazette-verified draws whose numbers the live source reproduced exactly. */
+  verified: number;
+  /** Gazette-verified draws where the live source disagreed (never applied). */
+  verifiedMismatches: number;
   lastCursor: string | null;
   errors: string[];
 }
@@ -50,6 +55,60 @@ export interface BackfillOptions {
   restart?: boolean;
   /** Import every result page the source currently exposes. */
   fullArchive?: boolean;
+}
+
+/**
+ * Fetching and parsing a draw page is the dominant cost of an archive import and
+ * it is pure network work, so a batch is inspected with bounded concurrency.
+ * Nothing here touches the database.
+ */
+const FETCH_CONCURRENCY = 5;
+
+type PageInspection =
+  | { ref: DrawPageRef; kind: 'FETCH_FAILED' }
+  | { ref: DrawPageRef; kind: 'PRE_DRAW' }
+  | { ref: DrawPageRef; kind: 'UNIDENTIFIED'; reason: string }
+  | { ref: DrawPageRef; kind: 'RESULT'; result: AggregatorParseResult };
+
+async function inspectPage(ref: DrawPageRef): Promise<PageInspection> {
+  try {
+    const page = await fetchDrawPage(ref);
+    if (!page) return { ref, kind: 'FETCH_FAILED' };
+
+    const outcome = inspectKeralaLotteriesPage(page.html, {
+      sourceUrl: ref.url,
+      expectedDate: ref.dateStr,
+      expectedDrawNumber: ref.drawNumber,
+    });
+
+    if (outcome.kind === 'PRE_DRAW') return { ref, kind: 'PRE_DRAW' };
+    if (outcome.kind === 'UNIDENTIFIED') {
+      return { ref, kind: 'UNIDENTIFIED', reason: outcome.reason };
+    }
+    return { ref, kind: 'RESULT', result: outcome.result };
+  } catch (error: any) {
+    return { ref, kind: 'UNIDENTIFIED', reason: error?.message || 'page inspection failed' };
+  }
+}
+
+/** Inspects every ref, preserving input order, with a bounded worker pool. */
+async function inspectPagesConcurrently(
+  refs: DrawPageRef[],
+  concurrency: number
+): Promise<PageInspection[]> {
+  const inspections: PageInspection[] = new Array(refs.length);
+  let nextIndex = 0;
+
+  const workers = Array.from({ length: Math.min(concurrency, refs.length) }, async () => {
+    for (;;) {
+      const index = nextIndex++;
+      if (index >= refs.length) return;
+      inspections[index] = await inspectPage(refs[index]);
+    }
+  });
+
+  await Promise.all(workers);
+  return inspections;
 }
 
 function addDays(dateStr: string, delta: number): string {
@@ -97,6 +156,36 @@ export async function discoverAllDrawPages(): Promise<DrawPageRef[]> {
   return Array.from(refs.values()).sort((a, b) => (a.dateStr < b.dateStr ? -1 : a.dateStr > b.dateStr ? 1 : 0));
 }
 
+/**
+ * Marks schemes with no recent draw as inactive.
+ *
+ * Importing the archive creates rows for schemes that have since been retired
+ * (Akshaya, Nirmal, Fifty-Fifty, Pournami, Bhagyamithra...). They are created
+ * active by default, which would advertise long-discontinued schemes on the
+ * homepage's "active schemes" list. Their result pages stay reachable; they are
+ * simply no longer presented as current.
+ */
+export async function deactivateStaleSchemes(inactiveAfterDays = 90): Promise<string[]> {
+  const cutoff = new Date(Date.now() - inactiveAfterDays * 24 * 60 * 60 * 1000);
+  const lotteries = await prisma.lottery.findMany({
+    where: { active: true },
+    select: { id: true, slug: true, draws: { orderBy: { drawDate: 'desc' }, take: 1, select: { drawDate: true } } },
+  });
+
+  const retired = lotteries.filter(
+    (lottery) => !lottery.draws[0] || lottery.draws[0].drawDate < cutoff
+  );
+
+  if (retired.length > 0) {
+    await prisma.lottery.updateMany({
+      where: { id: { in: retired.map((lottery) => lottery.id) } },
+      data: { active: false },
+    });
+  }
+
+  return retired.map((lottery) => lottery.slug);
+}
+
 export async function runAggregatorBackfill(options: BackfillOptions = {}): Promise<BackfillResult> {
   const today = getTodayIstStr();
   const from = options.fromDate || (options.fullArchive ? '2000-01-01' : addDays(today, -DEFAULT_LOOKBACK_DAYS));
@@ -116,6 +205,8 @@ export async function runAggregatorBackfill(options: BackfillOptions = {}): Prom
       updated: 0,
       skipped: 0,
       failed: 0,
+      verified: 0,
+      verifiedMismatches: 0,
       lastCursor: null,
       errors: ['Live aggregator source is disabled via KERALALOTTERIES_ENABLED=false.'],
     };
@@ -154,46 +245,44 @@ export async function runAggregatorBackfill(options: BackfillOptions = {}): Prom
     let updated = 0;
     let skipped = 0;
     let failed = 0;
+    let verified = 0;
+    let verifiedMismatches = 0;
     let lastCursor: string | null = cursor ?? null;
 
-    for (const ref of batch) {
+    // Network work runs concurrently; every database write below stays strictly
+    // sequential so the trust rules and counters remain race-free.
+    const inspections = await inspectPagesConcurrently(batch, FETCH_CONCURRENCY);
+
+    for (const inspection of inspections) {
+      const ref = inspection.ref;
       try {
-        const page = await fetchDrawPage(ref);
-        if (!page) {
+        if (inspection.kind === 'FETCH_FAILED') {
           failed++;
           errors.push(`${ref.dateStr} ${ref.drawNumber}: page fetch failed`);
           continue;
         }
 
-        const pageOutcome = inspectKeralaLotteriesPage(page.html, {
-          sourceUrl: ref.url,
-          expectedDate: ref.dateStr,
-          expectedDrawNumber: ref.drawNumber,
-        });
-
-        if (pageOutcome.kind === 'PRE_DRAW') {
+        if (inspection.kind === 'PRE_DRAW') {
           // Not an error: the page exists but the source never published numbers.
           skipped++;
           continue;
         }
 
-        if (pageOutcome.kind === 'UNIDENTIFIED') {
+        if (inspection.kind === 'UNIDENTIFIED') {
           failed++;
-          errors.push(
-            `${ref.dateStr} ${ref.drawNumber}: could not parse page (${pageOutcome.reason})`
-          );
+          errors.push(`${ref.dateStr} ${ref.drawNumber}: could not parse page (${inspection.reason})`);
           await prisma.importError.create({
             data: {
               sourceIdentifier: ref.url,
               errorType: 'PARSE_ERROR',
-              errorMessage: `Backfill could not parse the aggregator draw page (${pageOutcome.reason}).`,
+              errorMessage: `Backfill could not parse the aggregator draw page (${inspection.reason}).`,
               status: 'PENDING',
             },
           });
           continue;
         }
 
-        const { parsed } = pageOutcome.result;
+        const { parsed } = inspection.result;
         const slug = getLotterySlug(parsed.lotteryName, parsed.lotteryCode);
         const fingerprint = computeResultFingerprint(parsed);
 
@@ -205,11 +294,45 @@ export async function runAggregatorBackfill(options: BackfillOptions = {}): Prom
         const existing = lottery
           ? await prisma.draw.findFirst({
               where: { lotteryId: lottery.id, drawNumber: parsed.drawNumber },
-              select: { verificationLevel: true, sourceHash: true },
+              select: {
+                verificationLevel: true,
+                sourceHash: true,
+                prizes: {
+                  select: {
+                    category: true,
+                    winningNumbers: { select: { displayNumber: true } },
+                  },
+                },
+              },
             })
           : null;
 
         if (existing?.verificationLevel === 'OFFICIAL') {
+          // The gazette record is authoritative and is never rewritten from an
+          // unofficial source — but the source's numbers are checked against it
+          // so a disagreement is recorded instead of passing silently.
+          const diffs = compareParsedToOfficial(parsed, existing.prizes);
+          const material = diffs.filter((diff) => isHighStakesCategory(diff.category));
+
+          if (diffs.length === 0) {
+            verified++;
+          } else {
+            verifiedMismatches++;
+            if (material.length > 0) {
+              await prisma.importError.create({
+                data: {
+                  sourceIdentifier: ref.url,
+                  errorType: 'SOURCE_MISMATCH',
+                  errorMessage: material
+                    .map((diff) => diff.detail)
+                    .join(' ')
+                    .slice(0, 500),
+                  status: 'PENDING',
+                },
+              });
+            }
+          }
+
           skipped++;
           continue;
         }
@@ -265,6 +388,9 @@ export async function runAggregatorBackfill(options: BackfillOptions = {}): Prom
 
     if (created > 0 || updated > 0) {
       invalidateCache();
+      await deactivateStaleSchemes().catch((error) =>
+        console.warn('[Backfill] Could not refresh scheme activity:', error?.message || error)
+      );
     }
 
     return {
@@ -278,6 +404,8 @@ export async function runAggregatorBackfill(options: BackfillOptions = {}): Prom
       updated,
       skipped,
       failed,
+      verified,
+      verifiedMismatches,
       lastCursor,
       errors,
     };
@@ -304,6 +432,8 @@ export async function runAggregatorBackfill(options: BackfillOptions = {}): Prom
       updated: 0,
       skipped: 0,
       failed: 0,
+      verified: 0,
+      verifiedMismatches: 0,
       lastCursor: job.lastCursor,
       errors: [fatalError?.message || 'Fatal backfill error'],
     };

@@ -6,7 +6,9 @@ import { IST_OFFSET_MS } from '../date';
  *
  * The pipeline must never fail silently. This module inspects the audit tables
  * (SyncLog, SyncRun, ImportError) and the Draw table to surface actionable
- * alerts for operators, which are exposed on the admin dashboard.
+ * alerts. There is no admin UI: the alerts are returned on the automation's own
+ * responses (/api/cron/sync-results) and escalated to the server log when
+ * critical, so a stalled or broken pipeline is observable without a dashboard.
  */
 
 export type AutomationAlertCode =
@@ -67,7 +69,7 @@ function istDateOnly(now: Date): Date {
 
 /**
  * Computes the current automation health. Never throws: on database failure it
- * degrades to UNKNOWN rather than breaking the admin dashboard.
+ * degrades to UNKNOWN rather than breaking the calling endpoint.
  */
 export async function getAutomationHealth(now: Date = new Date()): Promise<AutomationHealth> {
   const checkedAt = now.toISOString();
