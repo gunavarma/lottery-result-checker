@@ -331,3 +331,66 @@ Unique constraint failed on the fields: (`code`)
 [90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
 [22m[39m[iter 40] status=PAUSED cursor=2024-06-05 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 55s
 
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 41] status=PAUSED cursor=2024-06-28 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 57s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 42] status=PAUSED cursor=2024-07-21 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 55s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 43] status=PAUSED cursor=2024-08-14 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 58s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 44] status=PAUSED cursor=2024-09-07 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 59s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 45] status=PAUSED cursor=2024-10-03 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 59s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 46] status=PAUSED cursor=2024-10-26 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 58s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 47] status=PAUSED cursor=2024-11-19 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 57s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 48] status=PAUSED cursor=2024-12-13 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 63s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 49] status=PAUSED cursor=2025-01-05 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 56s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 50] status=PAUSED cursor=2025-01-30 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 57s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 51] status=PAUSED cursor=2025-02-23 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 56s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 52] status=PAUSED cursor=2025-03-19 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 57s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 53] status=PAUSED cursor=2025-04-11 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 54s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 54] status=PAUSED cursor=2025-05-05 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 61s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 55] status=PAUSED cursor=2025-05-25 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 64s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 56] status=PAUSED cursor=2025-06-14 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 59s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 57] status=PAUSED cursor=2025-07-04 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 59s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 58] status=PAUSED cursor=2025-07-24 processed=20/1872 created=19 updated=0 skipped=1 failed=0 verified=0 mismatches=0 56s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 59] status=PAUSED cursor=2025-08-13 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 58s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 60] status=PAUSED cursor=2025-09-03 processed=20/1872 created=19 updated=0 skipped=1 failed=0 verified=0 mismatches=0 55s
+
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 61] status=PAUSED cursor=2025-09-24 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 59s
+

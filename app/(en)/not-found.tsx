@@ -26,7 +26,7 @@ export default function NotFound() {
           href="/kerala-lottery-result-today"
           className="bg-white p-5 rounded-2xl border border-[#E2E7E3] hover:border-[#0B3B32] transition-colors group shadow-xs space-y-1"
         >
-          <span className="text-xs font-bold text-[#0B3B32] block">Today's Results</span>
+          <span className="text-xs font-bold text-[#0B3B32] block">Today's Results..</span>
           <span className="text-[11px] text-[#68736E] block">View the latest certified draw winning numbers.</span>
         </Link>
 
