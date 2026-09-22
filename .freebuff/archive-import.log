@@ -318,3 +318,6 @@ Unique constraint failed on the fields: (`code`)
 [90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
 [22m[39m[iter 36] status=PAUSED cursor=2024-03-02 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 64s
 
+[90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 37] status=PAUSED cursor=2024-03-26 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 58s
+
