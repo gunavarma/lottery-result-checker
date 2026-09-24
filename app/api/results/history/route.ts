@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/prisma';
 import { startOfMonth, endOfMonth, startOfYear, endOfYear, parse } from 'date-fns';
+import { getOrSetCache } from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,29 +50,46 @@ export async function GET(request: NextRequest) {
       };
     }
 
+    // Published history is immutable, so each filter combination is cached
+    // (60s fresh / 5min SWR) — key mirrors the where-clause inputs. Without
+    // this every paginated request paid two remote-DB roundtrips (count +
+    // page) for identical results.
+    const cacheKey = `api_results_history_${lotterySlug || 'all'}_${year || 'any'}_${
+      month || 'any'
+    }_${date || 'any'}_p${page}_l${limit}`;
+
     const [total, draws] = await Promise.all([
-      prisma.draw.count({ where }),
-      prisma.draw.findMany({
-        where,
-        orderBy: {
-          drawDate: 'desc',
-        },
-        skip,
-        take: limit,
-        include: {
-          lottery: true,
-          prizes: {
-            where: {
-              orderIndex: 0, // 1st prize only for summary cards
+      getOrSetCache(
+        `${cacheKey}_count`,
+        () => prisma.draw.count({ where }),
+        { ttlMs: 60_000, swrMs: 300_000 }
+      ),
+      getOrSetCache(
+        cacheKey,
+        () =>
+          prisma.draw.findMany({
+            where,
+            orderBy: {
+              drawDate: 'desc',
             },
+            skip,
+            take: limit,
             include: {
-              winningNumbers: {
-                take: 1,
+              lottery: true,
+              prizes: {
+                where: {
+                  orderIndex: 0, // 1st prize only for summary cards
+                },
+                include: {
+                  winningNumbers: {
+                    take: 1,
+                  },
+                },
               },
             },
-          },
-        },
-      }),
+          }),
+        { ttlMs: 60_000, swrMs: 300_000 }
+      ),
     ]);
 
     const totalPages = Math.ceil(total / limit);

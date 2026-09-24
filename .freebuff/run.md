@@ -104,6 +104,33 @@ node --env-file=.env scripts/automation-status.mjs
 
 Prints pg_cron jobs, the last cron runs, the HTTP result of each scheduled call, `ImportJob` cursors, draw counts by status, and unresolved import failures. Secrets are redacted.
 
+## Fetch-route performance audit (2026-09-24)
+
+Guarantee: **no read route ever contacts keralalotteries.net or LOTIS per request.** External
+fetchers live only in `lib/sources/*` and `lib/lotis/*`, and are wired exclusively into the four
+auth-protected cron routes. Every public read path is DB/cache only:
+
+| Surface | Data source | Steady-state latency (measured locally) |
+| --- | --- | --- |
+| `/` + Recent Official Results | `homepage_data_v3` SWR cache + ISR 30 | ~7 ms |
+| `/results` hub | `results_hub_data` SWR cache | ~15 ms |
+| `/api/results/today`, `/api/results/dates` | SWR cache (10–30s TTL) | ~2–3 ms |
+| `/api/live` | new `api_live_state` SWR cache (5s TTL / 60s SWR), header stays `no-store` | cold ~0.7s → warm **~3 ms** |
+| `/api/lotteries` | new `api_lotteries_directory` SWR cache (5min/10min) | cold ~2.6s → warm **~3 ms** |
+| `/api/results/latest` | new per-limit SWR cache (60s/5min) | cold ~0.6s → warm **~4 ms** |
+| `/api/results/history` | new per-filter SWR cache (60s/5min, count + page) | cold ~0.7s → warm **~3 ms** |
+| `/api/search` | DB reads over indexed columns, CDN s-maxage 30 | — |
+| news (all surfaces) | static in-memory `lib/news.ts` | ~0 |
+
+The four routes added in this audit previously re-ran their nested Prisma queries on every request
+(cold requests paid multiple remote-Supabase roundtrips; `/api/live` was polled every 10s per
+visitor during the publication window). All hot pages keep their ISR/CDN caching; these caches only
+bound database load per server instance.
+
+The archive import (jobType AGGREGATOR_BACKFILL) **completed**: totals created=230, updated=2,
+failed=1, verified=109, mismatches=2. The one failure is SK-67 (2026-08-28), deliberately refused
+because the page-stated date contradicts its slug date — same policy as the 89 earlier refusals.
+
 ## Deployment
 
 1. **Deploy the current revision — this is the only required step.** Production is running an older build whose `/api/cron/sync-results` returns HTTP 500 for every request (even unauthenticated). That build also predates the stored-credential auth path, so its scheduled calls fail even though the database jobs are correctly configured. Deploying fixes both, and the earlier deploy failure (sub-daily cron expressions on Hobby) is gone.

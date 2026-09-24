@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/prisma';
 import { getTodayIstStr, parseDateOnlyUtc, IST_OFFSET_MS } from '@/lib/date';
+import { getOrSetCache } from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,10 +43,37 @@ function assessCompleteness(prizes: { tierNumber?: number | null; category?: str
  * Reads exclusively from PostgreSQL (the source of truth). It never contacts
  * LOTIS, never downloads or parses a gazette, and never blocks on external
  * work — that all happens in the background sync pipeline.
+ *
+ * The database-derived payload is micro-cached in-process (5s fresh, 60s SWR)
+ * because the live page polls this endpoint every 10s during the publication
+ * window; without the cache that poll hammered the database with four deeply
+ * nested queries per visitor. 5s keeps published-number updates effectively
+ * real-time (sync-live itself runs on a 1-minute pg_cron) while collapsing
+ * hundreds of polls per minute into at most one shared read.
  */
 export async function GET() {
   try {
-    const now = new Date();
+    const payload = await getOrSetCache(
+      'api_live_state',
+      () => loadLiveState(new Date()),
+      { ttlMs: 5_000, swrMs: 60_000 }
+    );
+
+    // The header stays no-store so browsers/CDNs never pin the state; the
+    // freshness window above is what keeps the database load bounded.
+    return NextResponse.json(serializeData(payload), {
+      headers: { 'Cache-Control': 'no-store' },
+    });
+  } catch (error: any) {
+    console.error('Error in /api/live:', error);
+    return NextResponse.json(
+      { success: false, error: error.message || 'Live status engine failure' },
+      { status: 500 }
+    );
+  }
+}
+
+async function loadLiveState(now: Date) {
 
     // Current IST wall-clock components (IST = UTC + 05:30)
     const istNow = new Date(now.getTime() + IST_OFFSET_MS);
@@ -145,38 +173,25 @@ export async function GET() {
       statusMessage = 'Draw time reached. Waiting for the official government release';
     }
 
-    return NextResponse.json(
-      serializeData({
-        success: true,
-        status,
-        statusMessage,
-        isPublished: status === 'PUBLISHED',
-        isProvisional: status === 'PROVISIONAL',
-        verificationLevel: currentLevel,
-        sourceProvider: todayDraw?.sourceProvider ?? null,
-        provisionalUpdatedAt: todayDraw?.provisionalUpdatedAt ?? null,
-        completeness,
-        countdownSeconds,
-        scheduledLottery,
-        todayDraw,
-        latestDraw,
-        latestSyncLog,
-        lastCheckedAt: latestSyncLog?.completedAt || latestSyncLog?.startedAt || now,
-        serverTimeIst: `${String(istHour).padStart(2, '0')}:${String(istMinute).padStart(
-          2,
-          '0'
-        )}:${String(istSecond).padStart(2, '0')} IST`,
-      }),
-      {
-        // Live state must reflect the database immediately after a sync write.
-        headers: { 'Cache-Control': 'no-store' },
-      }
-    );
-  } catch (error: any) {
-    console.error('Error in /api/live:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Live status engine failure' },
-      { status: 500 }
-    );
-  }
+    return {
+      success: true as const,
+      status,
+      statusMessage,
+      isPublished: status === 'PUBLISHED',
+      isProvisional: status === 'PROVISIONAL',
+      verificationLevel: currentLevel,
+      sourceProvider: todayDraw?.sourceProvider ?? null,
+      provisionalUpdatedAt: todayDraw?.provisionalUpdatedAt ?? null,
+      completeness,
+      countdownSeconds,
+      scheduledLottery,
+      todayDraw,
+      latestDraw,
+      latestSyncLog,
+      lastCheckedAt: latestSyncLog?.completedAt || latestSyncLog?.startedAt || now,
+      serverTimeIst: `${String(istHour).padStart(2, '0')}:${String(istMinute).padStart(
+        2,
+        '0'
+      )}:${String(istSecond).padStart(2, '0')} IST`,
+    };
 }
