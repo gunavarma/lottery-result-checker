@@ -5,7 +5,8 @@ import { isLocale } from '@/lib/i18n/config';
 import { mirrorMetadata } from '@/lib/i18n/mirror';
 import { Language } from '@/lib/translations';
 
-export const dynamic = 'force-dynamic';
+// Locale mirror of the "today" page: cached with the same short window.
+export const revalidate = 30;
 
 export async function generateMetadata({
   params,

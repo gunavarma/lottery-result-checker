@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runResumableHistoricalImport } from '@/lib/lotis/historical-importer';
-import { denyUnauthorized } from '@/lib/security/auth';
+import { requirePrivileged } from '@/lib/security/auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // Max execution timeout
 
 export async function GET(request: NextRequest) {
   try {
-    const denied = denyUnauthorized(request, 'cron');
+    const denied = await requirePrivileged(request, 'cron');
     if (denied) return denied;
 
     const forceRestart = request.nextUrl.searchParams.get('restart') === 'true';

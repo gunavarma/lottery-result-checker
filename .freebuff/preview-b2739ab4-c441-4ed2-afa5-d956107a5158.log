@@ -27,3 +27,26 @@ Error: listen EADDRINUSE: address already in use :::3401
 - Network:       http://192.168.0.104:3401
 ✓ Ready in 147ms
 ✓ Running next.config.ts took 28ms
+▲ Next.js 16.3.3
+- Local:         http://localhost:3401
+- Network:       http://192.168.0.104:3401
+✓ Ready in 241ms
+✓ Running next.config.ts took 24ms
+[Auth] CRON secret matches a previously exposed value and is rejected. Rotate it immediately.
+[Auth] CRON secret matches a previously exposed value and is rejected. Rotate it immediately.
+[Auth] CRON secret matches a previously exposed value and is rejected. Rotate it immediately.
+▲ Next.js 16.3.3
+- Local:         http://localhost:3401
+- Network:       http://192.168.0.104:3401
+✓ Ready in 240ms
+✓ Running next.config.ts took 24ms
+▲ Next.js 16.3.3
+- Local:         http://localhost:3401
+- Network:       http://192.168.0.104:3401
+✓ Ready in 283ms
+✓ Running next.config.ts took 35ms
+▲ Next.js 16.3.3
+- Local:         http://localhost:3401
+- Network:       http://192.168.0.104:3401
+✓ Ready in 356ms
+✓ Running next.config.ts took 34ms

@@ -9,7 +9,11 @@
     "postinstall": "prisma generate",
     "lint": "eslint",
     "test": "vitest run",
-    "generate-secrets": "node scripts/generate-secrets.mjs"
+    "generate-secrets": "node scripts/generate-secrets.mjs",
+    "automation:status": "node --env-file=.env scripts/automation-status.mjs",
+    "automation:configure": "node --env-file=.env scripts/configure-automation-cron.mjs",
+    "import:archive": "vitest run -c vitest.runners.config.ts tests/runners/archive-import.test.ts --testTimeout=5400000",
+    "import:repair": "vitest run -c vitest.runners.config.ts tests/runners/archive-repair.test.ts --testTimeout=5400000"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",

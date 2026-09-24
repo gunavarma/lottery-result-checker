@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { denyUnauthorized } from '@/lib/security/auth';
+import { requirePrivileged } from '@/lib/security/auth';
 import { runAggregatorBackfill } from '@/lib/sources/keralalotteries/backfill';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +18,7 @@ export const maxDuration = 60;
  */
 export async function GET(request: NextRequest) {
   try {
-    const denied = denyUnauthorized(request, 'cron');
+    const denied = await requirePrivileged(request, 'cron');
     if (denied) return denied;
 
     const params = request.nextUrl.searchParams;

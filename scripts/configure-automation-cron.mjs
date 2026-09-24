@@ -5,6 +5,7 @@
  *
  * Prints only non-sensitive diagnostics.
  */
+import crypto from 'node:crypto';
 import { PrismaClient } from '@prisma/client';
 
 const APP_URL = process.env.CRON_APP_URL || 'https://www.keraladraws.com';
@@ -70,6 +71,32 @@ async function main() {
         console.log('retired job:', jobName);
       }
     }
+
+    // The application also accepts a credential stored here (hash only), so the
+    // polling legs keep working even when the deployed environment secret is
+    // missing, stale or — as in production — a previously exposed value that the
+    // auth layer refuses. Without this, every scheduled call returns 503 and the
+    // pipeline is silently dead.
+    await client.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS automation_credentials (
+        id          TEXT PRIMARY KEY,
+        scope       TEXT NOT NULL UNIQUE,
+        hash        TEXT NOT NULL,
+        "rotatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    const hash = crypto.createHash('sha256').update(CRON_SECRET, 'utf8').digest('hex');
+    await client.$executeRawUnsafe(
+      `INSERT INTO automation_credentials (id, scope, hash, "rotatedAt", "createdAt", "updatedAt")
+       VALUES ($1, 'cron', $2, NOW(), NOW(), NOW())
+       ON CONFLICT (scope) DO UPDATE
+         SET hash = EXCLUDED.hash, "rotatedAt" = NOW(), "updatedAt" = NOW()`,
+      `cred_cron_${hash.slice(0, 16)}`,
+      hash
+    );
+    console.log('stored cron credential hash (sha256):', hash.slice(0, 12) + '…');
 
     await client.$executeRawUnsafe(JOB_SQL.official);
     console.log('scheduled: keraladraws-sync-results-15m (*/15 * * * *)');

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { syncRealLotteryNews } from '@/lib/news/news-engine';
-import { denyUnauthorized } from '@/lib/security/auth';
+import { requirePrivileged } from '@/lib/security/auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   try {
-    const denied = denyUnauthorized(request, 'cron');
+    const denied = await requirePrivileged(request, 'cron');
     if (denied) return denied;
 
     const result = await syncRealLotteryNews();

@@ -27,7 +27,9 @@ import {
   HelpCircle,
 } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+// A single historical draw is immutable once published, so this is cached with
+// background revalidation rather than re-rendered on every request.
+export const revalidate = 300;
 
 export async function generateMetadata({
   params,

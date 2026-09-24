@@ -33,7 +33,10 @@ import {
   Award,
 } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+// Historical results are effectively immutable once gazette-verified, so this
+// renders on demand and is then served from cache. Only today's date can still
+// change, and the client revalidates that case (TanStack Query).
+export const revalidate = 300;
 
 interface PageProps {
   params: Promise<{ date: string }>;

@@ -1,4 +1,5 @@
 import { Language, SUPPORTED_LANGUAGES } from '@/lib/translations';
+import { SITE_URL } from '@/lib/site-url';
 
 // Locale routing model: English is the canonical unprefixed tree (the (en)
 // route group). Every other locale lives under /{locale}/*.
@@ -39,7 +40,10 @@ export const LOCALE_HTML_LANG: Record<Language, string> = {
 // Next.js metadata "languages" map: hreflang tag -> absolute URL.
 // en is the x-default; en-IN is included for regional targeting clarity.
 export function languageAlternates(path: string): Record<string, string> {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com';
+  // Must be the same resolved origin as the canonical tag, otherwise Google
+  // reads the alternates as pointing at a different (unreachable) host and
+  // ignores the whole hreflang cluster.
+  const base = SITE_URL;
   const map: Record<string, string> = {
     'en-IN': `${base}${localePath(path, 'en')}`,
     'en': `${base}${localePath(path, 'en')}`,

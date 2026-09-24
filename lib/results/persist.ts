@@ -3,6 +3,7 @@ import type { Prisma } from '@prisma/client';
 import { prisma, formatINR } from '../prisma';
 import { getLotterySlug, type ParsedDrawResult, type ParsedPrize } from '../parser/lotis-parser';
 import { sendResultPublishedPushNotification } from '../firebase/fcm';
+import { SITE_URL } from '@/lib/site-url';
 
 /**
  * The single writer for parsed lottery results.
@@ -340,7 +341,7 @@ export async function persistParsedDraw(
     try {
       const firstPrize = prizesToWrite.find((p) => p.orderIndex === 0 || p.tierNumber === 1);
       const firstWinner = firstPrize?.winningNumbers?.[0];
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com';
+      const siteUrl = SITE_URL;
 
       await sendResultPublishedPushNotification({
         drawId: persisted.id,

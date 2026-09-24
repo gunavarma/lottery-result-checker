@@ -3,6 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import {
   evaluateAuth,
+  evaluatePrivilegedAuth,
+  hashSecret,
+  clearCredentialCache,
   timingSafeEqualStr,
   generateSecret,
   denyUnauthorizedAny,
@@ -187,5 +190,86 @@ describe('Security regression guards', () => {
     // Guard against the renamed-field regression that broke the live page.
     expect(route).not.toContain('scheduledScheme');
     expect(route).not.toContain('serverTimeIST');
+  });
+});
+
+/**
+ * The stored-credential path exists because the frequent polling legs run on
+ * Supabase pg_cron (Vercel Hobby cannot schedule sub-daily crons), and the
+ * deployed environment secret was a previously exposed value that the auth
+ * layer correctly refuses. Without this path every scheduled call returns 503
+ * and the pipeline is dead while the site still looks synchronized.
+ */
+const storedHashRef = vi.hoisted(() => ({ value: null as string | null }));
+
+vi.mock('@/lib/prisma', () => ({
+  prisma: {
+    automationCredential: {
+      findUnique: async () =>
+        storedHashRef.value ? { scope: 'cron', hash: storedHashRef.value } : null,
+    },
+  },
+}));
+
+describe('Stored (rotatable) credential fallback', () => {
+  const REAL_SECRET = 'a-fresh-rotated-secret-value-0123456789';
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    storedHashRef.value = null;
+    clearCredentialCache();
+  });
+
+  it('authorizes a request even when the configured env secret is compromised', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('CRON_SECRET', 'kerala-lottery-cron-secure-token-2026');
+    storedHashRef.value = hashSecret(REAL_SECRET);
+
+    const request = makeRequest('https://example.com/api/cron/sync-results', {
+      headers: { authorization: `Bearer ${REAL_SECRET}` },
+    });
+
+    const result = await evaluatePrivilegedAuth(request, ['cron']);
+    expect(result.authorized).toBe(true);
+    expect(result.status).toBe(200);
+  });
+
+  it('still fails closed when the presented token matches nothing', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('CRON_SECRET', 'kerala-lottery-cron-secure-token-2026');
+    storedHashRef.value = hashSecret(REAL_SECRET);
+
+    const wrong = makeRequest('https://example.com/api/cron/sync-results', {
+      headers: { authorization: 'Bearer not-the-right-secret-000000000000' },
+    });
+    expect((await evaluatePrivilegedAuth(wrong, ['cron'])).authorized).toBe(false);
+
+    const none = makeRequest('https://example.com/api/cron/sync-results');
+    expect((await evaluatePrivilegedAuth(none, ['cron'])).authorized).toBe(false);
+  });
+
+  it('prefers the environment secret without touching the database', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('CRON_SECRET', REAL_SECRET);
+    // A stored hash that would also match: the env path must win, and no stored
+    // credential is consulted (the mock returns null here either way).
+    storedHashRef.value = null;
+
+    const request = makeRequest('https://example.com/api/cron/sync-results', {
+      headers: { authorization: `Bearer ${REAL_SECRET}` },
+    });
+    expect((await evaluatePrivilegedAuth(request, ['cron'])).authorized).toBe(true);
+  });
+
+  it('does not authorize when only the database is configured with a wrong token', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('CRON_SECRET', '');
+    storedHashRef.value = hashSecret(REAL_SECRET);
+
+    const request = makeRequest('https://example.com/api/cron/sync-results', {
+      headers: { authorization: `Bearer ${REAL_SECRET}` },
+    });
+    // Env is unusable (503 path) but the stored credential is valid.
+    expect((await evaluatePrivilegedAuth(request, ['cron'])).authorized).toBe(true);
   });
 });

@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendResultPublishedPushNotification } from '@/lib/firebase/fcm';
 import { DrawPublishedEvent } from '@/lib/notifications/types';
-import { denyUnauthorizedAny } from '@/lib/security/auth';
+import { requirePrivileged } from '@/lib/security/auth';
+import { SITE_URL } from '@/lib/site-url';
 
 export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     // Dispatch is triggered by the sync pipeline (cron secret) or an operator
     // (admin secret). Both are validated fail-closed and constant-time.
-    const denied = denyUnauthorizedAny(request, ['cron', 'admin']);
+    const denied = await requirePrivileged(request, ['cron', 'admin']);
     if (denied) return denied;
 
     const body = await request.json().catch(() => ({}));
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
       drawTime: drawTime || '3:00 PM',
       firstPrizeAmountFormatted: firstPrizeAmountFormatted || '₹1,00,00,000',
       firstPrizeTicket,
-      resultUrl: resultUrl || `${process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com'}/result/${drawDate}/${lotteryCode}`,
+      resultUrl: resultUrl || `${SITE_URL}/result/${drawDate}/${lotteryCode}`,
     };
 
     const summary = await sendResultPublishedPushNotification(event);

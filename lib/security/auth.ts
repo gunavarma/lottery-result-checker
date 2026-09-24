@@ -167,6 +167,119 @@ export function denyUnauthorizedAny(request: Request, scopes: AuthScope[]): Next
 }
 
 /**
+ * ------------------------------------------------------------------
+ * Stored (rotatable) credential path
+ * ------------------------------------------------------------------
+ *
+ * The environment secret above is the primary credential. This second source
+ * exists because the frequent polling legs are driven by Supabase pg_cron
+ * (Vercel's Hobby plan rejects sub-daily cron expressions), and a secret shared
+ * between the database and the application has to live somewhere both can read.
+ *
+ * It also removes a real operational failure mode: rotating the environment
+ * secret requires a Vercel dashboard edit plus a redeploy, and when that step is
+ * missed the pipeline dies silently (every call returns 503) while the site
+ * still looks healthy. A stored credential can be rotated by an operator in one
+ * command with no deploy.
+ *
+ * Only the SHA-256 hash is stored, so a database read never reveals the secret.
+ * The comparison stays constant-time against the digested value.
+ */
+
+const CREDENTIAL_CACHE_TTL_MS = 30_000;
+const credentialCache = new Map<AuthScope, { hash: string | null; expiresAt: number }>();
+
+/** Test/seeding hook: forget any cached stored credential. */
+export function clearCredentialCache(): void {
+  credentialCache.clear();
+}
+
+export function hashSecret(secret: string): string {
+  return crypto.createHash('sha256').update(secret, 'utf8').digest('hex');
+}
+
+async function readStoredCredentialHash(scope: AuthScope): Promise<string | null> {
+  const now = Date.now();
+  const cached = credentialCache.get(scope);
+  if (cached && cached.expiresAt > now) return cached.hash;
+
+  try {
+    // Imported lazily so that loading this module never requires a database
+    // connection (tests and cron handlers both import it).
+    const { prisma } = await import('@/lib/prisma');
+    const row = await prisma.automationCredential.findUnique({ where: { scope } });
+    const hash = row?.hash ?? null;
+    credentialCache.set(scope, { hash, expiresAt: now + CREDENTIAL_CACHE_TTL_MS });
+    return hash;
+  } catch (error) {
+    // An unreachable database must never authorize anyone; it only means the
+    // stored credential is unavailable for this request.
+    console.error(
+      `[Auth] Could not read the stored ${scope} credential: ${(error as Error)?.message}`
+    );
+    credentialCache.set(scope, { hash: null, expiresAt: now + 5_000 });
+    return null;
+  }
+}
+
+/**
+ * Full evaluation for privileged endpoints: the environment secret first (no
+ * I/O), then the stored credential.
+ *
+ * Status semantics when nothing matched:
+ *  - 503 only when *no* usable credential exists for the requested scopes
+ *    (missing/compromised/too-short env secret and no stored row). This keeps
+ *    the operator-visible "rotate me" signal instead of disguising a
+ *    misconfiguration as a plain 401.
+ *  - 401 otherwise, so an attacker learns nothing about the configuration.
+ */
+export async function evaluatePrivilegedAuth(
+  request: Request,
+  scopes: AuthScope[]
+): Promise<AuthResult> {
+  let misconfigured: AuthResult | null = null;
+
+  for (const scope of scopes) {
+    const result = evaluateAuth(request, scope);
+    if (result.authorized) return result;
+    if (result.status === 503) misconfigured = result;
+  }
+
+  const presented = extractPresentedToken(request);
+  if (presented) {
+    const digest = hashSecret(presented);
+    for (const scope of scopes) {
+      const storedHash = await readStoredCredentialHash(scope);
+      if (!storedHash) continue;
+      if (timingSafeEqualStr(digest, storedHash)) return { authorized: true, status: 200 };
+    }
+
+    if (misconfigured) return misconfigured;
+    return { authorized: false, status: 401, reason: 'Unauthorized' };
+  }
+
+  return misconfigured ?? { authorized: false, status: 401, reason: 'Unauthorized' };
+}
+
+/**
+ * Async guard for privileged routes: returns a 401/503 response when the
+ * request may not proceed, or `null` when it is authorized.
+ */
+export async function requirePrivileged(
+  request: Request,
+  scopes: AuthScope | AuthScope[]
+): Promise<NextResponse | null> {
+  const list = Array.isArray(scopes) ? scopes : [scopes];
+  const result = await evaluatePrivilegedAuth(request, list);
+  if (result.authorized) return null;
+
+  return NextResponse.json(
+    { success: false, error: result.reason || 'Unauthorized' },
+    { status: result.status }
+  );
+}
+
+/**
  * Generates a cryptographically random secret suitable for CRON_SECRET /
  * ADMIN_SECRET. Used by the `npm run generate-secret` helper.
  */

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { denyUnauthorized } from '@/lib/security/auth';
+import { requirePrivileged } from '@/lib/security/auth';
 import { syncLiveResults, isWithinLiveWindow } from '@/lib/sources/keralalotteries/sync';
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +21,7 @@ export const maxDuration = 30;
  */
 export async function GET(request: NextRequest) {
   try {
-    const denied = denyUnauthorized(request, 'cron');
+    const denied = await requirePrivileged(request, 'cron');
     if (denied) return denied;
 
     const force = request.nextUrl.searchParams.get('force') === 'true';

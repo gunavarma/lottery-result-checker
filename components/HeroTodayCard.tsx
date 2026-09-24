@@ -28,7 +28,7 @@ interface HeroTodayCardProps {
 
 export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
   const { t } = useLanguage();
-  const { data: queryData, isFetching, error } = useLotteryResults({ initialData });
+  const { data: queryData, isFetching, error, refetch } = useLotteryResults({ initialData });
   const data = queryData || initialData;
   const errorMsg = error ? 'Temporarily unable to connect to results feed.' : null;
 
@@ -97,9 +97,12 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
               </span>
               <SyncIndicator isFetching={isFetching} compact className="text-white bg-white/10 border-white/20" />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              {scheduledLottery?.name || 'Kerala State Lottery'}
-            </h2>
+            {/* The page's only H1: this hero is the homepage's primary subject.
+                Every top-level heading on the site used to be an h2, which is
+                why the homepage reported "no H1 tag" in SEO audits. */}
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              {scheduledLottery?.name || 'Kerala State Lottery'} Result
+            </h1>
             <p className="text-xs text-slate-300">
               Conducted by the Directorate of Kerala State Lotteries at Gorky Bhavan, Thiruvananthapuram.
             </p>
@@ -115,6 +118,13 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-slate-300 border border-white/15 font-tabular">
                 <Clock className="w-3.5 h-3.5 text-[#C8A45D]" />
                 <span>RESULT EXPECTED AT 03:00:00 PM IST</span>
+              </span>
+            ) : liveStatus === 'DELAYED' ? (
+              /* Past the live window with nothing published: say so plainly
+                 rather than animating a spinner that will never stop. */
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#A66A00]/25 text-[#F2D07C] border border-[#A66A00]/50 font-tabular">
+                <Clock className="w-3.5 h-3.5" />
+                <span>AWAITING OFFICIAL PUBLICATION</span>
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#A66A00]/25 text-[#F2D07C] border border-[#A66A00]/50 font-tabular">
@@ -195,8 +205,41 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                   </p>
                 </div>
               </div>
+            ) : liveStatus === 'DELAYED' ? (
+              /* STATE 2: PUBLICATION WINDOW CLOSED AND TODAY'S RESULT IS LATE.
+                 No spinner: from 19:00 IST until midnight nothing is going to
+                 arrive any faster for it, and an endless spinner reads as a
+                 broken page. This is the honest "not published yet" state. */
+              <div className="bg-[#10201D] border border-white/10 rounded-2xl p-6 sm:p-8 space-y-4 text-center">
+                <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto">
+                  <Clock className="w-5 h-5 text-[#C8A45D]" />
+                </div>
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-extrabold text-[#C8A45D] uppercase tracking-widest block">
+                    AWAITING OFFICIAL PUBLICATION
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">
+                    RESULT NOT PUBLISHED YET
+                  </h2>
+                  <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
+                    Today&apos;s official result has not been published yet. We are checking automatically and will
+                    update this page as soon as it becomes available.
+                  </p>
+                </div>
+
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => refetch()}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-slate-100 border border-white/15 font-bold text-xs transition-colors cursor-pointer"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
+                    <span>{isFetching ? 'Checking official sources...' : 'Check again now'}</span>
+                  </button>
+                </div>
+              </div>
             ) : (
-              /* STATE 2: COUNTDOWN ZERO / RESULT BEING UPDATED */
+              /* STATE 3: DRAW UNDERWAY / GAZETTE IMMINENT (bounded to 15:00-19:00 IST) */
               <div className="bg-[#10201D] border border-[#A66A00]/40 rounded-2xl p-6 sm:p-8 space-y-5 text-center">
                 <div className="w-12 h-12 border-3 border-[#C8A45D] border-t-transparent rounded-full animate-spin mx-auto" />
                 <div className="space-y-1.5">

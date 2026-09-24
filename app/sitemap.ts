@@ -6,7 +6,10 @@ import { getAllGuides } from '@/lib/guides';
 import { formatDateOnly } from '@/lib/date';
 import { languageAlternates } from '@/lib/i18n/config';
 
-export const dynamic = 'force-dynamic';
+// A sitemap is read by crawlers far more often than its contents change, and the
+// database query behind it is not cheap. Cache it and let it revalidate hourly
+// instead of rebuilding it on every crawler hit.
+export const revalidate = 3600;
 
 // Wrap a sitemap entry with hreflang alternates for the locale mirrors.
 function withAlternates(entry: MetadataRoute.Sitemap[number]): MetadataRoute.Sitemap[number] {

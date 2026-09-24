@@ -16,8 +16,11 @@ export function ResultShareBar({ title, url }: ResultShareBarProps) {
     setMounted(true);
   }, []);
 
-  const baseOrigin =
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com';
+  // Pre-mount fallback only: once mounted we always use the real browser origin,
+  // which is what a shared link must point at. A build-time env value cannot be
+  // trusted here (it may be a development origin), so this is the production
+  // origin literal rather than another env read.
+  const baseOrigin = 'https://www.keraladraws.com';
   const fullUrl = mounted && typeof window !== 'undefined'
     ? `${window.location.origin}${url}`
     : `${baseOrigin}${url}`;

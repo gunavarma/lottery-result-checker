@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { syncOfficialResults } from '@/lib/lotis/sync';
-import { denyUnauthorized } from '@/lib/security/auth';
+import { requirePrivileged } from '@/lib/security/auth';
 import { prisma } from '@/lib/prisma';
 import { formatDateOnly } from '@/lib/date';
 import { getAutomationHealth } from '@/lib/lotis/health';
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   try {
     // Fail-closed, constant-time authentication. Vercel Cron sends
     // `Authorization: Bearer $CRON_SECRET` automatically.
-    const denied = denyUnauthorized(request, 'cron');
+    const denied = await requirePrivileged(request, 'cron');
     if (denied) return denied;
 
     const force = request.nextUrl.searchParams.get('force') === 'true';

@@ -16,7 +16,9 @@ import { Award, Calendar, Clock, Ticket, ShieldCheck, ChevronRight, FileText, Ar
 import { formatDateOnly, formatIstDate } from '@/lib/date';
 import { getOrSetCache } from '@/lib/cache';
 
-export const dynamic = 'force-dynamic';
+// Scheme pages change at most once a day (a new draw), so a cached render with
+// background revalidation is both safe and much faster than re-querying.
+export const revalidate = 300;
 
 interface PageProps {
   params: Promise<{ slug: string }>;

@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ChevronRight, Home } from 'lucide-react';
+import { SITE_URL } from '@/lib/site-url';
 
 interface BreadcrumbItem {
   label: string;
@@ -20,13 +21,13 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com',
+        item: SITE_URL,
       },
       ...items.map((item, idx) => ({
         '@type': 'ListItem',
         position: idx + 2,
         name: item.label,
-        ...(item.href ? { item: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com'}${item.href}` } : {}),
+        ...(item.href ? { item: `${SITE_URL}${item.href}` } : {}),
       })),
     ],
   };

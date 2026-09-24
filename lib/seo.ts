@@ -1,20 +1,16 @@
 import type { Metadata } from 'next';
 import { languageAlternates } from '@/lib/i18n/config';
+import { SITE_URL } from '@/lib/site-url';
 
-function getSafeSiteUrl(): string {
-  const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (!envUrl) return 'https://keraladraws.com';
-  if (envUrl.startsWith('http://') || envUrl.startsWith('https://')) {
-    return envUrl.replace(/\/+$/, '');
-  }
-  return `https://${envUrl}`.replace(/\/+$/, '');
-}
-
-export const SITE_URL = getSafeSiteUrl();
+// Re-exported so the many server modules that import SITE_URL from here keep a
+// single, correctly resolved origin (see lib/site-url.ts for the resolution
+// rules and why the naive env read was wrong).
+export { SITE_URL };
 export const SITE_NAME = 'KeralaDraws';
 export const SITE_TAGLINE = 'Kerala Lottery Results, Ticket Checker & Alerts';
+// Kept under ~155 characters so search engines show it in full.
 export const SITE_DESCRIPTION =
-  'Independent Kerala lottery results platform. Check official daily winning numbers, live draw status, complete prize structures, ticket verification and historical LOTIS gazette archives.';
+  'Kerala lottery results today and every past draw: verified winning numbers, complete prize tables, live draw status and a free ticket checker.';
 
 /**
  * Normalizes and produces a clean canonical URL for KeralaDraws

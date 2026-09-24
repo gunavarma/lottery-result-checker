@@ -20,6 +20,11 @@ export function useLotteryResults(options: UseLotteryResultsOptions = {}) {
     refetchInterval: (query) => {
       const data = query.state.data;
       if (data?.isTodayAvailable) return false;
+      // Outside the 15:00-19:00 IST publication window nothing can arrive
+      // sooner than the next draw, so poll infrequently: the old unconditional
+      // 30s interval kept hitting the API all evening and all night for a
+      // result that was simply never coming that day.
+      if (data?.liveStatus === 'DELAYED') return 5 * 60 * 1000;
       return 30_000;
     },
   });

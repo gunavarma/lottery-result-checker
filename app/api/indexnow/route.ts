@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SITE_URL } from '@/lib/seo';
-import { denyUnauthorizedAny } from '@/lib/security/auth';
+import { requirePrivileged } from '@/lib/security/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +12,7 @@ const INDEXNOW_HOST = 'api.indexnow.org';
 // updated result pages quickly — Bing's index feeds several AI answer engines.
 // Accepts absolute URLs or site paths (/kerala-lottery-result/2026-09-12).
 export async function POST(request: NextRequest) {
-  const unauthorized = denyUnauthorizedAny(request, ['cron', 'admin']);
+  const unauthorized = await requirePrivileged(request, ['cron', 'admin']);
   if (unauthorized) return unauthorized;
 
   let urls: unknown;

@@ -394,3 +394,92 @@ Unique constraint failed on the fields: (`code`)
 [90mstdout[2m | tests/_archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
 [22m[39m[iter 61] status=PAUSED cursor=2025-09-24 processed=20/1872 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 59s
 
+ [31m❯[39m tests/_archive-import.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 3600011[2mms[22m[39m
+[31m     [31m×[31m imports and verifies every published draw page[39m[33m 3600010[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/_archive-import.test.ts[2m > [22mfull archive import from keralalotteries.net[2m > [22mimports and verifies every published draw page
+[31m[1mError[22m: Test timed out in 3600000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[90m [2m❯[22m tests/_archive-import.test.ts:[2m8:3[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 13:05:12
+[2m   Duration [22m 3601.36s[2m (transform 102ms, setup 0ms, import 1.11s, tests 3600.01s, environment 0ms)[22m
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.runners.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/Users/guna/Documents/lottery-result-checker[39m
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 1] status=PAUSED cursor=2025-10-15 processed=20/1874 created=16 updated=0 skipped=4 failed=0 verified=0 mismatches=0 54s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 2] status=PAUSED cursor=2025-11-04 processed=20/1874 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 60s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 3] status=PAUSED cursor=2025-11-24 processed=20/1874 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 65s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 4] status=PAUSED cursor=2025-12-17 processed=20/1874 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 58s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 5] status=PAUSED cursor=2026-01-08 processed=20/1874 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 58s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 6] status=PAUSED cursor=2026-01-29 processed=20/1874 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 56s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 7] status=PAUSED cursor=2026-02-18 processed=20/1874 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 60s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 8] status=PAUSED cursor=2026-03-10 processed=20/1874 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 60s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 9] status=PAUSED cursor=2026-03-30 processed=20/1874 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 64s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 10] status=PAUSED cursor=2026-04-20 processed=20/1874 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 58s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 11] status=PAUSED cursor=2026-05-11 processed=20/1874 created=20 updated=0 skipped=0 failed=0 verified=0 mismatches=0 72s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 12] status=PAUSED cursor=2026-05-31 processed=20/1874 created=14 updated=0 skipped=6 failed=0 verified=6 mismatches=0 64s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 13] status=PAUSED cursor=2026-06-20 processed=20/1874 created=0 updated=0 skipped=20 failed=0 verified=19 mismatches=1 33s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 14] status=PAUSED cursor=2026-07-10 processed=20/1874 created=0 updated=0 skipped=20 failed=0 verified=20 mismatches=0 32s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 15] status=PAUSED cursor=2026-07-30 processed=20/1874 created=0 updated=0 skipped=20 failed=0 verified=19 mismatches=1 33s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 16] status=PAUSED cursor=2026-08-20 processed=20/1874 created=0 updated=0 skipped=20 failed=0 verified=20 mismatches=0 31s
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 17] status=PAUSED cursor=2026-09-10 processed=20/1874 created=0 updated=0 skipped=19 failed=1 verified=14 mismatches=0 28s
+   errors(sample): 2026-08-28 SK-67: could not parse page (page date 2026-08-29 != expected)
+
+[90mstdout[2m | tests/runners/archive-import.test.ts[2m > [22m[2mfull archive import from keralalotteries.net[2m > [22m[2mimports and verifies every published draw page
+[22m[39m[iter 18] status=COMPLETED cursor=2026-09-24 processed=14/1874 created=0 updated=2 skipped=12 failed=0 verified=11 mismatches=0 27s
+FINAL status=COMPLETED
+TOTALS {"created":230,"updated":2,"skipped":121,"failed":1,"verified":109,"verifiedMismatches":2}
+
+ [32m✓[39m tests/runners/archive-import.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 912090[2mms[22m[39m
+     [33m[2m✓[22m[39m imports and verifies every published draw page [33m 912088[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 13:40:45
+[2m   Duration [22m 913.28s[2m (transform 101ms, setup 0ms, import 1.05s, tests 912.09s, environment 0ms)[22m
+

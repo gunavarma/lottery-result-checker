@@ -127,12 +127,25 @@ edge-function job.
 ### Step 2: Configure the sync jobs
 Two jobs share the same configuration: the official gazette sync every 15
 minutes, and the provisional live poller every minute during the publication
-window. `pg_cron` refuses to schedule either until these are set, so a
-misconfigured project fails loudly instead of silently never syncing:
-```sql
-ALTER DATABASE postgres SET app.settings.keraladraws_app_url = 'https://<your-domain>';
-ALTER DATABASE postgres SET app.settings.keraladraws_cron_secret = '<same value as CRON_SECRET>';
+window. One command schedules both, and registers the credential they present:
+```bash
+node --env-file=.env scripts/configure-automation-cron.mjs
 ```
+
+> **Do not use `ALTER DATABASE postgres SET app.settings.*`.** It fails on this
+> project with SQLSTATE 42501 (the `postgres` role is not a superuser). That is
+> exactly why the older migrations never scheduled anything and the pipeline sat
+> dead while reporting success — every run was POSTing to a deleted Edge Function
+> and getting HTTP 404. The script above inlines the configuration into the job
+> bodies instead, which needs no elevated privileges.
+
+**Credential:** the jobs authenticate with `CRON_SECRET`. The app also accepts a
+credential stored in `automation_credentials` (hash only, never the plaintext),
+which is what the script registers. This second source exists because rotating a
+Vercel environment variable requires dashboard access plus a redeploy; with the
+stored credential the pipeline keeps running and the secret rotates by
+re-running the script. Both sources are validated in constant time and the
+endpoint fails closed (503) when neither is usable.
 
 ### Step 3: Generate the automation secrets
 Never use the previously documented placeholder values — they are public and

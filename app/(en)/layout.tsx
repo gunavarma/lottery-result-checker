@@ -22,7 +22,8 @@ try {
 export const metadata: Metadata = {
   metadataBase: safeMetadataBase,
   manifest: '/manifest.json',
-  title: `${SITE_NAME} | Kerala Lottery Results Today, Ticket Checker & Alerts`,
+  // Kept at or under ~60 characters so search engines do not truncate it.
+  title: `${SITE_NAME} | Kerala Lottery Results Today & Live Updates`,
   description: SITE_DESCRIPTION,
   keywords: [
     'Kerala Lottery Result Today',

@@ -320,3 +320,33 @@ model TicketWatchlist {
   @@index([ticketNumber])
   @@index([userId])
 }
+
+/// Second credential source for privileged automation endpoints.
+///
+/// The frequent polling is driven by Supabase pg_cron, because Vercel's Hobby
+/// plan rejects any cron expression that runs more than once per day. Those jobs
+/// therefore need a secret both the database and the application can read.
+///
+/// The environment variable is still the primary credential and still works.
+/// This row exists so that the pipeline keeps working — and so that the secret
+/// can be rotated — without a Vercel dashboard edit plus redeploy, which is
+/// exactly what left production dead: the deployed CRON_SECRET was a previously
+/// exposed value, the auth layer correctly refused it, and every scheduled call
+/// returned 503 while the site still looked "synchronized".
+///
+/// Only a SHA-256 hash is persisted, so reading this table never reveals the
+/// secret. The plaintext lives solely in the pg_cron job body, inside the same
+/// database, and is sent over HTTPS on each call.
+model AutomationCredential {
+  id        String   @id @default(cuid())
+  /// Credential namespace: 'cron' or 'admin'.
+  scope     String   @unique
+  /// SHA-256 (hex) of the secret. Never the secret itself.
+  hash      String
+  /// When this credential last changed, for operator diagnostics.
+  rotatedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("automation_credentials")
+}

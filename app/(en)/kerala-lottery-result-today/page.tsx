@@ -13,7 +13,11 @@ import { constructMetadata, getBreadcrumbSchema, getFAQSchema } from '@/lib/seo'
 import { startOfDay, endOfDay, format } from 'date-fns';
 import { Award, Clock, CheckCircle2, Search, MapPin, Ticket, ShieldCheck, FileText, ExternalLink, ArrowRight, HelpCircle, Radio } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+// Cached at the CDN and refreshed in the background rather than re-querying the
+// database for every visitor. 30s keeps the drawn page fresh while the client
+// (TanStack Query) revalidates the winning numbers live. Uncached rendering here
+// was the main cause of the multi-second server response in SEO audits.
+export const revalidate = 30;
 
 export async function generateMetadata(): Promise<Metadata> {
   const now = new Date();

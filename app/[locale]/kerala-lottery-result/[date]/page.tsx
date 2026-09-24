@@ -5,7 +5,8 @@ import { isLocale } from '@/lib/i18n/config';
 import { mirrorMetadata } from '@/lib/i18n/mirror';
 import { Language } from '@/lib/translations';
 
-export const dynamic = 'force-dynamic';
+// Locale mirror of the historical result page: same long cache window.
+export const revalidate = 300;
 
 type PageProps = { params: Promise<{ locale: string; date: string }> };
 

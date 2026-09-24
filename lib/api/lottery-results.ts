@@ -44,7 +44,8 @@ export interface LiveDrawResponse {
 export interface TodayResultResponse {
   success: boolean;
   isTodayAvailable: boolean;
-  liveStatus: 'WAITING' | 'CHECKING' | 'PUBLISHED' | 'FAILED';
+  /** 'DELAYED' = past the daily publication window, nothing published today. */
+  liveStatus: 'WAITING' | 'CHECKING' | 'DELAYED' | 'PUBLISHED' | 'FAILED';
   todayDate: string;
   todayDateFormatted: string;
   todayDraw: any | null;

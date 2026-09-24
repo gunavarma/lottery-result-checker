@@ -1,4 +1,5 @@
 import { NotificationProvider, DrawPublishedEvent, NotificationSendResult } from '../types';
+import { SITE_URL } from '@/lib/site-url';
 
 export class EmailProvider implements NotificationProvider {
   channel = 'EMAIL' as const;
@@ -14,7 +15,7 @@ export class EmailProvider implements NotificationProvider {
         return { channel: this.channel, subscriptionId: subscription.id, success: false, error: 'No email provided' };
       }
 
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://keralalottery.org';
+      const siteUrl = SITE_URL;
       const unsubscribeUrl = `${siteUrl}/api/notifications/unsubscribe?token=${subscription.unsubscribeToken || subscription.id}`;
 
       // If Resend API Key is available, dispatch via transactional HTTP API

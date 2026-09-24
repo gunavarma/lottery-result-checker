@@ -5,7 +5,9 @@ import { isLocale } from '@/lib/i18n/config';
 import { mirrorMetadata } from '@/lib/i18n/mirror';
 import { Language } from '@/lib/translations';
 
-export const dynamic = 'force-dynamic';
+// Matches the English /live page's caching: the live numbers themselves are
+// revalidated from the browser, so the shell does not need an uncached render.
+export const revalidate = 30;
 
 export async function generateMetadata({
   params,

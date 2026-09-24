@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendResultPublishedPushNotification } from '@/lib/firebase/fcm';
 import { prisma } from '@/lib/prisma';
-import { denyUnauthorized } from '@/lib/security/auth';
+import { requirePrivileged } from '@/lib/security/auth';
+import { SITE_URL } from '@/lib/site-url';
 
 export async function POST(request: NextRequest) {
   try {
-    const denied = denyUnauthorized(request, 'admin');
+    const denied = await requirePrivileged(request, 'admin');
     if (denied) return denied;
 
     const body = await request.json().catch(() => ({}));
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://keraladraws.com';
+    const siteUrl = SITE_URL;
 
     // If a specific test target token is provided, register it if not exists
     if (body.testFcmToken) {
