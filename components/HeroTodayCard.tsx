@@ -151,9 +151,9 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                     <span className="text-xs font-bold text-[#C8A45D] uppercase tracking-wider block font-tabular">
                       DRAW STATUS
                     </span>
-                    <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
+                    <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
                       RESULT NOT PUBLISHED YET
-                    </h3>
+                    </h2>
                   </div>
                   <div className="text-xs text-slate-300">
                     Expected Time: <strong className="text-white">03:00:00 PM (IST)</strong>
@@ -246,9 +246,9 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                   <span className="text-[10px] font-extrabold text-[#C8A45D] uppercase tracking-widest block">
                     LIVE DRAW PROCEEDINGS IN PROGRESS
                   </span>
-                  <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">
+                  <h2 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">
                     RESULT BEING UPDATED
-                  </h3>
+                  </h2>
                   <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
                     Fetching the latest verified winning numbers from the official Kerala Lottery draw currently underway at Gorky Bhavan...
                   </p>
@@ -303,9 +303,9 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                   <span className="text-xs font-bold text-[#C8A45D] tracking-wider uppercase block font-tabular">
                     Draw Code
                   </span>
-                  <h3 className="text-2xl sm:text-3xl font-black text-white mt-0.5 tracking-tight font-tabular">
+                  <h2 className="text-2xl sm:text-3xl font-black text-white mt-0.5 tracking-tight font-tabular">
                     {draw.drawNumber}
-                  </h3>
+                  </h2>
                 </div>
               </div>
 

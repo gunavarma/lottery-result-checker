@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import {
   Menu,
   X,
@@ -18,10 +19,19 @@ import {
   Award,
   Newspaper,
 } from 'lucide-react';
-import { SearchModal } from './SearchModal';
-import { NotificationModal } from './NotificationModal';
 import { LanguageSelector } from './LanguageSelector';
 import { useLanguage } from '@/context/LanguageContext';
+
+// Lazy-load heavy modals so their JS (including Firebase SDK) is deferred
+// until the user actually opens them, reducing initial bundle by ~72 KiB.
+const SearchModal = dynamic(
+  () => import('./SearchModal').then((mod) => mod.SearchModal),
+  { ssr: false }
+);
+const NotificationModal = dynamic(
+  () => import('./NotificationModal').then((mod) => mod.NotificationModal),
+  { ssr: false }
+);
 
 export function Navbar() {
   const pathname = usePathname();

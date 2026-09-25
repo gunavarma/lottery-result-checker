@@ -17,10 +17,18 @@ import {
   Ticket,
   XCircle,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { formatINR } from '@/lib/prisma';
 import { useLanguage } from '@/context/LanguageContext';
-import { TicketScanner, ScannedTicket } from '@/components/lottery/TicketScanner';
+import type { ScannedTicket } from '@/components/lottery/TicketScanner';
 import { useCheckTickets, TicketMatchResult } from '@/hooks/queries/useCheckTickets';
+
+// Lazy-load the camera/QR scanner to keep html5-qrcode and tesseract.js
+// out of the initial JS bundle. Only loaded when the user opens the scanner.
+const TicketScanner = dynamic(
+  () => import('@/components/lottery/TicketScanner').then((mod) => mod.TicketScanner),
+  { ssr: false }
+);
 
 interface TicketCheckerProps {
   initialLotteryId?: string;

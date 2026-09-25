@@ -1,13 +1,24 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Script from 'next/script';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { OfflineBanner } from '@/components/OfflineBanner';
-import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
-import { ForegroundNotificationToast } from '@/components/ForegroundNotificationToast';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+
+// Lazy-load components that depend on Firebase SDK or browser-only APIs.
+// They only render after async checks (notification permission, beforeinstallprompt),
+// so deferring them keeps Firebase out of the critical JS bundle.
+const PwaInstallPrompt = dynamic(
+  () => import('@/components/PwaInstallPrompt').then((mod) => mod.PwaInstallPrompt),
+  { ssr: false }
+);
+const ForegroundNotificationToast = dynamic(
+  () => import('@/components/ForegroundNotificationToast').then((mod) => mod.ForegroundNotificationToast),
+  { ssr: false }
+);
 
 // Shared body chrome used by both root layouts so the two locale trees stay
 // pixel- and behaviour-identical. The <html>/<head> shells live in the layouts.
