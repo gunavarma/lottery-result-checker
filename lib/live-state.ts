@@ -1,4 +1,4 @@
-import { IST_OFFSET_MS, getTodayIstStr } from '@/lib/date';
+import { IST_OFFSET_MS } from '@/lib/date';
 
 /**
  * The single source of truth for "what state is today's draw in?".
@@ -37,6 +37,22 @@ export const DRAW_HOUR_IST = 15;
 export const LIVE_WINDOW_END_HOUR_IST = 19;
 
 export const EXPECTED_DRAW_TIME = '03:00:00 PM';
+
+/**
+ * Formats an already-IST-shifted Date as `YYYY-MM-DD`.
+ *
+ * `computeLiveState` used to call `getTodayIstStr()` for `todayDate`, which
+ * reads the wall clock and ignores the `now` argument. The weekday, however, was
+ * derived from `now` — so injecting a date returned a date/weekday pair that
+ * could belong to two different days. Production always passes the real clock,
+ * so the pair matched there and the bug only surfaced in tests.
+ */
+function toIstDateStr(ist: Date): string {
+  const year = ist.getUTCFullYear();
+  const month = String(ist.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(ist.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 const DAYS_OF_WEEK = [
   'Sunday',
@@ -88,7 +104,7 @@ export function computeLiveState(isPublished: boolean, now: Date = new Date()): 
     liveStatus,
     secondsUntilDraw,
     expectedDrawTime: EXPECTED_DRAW_TIME,
-    todayDate: getTodayIstStr(),
+    todayDate: toIstDateStr(ist),
     todayDayOfWeek: DAYS_OF_WEEK[ist.getUTCDay()],
     currentIstTime: { hours, minutes, seconds },
   };

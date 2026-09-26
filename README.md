@@ -171,7 +171,20 @@ Create `.env` based on `.env.example`:
 # Database & Core Application Secrets
 # ==========================================
 # Generate with: npm run generate-secrets  (never commit real values)
-DATABASE_URL="postgresql://postgres:password@localhost:5432/kerala_lottery?schema=public"
+#
+# DATABASE_URL is what the app queries with; DIRECT_URL is only used by the
+# Prisma CLI for migrations. On Supabase BOTH must be the **pooler** host
+# (aws-0-<region>.pooler.supabase.com) — the direct `db.<ref>.supabase.co` host
+# is IPv6-only and Vercel has no IPv6 egress.
+#
+# On serverless, DATABASE_URL must be the *transaction* pooler on port **6543**
+# with `pgbouncer=true` and a small connection_limit. Pointing it at the
+# *session* pooler on 5432 lets every concurrent lambda hold a real Postgres
+# connection, the pooler starts refusing them, and Prisma reports
+# "Can't reach database server" — which renders as an empty results page for
+# whichever visitor lands on the affected instance.
+DATABASE_URL="postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
+DIRECT_URL="postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres"
 CRON_SECRET="<generated-32-byte-random-secret>"
 ADMIN_SECRET="<generated-32-byte-random-secret>"
 NEXT_PUBLIC_SITE_URL="http://localhost:3000"

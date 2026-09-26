@@ -12,10 +12,16 @@ import { loadTodaySnapshot } from '@/lib/results/today-snapshot';
 // hero therefore started its countdown at zero, which is also the value that
 // means "draw in progress", and rendered a spinner instead of the countdown.
 export async function getHomepageData() {
-  return getOrSetCache(
-    'homepage_data_v3',
-    async () => {
-      try {
+  // Failure handling deliberately wraps the cache call rather than living inside
+  // the fetcher. Previously the degraded "empty" payload was the value handed
+  // back to `getOrSetCache`, which then cached it as a success for 30s fresh and
+  // up to 5 minutes stale — so one failed database read could pin an empty
+  // homepage into the in-memory cache (and from there into the ISR HTML) long
+  // after the database had recovered. Now a rejected fetcher stores nothing.
+  try {
+    return await getOrSetCache(
+      'homepage_data_v4',
+      async () => {
         const [today, latestDraws, popularLotteries] = await Promise.all([
           loadTodaySnapshot(),
           prisma.draw.findMany({
@@ -58,21 +64,23 @@ export async function getHomepageData() {
           latestDraws,
           popularLotteries,
         });
-      } catch (error) {
-        console.error('Error fetching homepage data:', error);
-        // Degraded but honest: report the day as not-yet-published rather than
-        // latching a spinner that can never resolve.
-        return {
-          success: false as const,
-          isTodayAvailable: false,
-          liveStatus: 'DELAYED' as const,
-          todayDraw: null,
-          latestDraw: null,
-          latestDraws: [],
-          popularLotteries: [],
-        };
-      }
-    },
-    { ttlMs: 30_000, swrMs: 300_000 }
-  );
+      },
+      { ttlMs: 30_000, swrMs: 300_000 }
+    );
+  } catch (error) {
+    console.error('Error fetching homepage data:', error);
+    // Degraded but honest: report the day as not-yet-published rather than
+    // latching a spinner that can never resolve. The client components treat a
+    // `success: false` payload as untrusted and refetch immediately, so a fresh
+    // device recovers on its own instead of sitting on the empty state.
+    return {
+      success: false as const,
+      isTodayAvailable: false,
+      liveStatus: 'DELAYED' as const,
+      todayDraw: null,
+      latestDraw: null,
+      latestDraws: [],
+      popularLotteries: [],
+    };
+  }
 }

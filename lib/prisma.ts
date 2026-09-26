@@ -1,4 +1,11 @@
 import { PrismaClient } from '@prisma/client';
+import { withConnectTimeout } from './db-url';
+
+// `withConnectTimeout` raises Prisma's 5s default connection timeout, which a
+// cold Vercel function's first handshake with the Supabase pooler can exceed —
+// the abandoned attempt surfaced as "Can't reach database server" (observed
+// failing at ~5.44s) and degraded the affected render to an empty page.
+const datasourceUrl = withConnectTimeout(process.env.DATABASE_URL);
 
 // Prevent multiple instances of Prisma Client in development
 const globalForPrisma = globalThis as unknown as {
@@ -8,6 +15,7 @@ const globalForPrisma = globalThis as unknown as {
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
+    ...(datasourceUrl ? { datasourceUrl } : {}),
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });
 

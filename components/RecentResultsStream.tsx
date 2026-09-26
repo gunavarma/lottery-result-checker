@@ -3,15 +3,36 @@
 import React from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Award, ArrowRight, ShieldCheck, FileText, ChevronRight } from 'lucide-react';
+import { Award, ArrowRight, Loader2, ShieldCheck, FileText, ChevronRight } from 'lucide-react';
 import { formatINR } from '@/lib/prisma';
+import { useLatestResults } from '@/hooks/queries/useLatestResults';
 
 interface RecentResultsStreamProps {
   draws: any[];
 }
 
 export function RecentResultsStream({ draws }: RecentResultsStreamProps) {
-  if (!draws || draws.length === 0) {
+  const serverDraws = Array.isArray(draws) ? draws : [];
+
+  // The server render can legitimately arrive without draws: its first
+  // database read may have failed, or a CDN edge may be replaying an older
+  // cached render. Rather than parking a brand-new device on the empty notice
+  // until the next full page load, ask the API directly on mount and hydrate
+  // the list once the response lands.
+  const needsFallback = serverDraws.length === 0;
+  const { data, isLoading } = useLatestResults(6, { enabled: needsFallback });
+  const items = serverDraws.length > 0 ? serverDraws : (data?.draws ?? []);
+
+  if (items.length === 0) {
+    if (needsFallback && isLoading) {
+      return (
+        <div className="bg-white rounded-2xl p-8 border border-[#E2E7E3] flex items-center justify-center gap-2 text-[#5F6B66] text-xs">
+          <Loader2 className="w-4 h-4 animate-spin text-[#0B5D45]" />
+          <span>Loading recent official results…</span>
+        </div>
+      );
+    }
+
     return (
       <div className="bg-white rounded-2xl p-8 border border-[#E2E7E3] text-center text-[#5F6B66] text-xs">
         Results are synchronizing with the official LOTIS gazette database.
@@ -22,7 +43,7 @@ export function RecentResultsStream({ draws }: RecentResultsStreamProps) {
   return (
     <div className="bg-white rounded-2xl border border-[#E2E7E3] overflow-hidden shadow-xs">
       <div className="divide-y divide-[#E2E7E3]">
-        {draws.map((draw) => {
+        {items.map((draw) => {
           const drawDateFormatted = draw.drawDate
             ? format(new Date(draw.drawDate), 'dd MMM yyyy')
             : '—';

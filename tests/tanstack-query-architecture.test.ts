@@ -25,6 +25,10 @@ describe('TanStack Query Key Architecture & Caching Contracts', () => {
       { page: 2, limit: 12 },
     ]);
     expect(resultKeys.lotteries()).toEqual(['lotteries']);
+    // The homepage's recent-results fallback is keyed by limit so a 6-item
+    // homepage fetch and a 10-item fetch never share a cache entry.
+    expect(resultKeys.latest(6)).toEqual(['results', 'latest', 6]);
+    expect(resultKeys.latest(6)).not.toEqual(resultKeys.latest(10));
   });
 
   it('guarantees query isolation between different dates and schemes', () => {

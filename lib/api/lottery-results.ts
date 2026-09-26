@@ -54,6 +54,12 @@ export interface TodayResultResponse {
   secondsUntilDraw: number;
 }
 
+export interface LatestResultsResponse {
+  success: boolean;
+  count: number;
+  draws: any[];
+}
+
 export interface DateResultResponse {
   success: boolean;
   date: string;
@@ -100,6 +106,25 @@ export async function fetchTodayResult(): Promise<TodayResultResponse> {
     throw new Error(`Failed to fetch today's results: ${res.statusText}`);
   }
   return res.json();
+}
+
+/**
+ * Client-side fetcher for the most recent published draws. Used by the homepage
+ * as a self-healing fallback when the server render arrived without any draws
+ * (a failed first database read, or a stale cached HTML payload).
+ */
+export async function fetchLatestResults(limit = 10): Promise<LatestResultsResponse> {
+  const res = await fetch(`/api/results/latest?limit=${encodeURIComponent(String(limit))}`, {
+    headers: { Accept: 'application/json' },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch latest results: ${res.statusText}`);
+  }
+  const json = await res.json();
+  if (!json.success) {
+    throw new Error(json.error || 'Latest results unavailable');
+  }
+  return json;
 }
 
 /**

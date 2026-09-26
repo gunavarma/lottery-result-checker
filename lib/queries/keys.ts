@@ -11,6 +11,7 @@ export const resultKeys = {
   all: ['results'] as const,
   live: () => [...resultKeys.all, 'live'] as const,
   today: () => [...resultKeys.all, 'today'] as const,
+  latest: (limit: number) => [...resultKeys.all, 'latest', limit] as const,
   byDate: (date: string) => [...resultKeys.all, 'date', date] as const,
   detail: (slug: string, drawNumber?: string) =>
     [...resultKeys.all, 'detail', slug, drawNumber || 'latest'] as const,

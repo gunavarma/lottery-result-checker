@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Star, ArrowRight, Clock, Award, ShieldCheck } from 'lucide-react';
 import { formatINR } from '@/lib/prisma';
+import { useLotteries } from '@/hooks/queries/useLotteries';
 
 interface LotteryDirectoryListProps {
   lotteries: any[];
@@ -11,6 +12,13 @@ interface LotteryDirectoryListProps {
 
 export function LotteryDirectoryList({ lotteries }: LotteryDirectoryListProps) {
   const [favorites, setFavorites] = useState<string[]>([]);
+
+  // Self-heal an empty server render the same way the recent-results list does:
+  // `/api/lotteries` returns the identical nested shape, so the rows render the
+  // same whether the data came from the server or this fallback.
+  const serverLotteries = Array.isArray(lotteries) ? lotteries : [];
+  const { data: fetchedLotteries } = useLotteries({ enabled: serverLotteries.length === 0 });
+  const items = serverLotteries.length > 0 ? serverLotteries : (fetchedLotteries ?? []);
 
   useEffect(() => {
     try {
@@ -43,7 +51,7 @@ export function LotteryDirectoryList({ lotteries }: LotteryDirectoryListProps) {
   return (
     <div className="bg-white rounded-3xl border border-[#E2E7E3] overflow-hidden shadow-sm">
       <div className="divide-y divide-[#E2E7E3]">
-        {lotteries.map((lottery) => {
+        {items.map((lottery) => {
           const isFav = favorites.includes(lottery.id);
           const latestDraw = lottery.draws?.[0];
           const topPrize = latestDraw?.prizes?.[0]?.amount;

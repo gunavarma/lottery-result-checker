@@ -10,10 +10,19 @@ interface UseLotteryResultsOptions {
 }
 
 export function useLotteryResults(options: UseLotteryResultsOptions = {}) {
+  const initialData = options.initialData;
+  // A `success: false` payload means the server's first database read failed
+  // (or an edge served a stale render). Trusting it as fresh left a brand-new
+  // device on the "result not published yet" hero for the whole 30s staleTime —
+  // and for 5 minutes when it was flagged DELAYED. Marking it as updated at the
+  // epoch makes TanStack refetch the moment the component mounts.
+  const initialDataIsTrustworthy = Boolean(initialData?.success);
+
   return useQuery({
     queryKey: resultKeys.today(),
     queryFn: fetchTodayResult,
-    initialData: options.initialData,
+    initialData,
+    initialDataUpdatedAt: initialData && !initialDataIsTrustworthy ? 0 : undefined,
     enabled: options.enabled ?? true,
     staleTime: 30 * 1000,
     gcTime: 10 * 60 * 1000,

@@ -131,9 +131,46 @@ The archive import (jobType AGGREGATOR_BACKFILL) **completed**: totals created=2
 failed=1, verified=109, mismatches=2. The one failure is SK-67 (2026-08-28), deliberately refused
 because the page-stated date contradicts its slug date — same policy as the 89 earlier refusals.
 
+## Database connectivity (why a cold visit showed an empty homepage)
+
+Observed 2026-09-26 against production, and this — not a UI bug — is why a **new device** saw
+"Results are synchronizing with the official LOTIS gazette database" in Recent Official Results
+and "AWAITING OFFICIAL PUBLICATION / RESULT NOT PUBLISHED YET" in the Today card:
+
+```
+$ curl -s https://www.keraladraws.com/api/results/latest?limit=6
+{"success":false,"error":"Can't reach database server at
+ aws-0-ap-southeast-1.pooler.supabase.com:5432"}   # http=500
+```
+
+- The homepage HTML contained **zero** draw numbers and both empty-state strings, so the server
+  render itself was degraded — not a client hydration problem.
+- It is **intermittent**, which is why existing visitors kept seeing results: 4 consecutive
+  requests failed (each after ~5.44s — Prisma's 5s default connect timeout) and the 5th succeeded
+  with `count: 1843` in 2.7s, after which a warm instance answered in ~0.2s.
+- The error names port **5432**, i.e. production's `DATABASE_URL` is the Supabase **session**
+  pooler. The local `.env` uses the **transaction** pooler on **6543**
+  (`?pgbouncer=true&connection_limit=10`). Every concurrent Vercel lambda on 5432 holds a real
+  Postgres connection; once the pooler's session limit is reached it refuses new ones, and Prisma
+  reports "Can't reach database server".
+
+**Fix (Vercel dashboard — cannot be done from the repo):** set production `DATABASE_URL` to the
+port 6543 transaction pooler form with a small `connection_limit` (see README §3), and keep
+`DIRECT_URL` on 5432 for migrations. `lib/db-url.ts` additionally appends `connect_timeout=10` so
+the 5s cold-connect timeout is no longer the failure point.
+
+App-side mitigation already in place: the homepage's client components treat a `success: false`
+payload as untrusted and refetch (`/api/results/today`, `/api/results/latest`, `/api/lotteries`),
+and `getHomepageData()` no longer caches a degraded payload, so one failed read cannot pin an
+empty homepage for minutes after the database recovers.
+
 ## Deployment
 
-1. **Deploy the current revision — this is the only required step.** Production is running an older build whose `/api/cron/sync-results` returns HTTP 500 for every request (even unauthenticated). That build also predates the stored-credential auth path, so its scheduled calls fail even though the database jobs are correctly configured. Deploying fixes both, and the earlier deploy failure (sub-daily cron expressions on Hobby) is gone.
+1. **Deploy the current revision.** The earlier theory that production runs a stale build is
+   **wrong**: every DB-backed route returns HTTP 500 because of the connectivity failure above,
+   not because of old code. Deploying ships the client self-heal, the `homepage_data_v4` cache key
+   and the raised connect timeout; the `DATABASE_URL` correction above is still required for the
+   backend to be reliably reachable.
 2. Recommended, not required: set `CRON_SECRET` in Vercel to the local `.env` value, and `NEXT_PUBLIC_SITE_URL=https://www.keraladraws.com`. Neither is needed for correctness any more — the stored credential authorizes the database jobs, and the site origin resolver ignores a loopback value on a deployed host and prefers Vercel's own production domain.
 
 Verify after deploying with `node --env-file=.env scripts/automation-status.mjs`: the cron HTTP responses must show **200**, not 503.

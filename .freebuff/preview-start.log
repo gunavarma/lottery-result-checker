@@ -1,0 +1,20 @@
+▲ Next.js 16.3.3
+- Local:         http://localhost:3401
+- Network:       http://10.68.10.248:3401
+✓ Ready in 315ms
+✓ Running next.config.ts took 83ms
+⨯ Failed to start server
+Error: listen EADDRINUSE: address already in use :::3401
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3401)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '::',
+  port: 3401
+}
+▲ Next.js 16.3.3
+- Local:         http://localhost:3401
+- Network:       http://10.68.10.248:3401
+✓ Ready in 286ms
+✓ Running next.config.ts took 26ms

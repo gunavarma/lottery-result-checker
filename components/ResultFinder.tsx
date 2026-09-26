@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Calendar, ChevronRight, Filter } from 'lucide-react';
 import { format, subDays } from 'date-fns';
+import { useLotteries } from '@/hooks/queries/useLotteries';
 
 interface ResultFinderProps {
   lotteries?: Array<{ id: string; name: string; slug: string; code: string }>;
@@ -11,6 +12,11 @@ interface ResultFinderProps {
 
 export function ResultFinder({ lotteries = [] }: ResultFinderProps) {
   const router = useRouter();
+  // If the server render arrived without schemes (failed database read or a
+  // stale cached render), fetch the directory on the client so the selector is
+  // never empty on a fresh device.
+  const { data: fetchedLotteries } = useLotteries({ enabled: lotteries.length === 0 });
+  const lotteryOptions = lotteries.length > 0 ? lotteries : (fetchedLotteries ?? []);
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const yesterdayStr = format(subDays(new Date(), 1), 'yyyy-MM-dd');
 
@@ -92,7 +98,7 @@ export function ResultFinder({ lotteries = [] }: ResultFinderProps) {
               className="bg-transparent text-xs font-bold text-[#17201D] focus:outline-hidden cursor-pointer"
             >
               <option value="all">All Lotteries</option>
-              {lotteries.map((lot) => (
+              {lotteryOptions.map((lot) => (
                 <option key={lot.id} value={lot.slug}>
                   {lot.name} ({lot.code})
                 </option>

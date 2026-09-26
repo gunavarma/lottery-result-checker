@@ -69,6 +69,31 @@ describe('Performance & In-Memory SWR Cache Architecture', () => {
     expect(getCacheStats().totalEntries).toBe(0);
   });
 
+  it('never caches a failed fetch, so one error cannot pin empty data', async () => {
+    // The homepage regression this guards: its loader used to catch the database
+    // error *inside* the fetcher and return a degraded empty payload as if it
+    // were a successful result. The cache then stored that emptiness as fresh
+    // for 30s and served it stale for 5 more minutes, long after the database
+    // recovered. Failing must therefore leave the cache untouched.
+    const failing = vi.fn().mockRejectedValue(new Error('database unavailable'));
+
+    await expect(
+      getOrSetCache('failing_key', failing, { ttlMs: 30_000, swrMs: 300_000 })
+    ).rejects.toThrow('database unavailable');
+
+    expect(getCacheStats().totalEntries).toBe(0);
+
+    // The next request must genuinely retry instead of replaying the failure.
+    const healthy = vi.fn().mockResolvedValue({ success: true, draws: [1, 2, 3] });
+    const result = await getOrSetCache('failing_key', healthy, {
+      ttlMs: 30_000,
+      swrMs: 300_000,
+    });
+
+    expect(result).toEqual({ success: true, draws: [1, 2, 3] });
+    expect(healthy).toHaveBeenCalledTimes(1);
+  });
+
   it('coalesces simultaneous cache misses into one fetch', async () => {
     const fetcher = vi.fn(
       () => new Promise((resolve) => setTimeout(() => resolve({ value: 'fresh' }), 20))
