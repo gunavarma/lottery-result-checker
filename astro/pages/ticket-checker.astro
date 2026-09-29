@@ -1,0 +1,76 @@
+---
+/**
+ * Ported from `app/(en)/ticket-checker/page.tsx` (+ `check-ticket/layout.tsx`
+ * for the head copy).
+ *
+ * The original was a server component that did no data fetching of its own — it
+ * only wrapped `<TicketChecker />`. In Astro that means the route markup is real
+ * here and the interactive part is a single island, which is what `client:load`
+ * expresses.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { TicketCheckerIsland } from '@/components/island/ticket-checker';
+import { constructMetadata, getBreadcrumbSchema, getFAQSchema } from '@/lib/seo';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
+
+const breadcrumbs = [
+  { name: 'Home', url: '/' },
+  { name: 'Ticket Checker', url: '/ticket-checker' },
+];
+
+const head = constructMetadata({
+  title: 'Kerala Lottery Ticket Checker | Instant Winning Number Verification',
+  description:
+    'Check your Kerala lottery ticket instantly against official LOTIS certified results. Paste your number or scan the ticket to see every prize tier you have won.',
+  path: '/ticket-checker',
+  keywords: [
+    'Kerala Lottery Ticket Checker',
+    'Kerala Lottery Ticket Check',
+    'Check Kerala Lottery Number',
+    'KeralaDraws',
+  ],
+});
+
+// Breadcrumb + FAQ coverage for the query "is my Kerala lottery ticket a winner".
+const faqs = [
+  {
+    question: 'How do I check if my Kerala lottery ticket has won?',
+    answer:
+      'Enter your ticket number above and KeralaDraws compares it against every prize tier of the official LOTIS certified draw result automatically.',
+  },
+  {
+    question: 'Does KeralaDraws store the ticket numbers I check?',
+    answer:
+      'Tickets you save are stored only in your own browser. Un-saved numbers are used to run the comparison and are not retained as your personal data.',
+  },
+];
+---
+
+<BaseLayout
+  head={head}
+  locale="en"
+  jsonLd={[getBreadcrumbSchema(breadcrumbs), getFAQSchema(faqs)]}
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8">
+    <Breadcrumbs
+      items={[{ label: 'Home', href: '/' }, { label: 'Ticket Checker' }]}
+    />
+
+    <div class="border-b border-[#E2E7E3] pb-6 space-y-2">
+      <span
+        class="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular"
+      >
+        Instant Verification
+      </span>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-[#17201D] tracking-tight">
+        Kerala Lottery Ticket Checker
+      </h1>
+      <p class="text-xs sm:text-sm text-[#68736E] max-w-3xl">
+        Paste your ticket number or scan the ticket to check every prize tier
+        against the official certified draw result.
+      </p>
+    </div>
+
+    <TicketCheckerIsland client:load locale="en" />
+  </div>
+</BaseLayout>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
+import Link from "@/components/Link";
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { NotificationModal } from '@/components/NotificationModal';
 import {
@@ -17,8 +17,7 @@ import {
   ArrowRight,
   RefreshCw,
 } from 'lucide-react';
-import { formatINR } from '@/lib/prisma';
-
+import { formatINR } from '@/lib/format';
 export default function MyTicketsPage() {
   const [lotteries, setLotteries] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);

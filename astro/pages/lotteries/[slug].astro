@@ -1,0 +1,12 @@
+---
+/**
+ * Legacy `/lotteries/<slug>` alias for the canonical `/lottery/<slug>` scheme
+ * page. Ported from `app/(en)/lotteries/[slug]/page.tsx`.
+ *
+ * This one matters beyond tidiness: the results hub links every scheme pill to
+ * `/lotteries/<slug>`, so leaving it unported would have produced a 404 from
+ * links the site renders itself.
+ */
+const slug = Astro.params.slug as string;
+return Astro.redirect(`/lottery/${slug}`, 308);
+---

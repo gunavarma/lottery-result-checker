@@ -1,0 +1,24 @@
+---
+/**
+ * Ported from `app/(en)/previous-results/page.tsx`. Interactive archive browser,
+ * so it is an island and is never CDN-cached (its contents depend on the
+ * visitor's date selection).
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { PreviousResultsPageIsland } from '@/components/island/previous-results-page';
+import { constructMetadata } from '@/lib/seo';
+import { setNoStoreHeaders } from '../lib/cache-headers';
+
+setNoStoreHeaders(Astro);
+
+const head = constructMetadata({
+  title: 'Previous Kerala Lottery Results | KeralaDraws',
+  description:
+    'Browse previous Kerala lottery results by scheme and date, with verified winning numbers and complete prize tables.',
+  path: '/previous-results',
+});
+---
+
+<BaseLayout head={head} locale="en">
+  <PreviousResultsPageIsland client:load locale="en" />
+</BaseLayout>

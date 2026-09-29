@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import {
   Search,
   CheckCircle2,
@@ -17,8 +17,8 @@ import {
   Ticket,
   XCircle,
 } from 'lucide-react';
-import dynamic from 'next/dynamic';
-import { formatINR } from '@/lib/prisma';
+import dynamic from '@/components/dynamic';
+import { formatINR } from '@/lib/format';
 import { useLanguage } from '@/context/LanguageContext';
 import type { ScannedTicket } from '@/components/lottery/TicketScanner';
 import { useCheckTickets, TicketMatchResult } from '@/hooks/queries/useCheckTickets';
@@ -33,11 +33,26 @@ const TicketScanner = dynamic(
 interface TicketCheckerProps {
   initialLotteryId?: string;
   initialDrawNumber?: string;
+  /**
+   * The active scheme list as rendered by the server.
+   *
+   * The scheme `<select>` needs an id, a name and a code. Fetching that from
+   * `/api/lotteries` on mount meant every page carrying this component paid a
+   * render-blocking request for data the server had already loaded — and, on
+   * routes where that endpoint is not reachable, a 404 document as well. The
+   * request is now only made when the prop is genuinely absent, which is the
+   * self-healing case (a failed first database read left the list empty).
+   */
+  lotteries?: Array<{ id: string; name: string; code: string }>;
 }
 
-export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketCheckerProps) {
+export function TicketChecker({
+  initialLotteryId,
+  initialDrawNumber,
+  lotteries: serverLotteries,
+}: TicketCheckerProps) {
   const { t } = useLanguage();
-  const [lotteries, setLotteries] = useState<any[]>([]);
+  const [lotteries, setLotteries] = useState<any[]>(() => serverLotteries ?? []);
   const [selectedLottery, setSelectedLottery] = useState(initialLotteryId || 'all');
   const [ticketInput, setTicketInput] = useState('');
   const [singleResults, setSingleResults] = useState<any[] | null>(null);
@@ -58,6 +73,9 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
   const checkTicketsMutation = useCheckTickets();
 
   useEffect(() => {
+    // Server-rendered list wins; there is nothing to repair.
+    if (serverLotteries && serverLotteries.length > 0) return;
+
     async function fetchLotteries() {
       try {
         const res = await fetch('/api/lotteries');
@@ -70,7 +88,7 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
       }
     }
     fetchLotteries();
-  }, []);
+  }, [serverLotteries]);
 
   // Single Ticket Manual Search
   const executeSingleSearch = async (query: string, lotteryId: string = selectedLottery) => {
@@ -534,12 +552,20 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
         </div>
       )}
 
-      {/* Multi-Ticket Scanner Modal */}
-      <TicketScanner
-        open={scannerOpen}
-        onOpenChange={setScannerOpen}
-        onTicketsScanned={handleTicketsScanned}
-      />
+      {/* Multi-Ticket Scanner Modal
+
+          Mounted only once the user opens it. `dynamic()` resolves its loader
+          from a mount effect, so an always-rendered `<TicketScanner>` fetched
+          the 384 KB html5-qrcode chunk — and its tesseract.js OCR worker — for
+          every visitor, including the ones who never scan anything. Rendering
+          it on demand keeps that chunk off the page's load path entirely. */}
+      {scannerOpen && (
+        <TicketScanner
+          open={scannerOpen}
+          onOpenChange={setScannerOpen}
+          onTicketsScanned={handleTicketsScanned}
+        />
+      )}
     </div>
   );
 }

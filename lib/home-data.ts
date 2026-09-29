@@ -1,4 +1,8 @@
-import 'server-only';
+// NOTE: this module previously began with `import 'server-only'`. That was a
+// Next.js *bundler alias* (there is no such dependency on disk), so it was the
+// one thing in the shared data layer that only resolved under Next's compiler.
+// Astro has no client-boundary import poisoning to replace it with; the guard it
+// provided is instead enforced by keeping this module out of `src/components`.
 
 import { prisma, serializeData } from '@/lib/prisma';
 import { getOrSetCache, PUBLISHED_DATA_STALE_IF_ERROR_MS } from '@/lib/cache';

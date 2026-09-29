@@ -1,13 +1,10 @@
-import React from 'react';
-import type { Metadata } from 'next';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
 import { FileText, ShieldAlert, CheckCircle, Scale } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = constructMetadata({
+export const metadata = constructMetadata({
   title: 'Terms of Service | KeralaDraws',
   description:
     'Terms of service and user agreements for accessing KeralaDraws lottery result feeds, ticket verification widgets, and gazette archives.',

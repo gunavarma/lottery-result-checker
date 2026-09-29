@@ -1,0 +1,32 @@
+---
+/**
+ * Ported from `app/(en)/kerala-lottery-results/[year]/page.tsx`.
+ *
+ * An unknown or empty year rewrites to the shared 404 route with a real 404
+ * status, replacing Next's `notFound()` — these archives are indexed, so a
+ * soft-404 that returns 200 would be treated as a thin page by crawlers.
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import YearArchivePage, {
+  generateMetadata,
+  getYearArchiveData,
+} from '@/components/pages/KeralaLotteryResultsYearPage';
+import { setNoStoreHeaders } from '../../../lib/cache-headers';
+
+// Astro only matches a dynamic route when the segment is present.
+const year = Astro.params.year as string;
+const data = await getYearArchiveData(year);
+
+if (!data) {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+setNoStoreHeaders(Astro);
+
+const head = await generateMetadata({ params: Promise.resolve({ year }) });
+---
+
+<BaseLayout head={head} locale="en">
+  <YearArchivePage yearStr={year} data={data} />
+</BaseLayout>

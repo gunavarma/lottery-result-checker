@@ -1,5 +1,5 @@
 import React from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { Clock, ArrowRight, BookOpen, Tag } from 'lucide-react';
 import { NewsArticle } from '@/lib/news';
 

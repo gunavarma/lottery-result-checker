@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Link from "@/components/Link";
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { ResultCard } from '@/components/ResultCard';
 import { NotificationModal } from '@/components/NotificationModal';

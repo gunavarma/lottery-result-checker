@@ -1,7 +1,7 @@
 import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { prisma, serializeData, formatINR } from '@/lib/prisma';
+import Link from "@/components/Link";
+import { prisma } from '@/lib/prisma';
+import { serializeData, formatINR } from '@/lib/format';
 import { PrizeTable } from '@/components/PrizeTable';
 import { OfficialSourceBadge } from '@/components/OfficialSourceBadge';
 import { ProvisionalResultBanner } from '@/components/ProvisionalResultBanner';
@@ -17,9 +17,8 @@ import { Award, Clock, CheckCircle2, Search, MapPin, Ticket, ShieldCheck, FileTe
 // database for every visitor. 30s keeps the drawn page fresh while the client
 // (TanStack Query) revalidates the winning numbers live. Uncached rendering here
 // was the main cause of the multi-second server response in SEO audits.
-export const revalidate = 30;
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata() {
   const now = new Date();
   const dateFormatted = format(now, 'dd MMMM yyyy');
 
@@ -46,7 +45,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 import { getOrSetCache } from '@/lib/cache';
 
-async function getTodayResultData() {
+export async function getTodayResultData() {
   return getOrSetCache(
     'today_result_data',
     async () => {
@@ -113,8 +112,13 @@ async function getTodayResultData() {
   );
 }
 
-export default async function TodayResultPage() {
-  const { isFromToday, draw } = await getTodayResultData();
+export default function TodayResultPage({
+  isFromToday,
+  draw,
+}: {
+  isFromToday: any;
+  draw: any;
+}) {
   const isProvisional = draw?.verificationLevel === 'PROVISIONAL';
 
   const drawDateObj = draw?.drawDate ? new Date(draw.drawDate) : new Date();

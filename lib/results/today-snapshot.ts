@@ -1,4 +1,6 @@
-import 'server-only';
+// See lib/home-data.ts: `server-only` was a Next.js bundler alias, not a real
+// dependency, so it could not survive the move to Vite/Astro.
+
 
 import { prisma, serializeData } from '@/lib/prisma';
 import { getIstDateRange, parseDateOnlyUtc } from '@/lib/date';

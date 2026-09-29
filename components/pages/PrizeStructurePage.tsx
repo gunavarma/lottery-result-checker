@@ -1,16 +1,15 @@
 import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { prisma, serializeData, formatINR, formatINRExact } from '@/lib/prisma';
+import Link from "@/components/Link";
+import { prisma } from '@/lib/prisma';
+import { serializeData, formatINR, formatINRExact } from '@/lib/format';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Award, ShieldCheck, Ticket, Info, CheckCircle2 } from 'lucide-react';
 
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = constructMetadata({
+export const metadata = constructMetadata({
   title: 'Kerala Lottery Prize Structure 2026 | Weekly & Bumper Prize Breakdown',
   description:
     'Complete official Kerala Lottery prize structure breakdown for all weekly lotteries (Karunya Plus, Sthree Sakthi, Suvarna Keralam) and bumper lotteries. Prize tiers, winner counts, consolation prizes.',
@@ -24,7 +23,7 @@ export const metadata: Metadata = constructMetadata({
   ],
 });
 
-async function getPrizeStructureData() {
+export async function getPrizeStructureData() {
   try {
     const lotteries = await prisma.lottery.findMany({
       where: { active: true },
@@ -56,14 +55,14 @@ async function getPrizeStructureData() {
   }
 }
 
-export default async function PrizeStructurePage({
-  searchParams,
+export default function PrizeStructurePage({
+  scheme,
+  lotteries,
 }: {
-  searchParams: Promise<{ scheme?: string }>;
+  scheme?: string;
+  lotteries: any[];
 }) {
-  const params = await searchParams;
-  const lotteries = await getPrizeStructureData();
-  const selectedSlug = params.scheme || lotteries[0]?.slug;
+  const selectedSlug = scheme || lotteries[0]?.slug;
   const activeLottery = lotteries.find((l: any) => l.slug === selectedSlug) || lotteries[0];
   const latestDraw = activeLottery?.draws?.[0] || null;
 

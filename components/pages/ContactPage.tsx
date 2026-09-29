@@ -1,13 +1,10 @@
-import React from 'react';
-import type { Metadata } from 'next';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
 import { Mail, MessageSquare, ShieldCheck, MapPin, Phone, HelpCircle } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = constructMetadata({
+export const metadata = constructMetadata({
   title: 'Contact KeralaDraws | Support & Inquiries',
   description:
     'Contact the KeralaDraws editorial and technical support team for website inquiries, data verification queries, or feedback regarding Kerala lottery results.',

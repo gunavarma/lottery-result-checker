@@ -1,13 +1,10 @@
-import React from 'react';
-import type { Metadata } from 'next';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
 import { AlertTriangle, ShieldCheck, ExternalLink, HelpCircle, FileText } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = constructMetadata({
+export const metadata = constructMetadata({
   title: 'Disclaimer & Official Verification Policy | KeralaDraws',
   description:
     'Read the KeralaDraws statutory disclaimer. Understand our non-governmental status, official LOTIS portal synchronization methodology, and physical gazette verification requirements.',

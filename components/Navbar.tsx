@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import dynamic from 'next/dynamic';
+import Link from '@/components/Link';
+import Image from '@/components/Image';
+import { usePathname } from '@/hooks/astro-navigation';
+import dynamic from '@/components/dynamic';
 import {
   Menu,
   X,
@@ -33,8 +33,12 @@ const NotificationModal = dynamic(
   { ssr: false }
 );
 
-export function Navbar() {
-  const pathname = usePathname();
+export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
+  // Astro passes the request path in, so the active-link state is correct in the
+  // server-rendered HTML. The hook is only a fallback for call sites that render
+  // this component without that prop.
+  const pathnameFromBrowser = usePathname();
+  const pathname = pathnameProp ?? pathnameFromBrowser;
   const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -272,14 +276,22 @@ export function Navbar() {
         </Link>
       </nav>
 
-      {/* Global Search Modal */}
-      <SearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+      {/* Global Search Modal
+
+          Rendered only while open. `dynamic()` resolves its loader from a mount
+          effect, so an always-rendered element did not defer anything: both
+          modals mounted on every page, and the notification modal's mount
+          effect fetched `/api/lotteries` (and Firebase came along with the
+          search modal). Gating the render is what actually makes the lazy
+          boundary lazy. */}
+      {searchModalOpen && (
+        <SearchModal isOpen onClose={() => setSearchModalOpen(false)} />
+      )}
 
       {/* Notification Preferences Modal */}
-      <NotificationModal
-        isOpen={notificationModalOpen}
-        onClose={() => setNotificationModalOpen(false)}
-      />
+      {notificationModalOpen && (
+        <NotificationModal isOpen onClose={() => setNotificationModalOpen(false)} />
+      )}
     </>
   );
 }

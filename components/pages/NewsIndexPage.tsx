@@ -1,6 +1,4 @@
-import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from "@/components/Link";
 import { getAllNews, getFeaturedNews } from '@/lib/news';
 import { NewsCard, FeaturedNewsHero } from '@/components/NewsComponents';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
@@ -8,9 +6,8 @@ import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
 import { Newspaper, ArrowRight, Tag, ShieldCheck } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = constructMetadata({
+export const metadata = constructMetadata({
   title: 'Kerala Lottery News & Gazette Announcements | KeralaDraws',
   description:
     'Read official Kerala lottery news, seasonal bumper announcements, prize claim compliance rules, draw date revisions, and gazette releases on KeralaDraws.',

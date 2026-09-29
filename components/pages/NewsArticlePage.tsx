@@ -1,7 +1,5 @@
 import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import Link from "@/components/Link";
 import { getNewsBySlug, getAllNews, getRelatedNewsForLottery } from '@/lib/news';
 import { NewsCard } from '@/components/NewsComponents';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
@@ -10,13 +8,12 @@ import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema, getNewsArticleSchema } from '@/lib/seo';
 import { Clock, User, Calendar, Tag, ArrowRight, ShieldCheck, Ticket, FileText } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
+}) {
   const { slug } = await params;
   const article = getNewsBySlug(slug);
 
@@ -36,17 +33,12 @@ export async function generateMetadata({
   });
 }
 
-export default async function NewsArticlePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
+export default function NewsArticlePage({ slug }: { slug: string }) {
   const article = getNewsBySlug(slug);
 
-  if (!article) {
-    notFound();
-  }
+  // The Astro route resolves the slug and returns a 404 before rendering this,
+  // so the guard here only keeps the component type-safe in isolation.
+  if (!article) return null;
 
   const allArticles = getAllNews();
   const relatedArticles = allArticles.filter((a) => a.id !== article.id).slice(0, 2);

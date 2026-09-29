@@ -1,14 +1,11 @@
-import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from "@/components/Link";
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
 import { ShieldCheck, HelpCircle, FileCheck, Phone, Mail, MapPin, ExternalLink, AlertTriangle } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = constructMetadata({
+export const metadata = constructMetadata({
   title: 'About KeralaDraws | Independent Lottery Information Platform',
   description:
     'Learn about KeralaDraws, our automated official LOTIS gazette synchronization, editorial independence, ticket checking tools, and statutory transparency policies.',

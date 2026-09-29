@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/hooks/astro-navigation';
 import { Search, Calendar, ChevronRight, Filter } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { useLotteries } from '@/hooks/queries/useLotteries';

@@ -1,7 +1,7 @@
 import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { prisma, serializeData, formatINR } from '@/lib/prisma';
+import Link from "@/components/Link";
+import { prisma } from '@/lib/prisma';
+import { serializeData, formatINR } from '@/lib/format';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { ResultCard } from '@/components/ResultCard';
 import { getAllNews } from '@/lib/news';
@@ -11,7 +11,7 @@ import { Search, Award, Calendar, ExternalLink, ShieldCheck, ArrowRight, Newspap
 
 import { constructMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = constructMetadata({
+export const metadata = constructMetadata({
   title: 'Search Kerala Lottery Results & News | Universal Lookup',
   description:
     'Search Kerala lottery results by lottery scheme, draw number (e.g. KN-638, SK-67), date or winning ticket number. Database search across verified official LOTIS results.',
@@ -19,7 +19,7 @@ export const metadata: Metadata = constructMetadata({
   noIndex: true,
 });
 
-async function getSearchResults(query: string) {
+export async function getSearchResults(query: string) {
   if (!query || query.trim().length < 2) {
     return { draws: [], lotteries: [], winningTickets: [], news: [] };
   }
@@ -114,14 +114,7 @@ async function getSearchResults(query: string) {
   });
 }
 
-export default async function SearchPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
-  const params = await searchParams;
-  const query = params.q?.trim() || '';
-  const results = await getSearchResults(query);
+export default function SearchPage({ query, results }: { query: string; results: any }) {
 
   const hasResults =
     results.draws.length > 0 ||

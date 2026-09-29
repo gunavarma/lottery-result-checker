@@ -1,0 +1,20 @@
+---
+/**
+ * Ported from `app/(en)/search/page.tsx`.
+ *
+ * Search results are query-dependent and the route is `noindex`, so they must
+ * never reach a shared cache.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SearchPage, { metadata, getSearchResults } from '@/components/pages/SearchPage';
+import { setNoStoreHeaders } from '../lib/cache-headers';
+
+setNoStoreHeaders(Astro);
+
+const query = (Astro.url.searchParams.get('q') || '').trim();
+const results = await getSearchResults(query);
+---
+
+<BaseLayout head={metadata} locale="en">
+  <SearchPage query={query} results={results} />
+</BaseLayout>

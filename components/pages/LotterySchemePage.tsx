@@ -1,8 +1,7 @@
 import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { prisma, serializeData, formatINR } from '@/lib/prisma';
+import Link from "@/components/Link";
+import { prisma } from '@/lib/prisma';
+import { serializeData, formatINR } from '@/lib/format';
 import { PrizeTable } from '@/components/PrizeTable';
 import { ResultCard } from '@/components/ResultCard';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
@@ -18,13 +17,12 @@ import { getOrSetCache } from '@/lib/cache';
 
 // Scheme pages change at most once a day (a new draw), so a cached render with
 // background revalidation is both safe and much faster than re-querying.
-export const revalidate = 300;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-async function getLotterySchemeData(slug: string) {
+export async function getLotterySchemeData(slug: string) {
   const cacheKey = `lottery_scheme_hub_v2_${slug.toLowerCase()}`;
 
   return getOrSetCache(
@@ -61,7 +59,7 @@ async function getLotterySchemeData(slug: string) {
   );
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
   const lottery = await getLotterySchemeData(slug);
 
@@ -92,13 +90,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-export default async function LotterySchemePage({ params }: PageProps) {
-  const { slug } = await params;
-  const lottery = await getLotterySchemeData(slug);
-
-  if (!lottery) {
-    notFound();
-  }
+export default function LotterySchemePage({ lottery }: { lottery: any }) {
+  // The Astro route returns an authentic 404 when the scheme is unknown.
+  if (!lottery) return null;
 
   const latestDraw = lottery.draws?.[0] || null;
   const pastDraws = lottery.draws?.slice(1) || [];

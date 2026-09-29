@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Link from "@/components/Link";
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PrizeTable } from '@/components/PrizeTable';
 import { OfficialSourceBadge } from '@/components/OfficialSourceBadge';
@@ -10,7 +10,7 @@ import { NotificationModal } from '@/components/NotificationModal';
 import { SyncIndicator } from '@/components/SyncIndicator';
 import { ProvisionalResultBanner } from '@/components/ProvisionalResultBanner';
 import { useLiveResults } from '@/hooks/queries/useLiveResults';
-import { formatINR } from '@/lib/prisma';
+import { formatINR } from '@/lib/format';
 import {
   Clock,
   Radio,

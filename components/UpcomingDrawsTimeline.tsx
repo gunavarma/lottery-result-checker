@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { Calendar, Clock, ArrowRight, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 

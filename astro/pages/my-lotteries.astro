@@ -1,0 +1,24 @@
+---
+/**
+ * Ported from `app/(en)/my-lotteries/page.tsx`. Personal scheme list: noIndex
+ * and never CDN-cached.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { MyLotteriesPageIsland } from '@/components/island/my-lotteries-page';
+import { constructMetadata } from '@/lib/seo';
+import { setNoStoreHeaders } from '../lib/cache-headers';
+
+setNoStoreHeaders(Astro);
+
+const head = constructMetadata({
+  title: 'My Lottery Schemes | KeralaDraws',
+  description:
+    'Your followed Kerala lottery schemes with upcoming draw dates and the latest verified results.',
+  path: '/my-lotteries',
+  noIndex: true,
+});
+---
+
+<BaseLayout head={head} locale="en">
+  <MyLotteriesPageIsland client:load locale="en" />
+</BaseLayout>

@@ -1,0 +1,27 @@
+---
+/**
+ * Ported from `app/(en)/guides/[slug]/page.tsx`. See the news article route for
+ * why `params` is read directly and `generateMetadata` is called from here.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import GuideDetailPage, { generateMetadata } from '@/components/pages/GuideArticlePage';
+import { getGuideBySlug } from '@/lib/guides';
+import { REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
+
+// Astro only matches a dynamic route when the segment is present.
+const slug = Astro.params.slug as string;
+const guide = getGuideBySlug(slug);
+
+if (!guide) {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+setRevalidateHeaders(Astro, REVALIDATE.CONTENT);
+
+const head = await generateMetadata({ params: Promise.resolve({ slug }) });
+---
+
+<BaseLayout head={head} locale="en">
+  <GuideDetailPage slug={slug} />
+</BaseLayout>

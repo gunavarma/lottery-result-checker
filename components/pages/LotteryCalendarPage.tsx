@@ -1,7 +1,7 @@
 import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { prisma, serializeData, formatINR } from '@/lib/prisma';
+import Link from "@/components/Link";
+import { prisma } from '@/lib/prisma';
+import { serializeData, formatINR } from '@/lib/format';
 import { DrawScheduleTable, WEEKLY_SCHEDULE, BUMPER_SCHEDULE } from '@/components/DrawScheduleTable';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Calendar, Clock, Award, ShieldCheck, ChevronRight, ArrowRight, CheckCircle2 } from 'lucide-react';
@@ -10,9 +10,8 @@ import { format, addDays, startOfDay, endOfDay } from 'date-fns';
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = constructMetadata({
+export const metadata = constructMetadata({
   title: 'Kerala Lottery Calendar 2026 | Weekly & Bumper Draw Timetable',
   description:
     'Complete Kerala State Lottery calendar and draw schedule for 2026. Weekly draw days (Monday to Sunday), 3:00 PM draw times, ticket prices, and annual bumper dates.',
@@ -26,7 +25,7 @@ export const metadata: Metadata = constructMetadata({
   ],
 });
 
-async function getCalendarDraws() {
+export async function getCalendarDraws() {
   try {
     const today = new Date();
     const startDate = addDays(today, -3);
@@ -53,9 +52,8 @@ async function getCalendarDraws() {
   }
 }
 
-export default async function LotteryCalendarPage() {
+export default function LotteryCalendarPage({ publishedDraws }: { publishedDraws: any[] }) {
   const today = new Date();
-  const publishedDraws = await getCalendarDraws();
 
   // Generate upcoming 14 days schedule
   const upcomingDraws = [];

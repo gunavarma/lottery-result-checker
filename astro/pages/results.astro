@@ -1,0 +1,25 @@
+---
+/**
+ * Ported from `app/(en)/results/page.tsx`.
+ *
+ * The page body had no interactive children, so it stays as one presentational
+ * React component and Astro renders it to HTML with no hydration. Only the data
+ * fetch moved: Astro has no async components, so `getResultsHubData()` runs here
+ * in the frontmatter and its result is handed to the component as props.
+ *
+ * Was `force-dynamic` in Next.js — an uncached HTML render on every hit while
+ * the data underneath it is already cached for 60s. That is exactly what a CDN
+ * cache window expresses, so this now uses `REVALIDATE.CONTENT` instead.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { ResultsHubPage, metadata, getResultsHubData } from '@/components/pages/ResultsHub';
+import { REVALIDATE, setRevalidateHeaders } from '../lib/cache-headers';
+
+setRevalidateHeaders(Astro, REVALIDATE.CONTENT);
+
+const { latestDraws, lotteries } = await getResultsHubData();
+---
+
+<BaseLayout head={metadata} locale="en">
+  <ResultsHubPage latestDraws={latestDraws} lotteries={lotteries} />
+</BaseLayout>

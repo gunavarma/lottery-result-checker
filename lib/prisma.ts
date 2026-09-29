@@ -34,34 +34,8 @@ export const prisma =
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-// BigInt JSON serializer helper for Next.js API routes and server components
-export function serializeData<T>(data: T): T {
-  return JSON.parse(
-    JSON.stringify(data, (_, value) =>
-      typeof value === 'bigint' ? Number(value) : value
-    )
-  );
-}
-
-export function formatINR(amount: number | bigint | string | null | undefined): string {
-  if (amount === null || amount === undefined) return '₹0';
-  const num = typeof amount === 'bigint' ? Number(amount) : Number(amount);
-  if (isNaN(num)) return '₹0';
-  
-  if (num >= 10000000) {
-    const cr = (num / 10000000).toLocaleString('en-IN', { maximumFractionDigits: 2 });
-    return `₹${cr} Crore`;
-  }
-  if (num >= 100000) {
-    const lk = (num / 100000).toLocaleString('en-IN', { maximumFractionDigits: 2 });
-    return `₹${lk} Lakh`;
-  }
-  return `₹${num.toLocaleString('en-IN')}`;
-}
-
-export function formatINRExact(amount: number | bigint | string | null | undefined): string {
-  if (amount === null || amount === undefined) return '₹0';
-  const num = typeof amount === 'bigint' ? Number(amount) : Number(amount);
-  if (isNaN(num)) return '₹0';
-  return `₹${num.toLocaleString('en-IN')}`;
-}
+// The pure helpers now live in `lib/format.ts` and are re-exported here so
+// server-side imports of them keep working. They were moved because importing
+// this module for a formatter pulled the whole Prisma client into the *browser*
+// bundle; see the note in `lib/format.ts`.
+export { serializeData, formatINR, formatINRExact } from './format';

@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { format } from 'date-fns';
 import { Award, ArrowRight, Loader2, ShieldCheck, FileText, ChevronRight } from 'lucide-react';
-import { formatINR } from '@/lib/prisma';
+import { formatINR } from '@/lib/format';
 import { useLatestResults } from '@/hooks/queries/useLatestResults';
 
 interface RecentResultsStreamProps {

@@ -1,8 +1,7 @@
 import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { prisma, serializeData, formatINR } from '@/lib/prisma';
+import Link from "@/components/Link";
+import { prisma } from '@/lib/prisma';
+import { serializeData, formatINR } from '@/lib/format';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema, SITE_URL } from '@/lib/seo';
@@ -16,13 +15,12 @@ import {
   Ticket,
 } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{ year: string }>;
 }
 
-async function getYearArchiveData(yearStr: string) {
+export async function getYearArchiveData(yearStr: string) {
   if (!/^\d{4}$/.test(yearStr)) return null;
 
   const yearNum = parseInt(yearStr, 10);
@@ -82,7 +80,7 @@ async function getYearArchiveData(yearStr: string) {
   );
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps) {
   const { year: yearStr } = await params;
   const data = await getYearArchiveData(yearStr);
 
@@ -107,13 +105,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-export default async function YearArchivePage({ params }: PageProps) {
-  const { year: yearStr } = await params;
-  const data = await getYearArchiveData(yearStr);
+export default function YearArchivePage({
+  yearStr,
+  data,
+}: {
+  yearStr: string;
+  data: any;
+}) {
 
-  if (!data) {
-    notFound();
-  }
+  // The Astro route returns a real 404 when the year has no archive; this guard
+  // only keeps the component type-safe in isolation.
+  if (!data) return null;
 
   const breadcrumbs = [
     { name: 'Home', url: SITE_URL },

@@ -1,0 +1,20 @@
+---
+/**
+ * Ported from `app/(en)/prize-structure/page.tsx`.
+ *
+ * The selected scheme comes from `?scheme=`; a shared cache would serve one
+ * visitor's scheme to the next, so this keeps `force-dynamic` semantics.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PrizeStructurePage, { metadata, getPrizeStructureData } from '@/components/pages/PrizeStructurePage';
+import { setNoStoreHeaders } from '../lib/cache-headers';
+
+setNoStoreHeaders(Astro);
+
+const scheme = Astro.url.searchParams.get('scheme') || undefined;
+const lotteries = await getPrizeStructureData();
+---
+
+<BaseLayout head={metadata} locale="en">
+  <PrizeStructurePage scheme={scheme} lotteries={lotteries} />
+</BaseLayout>

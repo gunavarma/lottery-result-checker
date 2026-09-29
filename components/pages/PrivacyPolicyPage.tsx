@@ -1,14 +1,11 @@
-import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from "@/components/Link";
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
 import { ShieldCheck, Lock, Bell, Eye, Database } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = constructMetadata({
+export const metadata = constructMetadata({
   title: 'Privacy Policy | KeralaDraws Data Protection',
   description:
     'Read the KeralaDraws Privacy Policy. Understand our strict user data protections, Firebase Cloud Messaging (FCM) push notification tokens, and zero personal data retention policies.',

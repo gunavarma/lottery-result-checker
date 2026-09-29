@@ -17,6 +17,13 @@
 /.next/
 /out/
 
+# astro
+/dist/
+/.astro/
+
+# vite/tailwind build cache
+.vite/
+
 # production
 /build
 

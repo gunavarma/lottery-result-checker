@@ -1,7 +1,7 @@
 import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { prisma, serializeData, formatINR } from '@/lib/prisma';
+import Link from "@/components/Link";
+import { prisma } from '@/lib/prisma';
+import { serializeData, formatINR } from '@/lib/format';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { StructuredData } from '@/components/StructuredData';
 import { OfficialSourceBadge } from '@/components/OfficialSourceBadge';
@@ -17,7 +17,6 @@ import {
   Filter,
 } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
 interface PageProps {
   searchParams: Promise<{
@@ -26,7 +25,7 @@ interface PageProps {
   }>;
 }
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata() {
   return constructMetadata({
     title: 'Kerala Lottery Results Archive – Previous Winning Numbers (2026) | KeralaDraws',
     description:
@@ -43,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-async function getArchiveData(lotterySlug?: string, pageNumber: number = 1) {
+export async function getArchiveData(lotterySlug?: string, pageNumber: number = 1) {
   const pageSize = 30;
   const skip = (pageNumber - 1) * pageSize;
   const cacheKey = `archive_main_page_v2_${lotterySlug || 'all'}_p${pageNumber}`;
@@ -127,10 +126,15 @@ async function getArchiveData(lotterySlug?: string, pageNumber: number = 1) {
   );
 }
 
-export default async function KeralaLotteryResultsArchivePage({ searchParams }: PageProps) {
-  const { lottery: lotterySlug, page: pageStr } = await searchParams;
-  const currentPage = Math.max(1, parseInt(pageStr || '1', 10) || 1);
-  const data = await getArchiveData(lotterySlug, currentPage);
+export default function KeralaLotteryResultsArchivePage({
+  lotterySlug,
+  currentPage,
+  data,
+}: {
+  lotterySlug?: string;
+  currentPage: number;
+  data: any;
+}) {
 
   const breadcrumbs = [
     { name: 'Home', url: SITE_URL },

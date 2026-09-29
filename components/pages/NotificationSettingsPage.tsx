@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell, CheckCircle2, AlertCircle, ShieldCheck, Check, Trash2, ArrowLeft, Loader2 } from 'lucide-react';
-import Link from 'next/link';
+import Link from "@/components/Link";
 import { requestFcmToken } from '@/lib/firebase/client';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 

@@ -1,0 +1,9 @@
+---
+/** Ported from `app/(en)/contact/page.tsx`. Presentational, ships no JS. */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactPage, { metadata } from '@/components/pages/ContactPage';
+---
+
+<BaseLayout head={metadata} locale="en">
+  <ContactPage />
+</BaseLayout>

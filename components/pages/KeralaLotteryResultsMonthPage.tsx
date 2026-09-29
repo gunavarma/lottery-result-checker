@@ -1,8 +1,7 @@
 import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { prisma, serializeData, formatINR } from '@/lib/prisma';
+import Link from "@/components/Link";
+import { prisma } from '@/lib/prisma';
+import { serializeData, formatINR } from '@/lib/format';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema, SITE_URL } from '@/lib/seo';
@@ -16,13 +15,12 @@ import {
   Ticket,
 } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{ year: string; month: string }>;
 }
 
-async function getMonthArchiveData(yearStr: string, monthStr: string) {
+export async function getMonthArchiveData(yearStr: string, monthStr: string) {
   if (!/^\d{4}$/.test(yearStr) || !/^\d{2}$/.test(monthStr)) return null;
 
   const yearNum = parseInt(yearStr, 10);
@@ -75,7 +73,7 @@ async function getMonthArchiveData(yearStr: string, monthStr: string) {
   );
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps) {
   const { year: yearStr, month: monthStr } = await params;
   const data = await getMonthArchiveData(yearStr, monthStr);
 
@@ -100,14 +98,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-export default async function MonthArchivePage({ params }: PageProps) {
-  const { year: yearStr, month: monthStr } = await params;
-  const data = await getMonthArchiveData(yearStr, monthStr);
+export default function MonthArchivePage({
+  yearStr,
+  monthStr,
+  data,
+}: {
+  yearStr: string;
+  monthStr: string;
+  data: any;
+}) {
 
-  // Strict anti-soft-404: If month has no verified draws, return authentic 404
-  if (!data) {
-    notFound();
-  }
+  // Strict anti-soft-404: the Astro route returns a real 404 when the month has
+  // no verified draws. This guard only keeps the component type-safe in isolation.
+  if (!data) return null;
 
   const { monthName, draws, totalCount } = data;
 

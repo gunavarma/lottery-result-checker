@@ -1,0 +1,18 @@
+---
+/**
+ * Ported from `app/(en)/kerala-lottery-result-today/page.tsx`.
+ * Was `export const revalidate = 30` under Next.js ISR.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TodayResultPage, { generateMetadata, getTodayResultData } from '@/components/pages/TodayResultPage';
+import { REVALIDATE, setRevalidateHeaders } from '../lib/cache-headers';
+
+setRevalidateHeaders(Astro, REVALIDATE.LIVE);
+
+const head = await generateMetadata();
+const { isFromToday, draw } = await getTodayResultData();
+---
+
+<BaseLayout head={head} locale="en">
+  <TodayResultPage isFromToday={isFromToday} draw={draw} />
+</BaseLayout>

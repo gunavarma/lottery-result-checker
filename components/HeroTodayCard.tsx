@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import Link from '@/components/Link';
+import Image from '@/components/Image';
 import {
   Award,
   Calendar,
@@ -16,11 +16,28 @@ import {
   FileText,
   Timer,
 } from 'lucide-react';
-import { formatINR } from '@/lib/prisma';
-import { format } from 'date-fns';
+import { formatINR } from '@/lib/format';
 import { useLanguage } from '@/context/LanguageContext';
 import { useLotteryResults } from '@/hooks/queries/useLotteryResults';
 import { SyncIndicator } from '@/components/SyncIndicator';
+
+function formatDateFull(d: Date | string): string {
+  try {
+    const date = typeof d === 'string' ? new Date(d) : d;
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+  } catch {
+    return '';
+  }
+}
+
+function formatDateSlug(d: Date | string): string {
+  try {
+    const date = typeof d === 'string' ? new Date(d) : d;
+    return date.toISOString().slice(0, 10);
+  } catch {
+    return '';
+  }
+}
 
 interface HeroTodayCardProps {
   initialData?: any;
@@ -80,10 +97,10 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
   const consolationPrize = draw?.prizes?.find((p: any) => p.category?.toLowerCase().includes('cons'));
 
   const drawDateFormatted = draw?.drawDate
-    ? format(new Date(draw.drawDate), 'dd MMMM yyyy')
-    : data?.todayDateFormatted || format(new Date(), 'dd MMMM yyyy');
+    ? formatDateFull(draw.drawDate)
+    : data?.todayDateFormatted || formatDateFull(new Date());
 
-  const drawDateSlug = draw?.drawDate ? format(new Date(draw.drawDate), 'yyyy-MM-dd') : data?.todayDate || '';
+  const drawDateSlug = draw?.drawDate ? formatDateSlug(draw.drawDate) : data?.todayDate || '';
 
   return (
     <div className="relative overflow-hidden rounded-3xl bg-[#0B3B32] text-white p-6 sm:p-8 lg:p-10 border border-[#0B3B32] shadow-xl font-tabular">

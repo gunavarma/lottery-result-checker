@@ -1,8 +1,7 @@
 import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { prisma, serializeData, formatINR } from '@/lib/prisma';
+import Link from "@/components/Link";
+import { prisma } from '@/lib/prisma';
+import { serializeData, formatINR } from '@/lib/format';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { StructuredData } from '@/components/StructuredData';
 import { PrizeTable } from '@/components/PrizeTable';
@@ -36,13 +35,12 @@ import {
 // Historical results are effectively immutable once gazette-verified, so this
 // renders on demand and is then served from cache. Only today's date can still
 // change, and the client revalidates that case (TanStack Query).
-export const revalidate = 300;
 
 interface PageProps {
   params: Promise<{ date: string }>;
 }
 
-async function getHistoricalDrawData(dateStr: string) {
+export async function getHistoricalDrawData(dateStr: string) {
   if (!isValidDateFormat(dateStr)) return null;
 
   const cacheKey = `kerala_lottery_result_page_${dateStr}`;
@@ -94,7 +92,7 @@ async function getHistoricalDrawData(dateStr: string) {
   );
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps) {
   const { date: dateStr } = await params;
   const data = await getHistoricalDrawData(dateStr);
 
@@ -141,14 +139,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-export default async function KeralaLotteryResultDatePage({ params }: PageProps) {
-  const { date: dateStr } = await params;
-  const data = await getHistoricalDrawData(dateStr);
-
-  // Strict anti-soft-404: If date has no verified draw, return authentic HTTP 404
-  if (!data || !data.draws || data.draws.length === 0) {
-    notFound();
-  }
+export default function KeralaLotteryResultDatePage({
+  dateStr,
+  data,
+}: {
+  dateStr: string;
+  data: any;
+}) {
+  // Strict anti-soft-404: the Astro route returns an authentic 404 when the date
+  // has no verified draw. This guard only keeps the component type-safe.
+  if (!data || !data.draws || data.draws.length === 0) return null;
 
   const { dateFormatted, year, month, prevDate, nextDate, draws } = data;
   const mainDraw = draws[0];

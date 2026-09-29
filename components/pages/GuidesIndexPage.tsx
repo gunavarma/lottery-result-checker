@@ -1,15 +1,12 @@
-import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from "@/components/Link";
 import { getAllGuides, getFeaturedGuide } from '@/lib/guides';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
 import { BookOpen, ArrowRight, ShieldCheck, Ticket, Award, Clock, HelpCircle, CheckCircle2 } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = constructMetadata({
+export const metadata = constructMetadata({
   title: 'Kerala Lottery Guides & Information | KeralaDraws Knowledge Base',
   description:
     'Comprehensive guides on how to check Kerala lottery tickets, draw proceedings at Gorky Bhavan, prize tier breakdowns, claim rules, and LOTIS gazette verification.',

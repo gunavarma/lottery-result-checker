@@ -1,8 +1,7 @@
 import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { prisma, serializeData, formatINR } from '@/lib/prisma';
+import Link from "@/components/Link";
+import { prisma } from '@/lib/prisma';
+import { serializeData, formatINR } from '@/lib/format';
 import { PrizeTable } from '@/components/PrizeTable';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { OfficialSourceBadge } from '@/components/OfficialSourceBadge';
@@ -29,13 +28,12 @@ import {
 
 // A single historical draw is immutable once published, so this is cached with
 // background revalidation rather than re-rendered on every request.
-export const revalidate = 300;
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string; drawNumber: string }>;
-}): Promise<Metadata> {
+}) {
   try {
     const { slug, drawNumber } = await params;
     const cleanDrawNumber = drawNumber.toUpperCase();
@@ -99,7 +97,7 @@ export async function generateMetadata({
 
 import { getOrSetCache } from '@/lib/cache';
 
-async function getDrawResultData(slug: string, drawNumber: string) {
+export async function getDrawResultData(slug: string, drawNumber: string) {
   const cacheKey = `draw_result_${slug}_${drawNumber.toLowerCase()}`;
 
   return getOrSetCache(
@@ -187,17 +185,17 @@ async function getDrawResultData(slug: string, drawNumber: string) {
   );
 }
 
-export default async function PermanentResultPage({
-  params,
+export default function PermanentResultPage({
+  slug,
+  drawNumber,
+  data,
 }: {
-  params: Promise<{ slug: string; drawNumber: string }>;
+  slug: string;
+  drawNumber: string;
+  data: any;
 }) {
-  const { slug, drawNumber } = await params;
-  const data = await getDrawResultData(slug, drawNumber);
-
-  if (!data || !data.draw) {
-    notFound();
-  }
+  // The Astro route returns an authentic 404 when the draw is unknown.
+  if (!data || !data.draw) return null;
 
   const { draw, previousDraw, nextDraw, relatedDraws } = data;
   const drawDateFormatted = format(new Date(draw.drawDate), 'dd MMMM yyyy');

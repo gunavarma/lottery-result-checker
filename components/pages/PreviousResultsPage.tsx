@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Link from "@/components/Link";
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PrizeTable } from '@/components/PrizeTable';
 import { OfficialSourceBadge } from '@/components/OfficialSourceBadge';
 import { ResultShareBar } from '@/components/ResultShareBar';
-import { formatINR } from '@/lib/prisma';
+import { formatINR } from '@/lib/format';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,

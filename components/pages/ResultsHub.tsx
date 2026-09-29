@@ -1,7 +1,7 @@
 import React from 'react';
-import type { Metadata } from 'next';
 import Link from 'next/link';
-import { prisma, serializeData, formatINR } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
+import { serializeData, formatINR } from '@/lib/format';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
@@ -17,9 +17,8 @@ import {
 import { format, subDays } from 'date-fns';
 import { getOrSetCache } from '@/lib/cache';
 
-export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = constructMetadata({
+export const metadata = constructMetadata({
   title: 'Kerala Lottery Results | Latest Official Draw Records',
   description:
     'Browse all latest official Kerala State Lottery results, certified winning numbers, daily 3:00 PM draw announcements, and LOTIS gazette releases.',
@@ -34,7 +33,10 @@ export const metadata: Metadata = constructMetadata({
   ],
 });
 
-async function getResultsHubData() {
+// Exported so the Astro route can run it during the server render and pass the
+// result in as props. Astro cannot render an `async` component, so the fetching
+// had to move out of the component even though nothing else about it changed.
+export async function getResultsHubData() {
   return getOrSetCache(
     'results_hub_data',
     async () => {
@@ -80,8 +82,13 @@ async function getResultsHubData() {
   );
 }
 
-export default async function ResultsHubPage() {
-  const { latestDraws, lotteries } = await getResultsHubData();
+export function ResultsHubPage({
+  latestDraws,
+  lotteries,
+}: {
+  latestDraws: any[];
+  lotteries: any[];
+}) {
 
   const breadcrumbs = [
     { name: 'Home', url: '/' },
