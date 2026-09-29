@@ -32,7 +32,7 @@ export const prisma =
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+globalForPrisma.prisma = prisma;
 
 // The pure helpers now live in `lib/format.ts` and are re-exported here so
 // server-side imports of them keep working. They were moved because importing

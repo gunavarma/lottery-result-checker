@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from '@/hooks/astro-navigation';
-import { Search, Calendar, ChevronRight, Filter } from 'lucide-react';
+import { Search, Calendar, ChevronRight, Filter, Loader2 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { useLotteries } from '@/hooks/queries/useLotteries';
 
@@ -22,23 +22,23 @@ export function ResultFinder({ lotteries = [] }: ResultFinderProps) {
 
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   const [selectedLottery, setSelectedLottery] = useState<string>('all');
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const navigateToResult = (dateVal: string, lotteryVal: string) => {
+    setLoading(true);
+    // Direct canonical route bypasses the legacy 308 redirect hop
+    const targetUrl = `/kerala-lottery-result/${dateVal}` + (lotteryVal !== 'all' ? `?scheme=${encodeURIComponent(lotteryVal)}` : '');
+    window.location.assign(targetUrl);
+  };
 
   const handleQuickJump = (dateVal: string) => {
     setSelectedDate(dateVal);
-    if (selectedLottery !== 'all') {
-      router.push(`/result/${dateVal}/${selectedLottery}`);
-    } else {
-      router.push(`/results/date/${dateVal}`);
-    }
+    navigateToResult(dateVal, selectedLottery);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedLottery !== 'all') {
-      router.push(`/result/${selectedDate}/${selectedLottery}`);
-    } else {
-      router.push(`/results/date/${selectedDate}`);
-    }
+    navigateToResult(selectedDate, selectedLottery);
   };
 
   return (
@@ -109,10 +109,20 @@ export function ResultFinder({ lotteries = [] }: ResultFinderProps) {
           {/* Search/Find Action */}
           <button
             type="submit"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#0B5D45] hover:bg-[#084835] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#0B5D45] hover:bg-[#084835] text-white text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-80"
           >
-            <span>Show Results</span>
-            <ChevronRight className="w-3.5 h-3.5" />
+            {loading ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Opening Results...</span>
+              </>
+            ) : (
+              <>
+                <span>Show Results</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </>
+            )}
           </button>
         </div>
       </form>

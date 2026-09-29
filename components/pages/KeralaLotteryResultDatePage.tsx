@@ -51,26 +51,28 @@ export async function getHistoricalDrawData(dateStr: string) {
     async () => {
       const targetDate = parseDateOnlyUtc(dateStr);
       const { formattedDisplay } = getIstDateRange(dateStr);
-      const adjacent = await getAdjacentAvailableDates(dateStr);
 
-      const draws = await prisma.draw.findMany({
-        where: {
-          drawDate: targetDate,
-          status: 'PUBLISHED',
-        },
-        include: {
-          lottery: true,
-          prizes: {
-            orderBy: { orderIndex: 'asc' },
-            include: {
-              winningNumbers: {
-                orderBy: { id: 'asc' },
+      const [adjacent, draws] = await Promise.all([
+        getAdjacentAvailableDates(dateStr),
+        prisma.draw.findMany({
+          where: {
+            drawDate: targetDate,
+            status: 'PUBLISHED',
+          },
+          include: {
+            lottery: true,
+            prizes: {
+              orderBy: { orderIndex: 'asc' },
+              include: {
+                winningNumbers: {
+                  orderBy: { id: 'asc' },
+                },
               },
             },
           },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
+          orderBy: { createdAt: 'desc' },
+        }),
+      ]);
 
       if (!draws || draws.length === 0) return null;
 
@@ -86,16 +88,13 @@ export async function getHistoricalDrawData(dateStr: string) {
         draws,
       });
     },
-    // Never keep an empty/provisional draw page cached for a whole day: the
-    // importer can publish or correct a result moments after the first visit.
-    { ttlMs: isToday ? 5_000 : 60_000, swrMs: isToday ? 15_000 : 300_000 }
+    // Historical draws are immutable once published. Cache for 1 hour with 24hr SWR.
+    // Today's live draw keeps a fast 10s cache to refresh as numbers are published.
+    { ttlMs: isToday ? 10_000 : 3_600_000, swrMs: isToday ? 30_000 : 86_400_000 }
   );
 }
 
-export async function generateMetadata({ params }: PageProps) {
-  const { date: dateStr } = await params;
-  const data = await getHistoricalDrawData(dateStr);
-
+export function buildMetadataFromData(data: any, dateStr: string) {
   if (!data || !data.draws || data.draws.length === 0) {
     return constructMetadata({
       title: 'Kerala Lottery Result Not Found',
@@ -113,7 +112,7 @@ export async function generateMetadata({ params }: PageProps) {
 
   const primaryDraw = data.draws[0];
   const firstPrize = primaryDraw.prizes?.find(
-    (p: any) => p.orderIndex === 0 || p.tierNumber === 1 || p.category.toLowerCase().includes('1st')
+    (p: any) => p.orderIndex === 0 || p.tierNumber === 1 || p.category?.toLowerCase().includes('1st')
   );
   const firstPrizeText = firstPrize ? formatINR(firstPrize.amount) : '₹1 Crore';
   const firstWinner = firstPrize?.winningNumbers?.[0]?.displayNumber;
@@ -137,6 +136,12 @@ export async function generateMetadata({ params }: PageProps) {
       'KeralaDraws',
     ],
   });
+}
+
+export async function generateMetadata({ params }: PageProps) {
+  const { date: dateStr } = await params;
+  const data = await getHistoricalDrawData(dateStr);
+  return buildMetadataFromData(data, dateStr);
 }
 
 export default function KeralaLotteryResultDatePage({

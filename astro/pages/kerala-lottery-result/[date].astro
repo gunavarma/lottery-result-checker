@@ -7,7 +7,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { KeralaLotteryResultDatePageIsland } from '@/components/island/kerala-lottery-result-date-page';
 import {
-  generateMetadata,
+  buildMetadataFromData,
   getHistoricalDrawData,
 } from '@/components/pages/KeralaLotteryResultDatePage';
 import { REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
@@ -24,9 +24,10 @@ if (!data || !data.draws || data.draws.length === 0) {
 
 setRevalidateHeaders(Astro, REVALIDATE.RESULT_PAGE);
 
-const head = await generateMetadata({ params: Promise.resolve({ date: dateStr }) });
+// Construct metadata directly from loaded data without re-fetching
+const head = buildMetadataFromData(data, dateStr);
 ---
 
 <BaseLayout head={head} locale="en">
-  <KeralaLotteryResultDatePageIsland client:load locale="en" dateStr={dateStr} data={data} />
+  <KeralaLotteryResultDatePageIsland client:idle locale="en" dateStr={dateStr} data={data} />
 </BaseLayout>
