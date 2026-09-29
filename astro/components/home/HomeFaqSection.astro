@@ -1,0 +1,59 @@
+---
+/**
+ * Official Kerala Lottery FAQ Accordion.
+ * Built with native HTML5 <details> and <summary> tags for 100% SEO indexability
+ * and 0 KB JavaScript shipping to the client.
+ */
+import { HOMEPAGE_FAQS } from '@/lib/home-faqs';
+import { HelpCircle, ChevronDown } from 'lucide-react';
+---
+
+<div id="faqs" class="space-y-6 scroll-mt-24">
+  {/* Header */}
+  <div class="border-b border-[#E2E7E3] pb-4 space-y-1">
+    <div class="flex items-center gap-2">
+      <span class="text-[11px] font-bold text-[#0B5D45] uppercase tracking-wider block font-tabular">
+        Frequently Asked Questions
+      </span>
+      <span class="text-xs bg-[#E9F3EE] text-[#0B5D45] font-bold px-2 py-0.5 rounded-full font-tabular">
+        {HOMEPAGE_FAQS.length} Questions Answered
+      </span>
+    </div>
+    <h2 class="text-2xl sm:text-3xl font-extrabold text-[#17201D] tracking-tight flex items-center gap-2">
+      <HelpCircle className="w-6 h-6 text-[#0B5D45]" />
+      <span>Kerala Lottery Results &amp; Verification FAQs</span>
+    </h2>
+    <p class="text-xs sm:text-sm text-[#5F6B66] max-w-2xl">
+      Clear, verified answers regarding daily 3:00 PM draw times, weekly schemes, prize claim protocols, taxes, and government gazette verification.
+    </p>
+  </div>
+
+  {/* Accordion Container */}
+  <div class="bg-white rounded-3xl p-4 sm:p-8 border border-[#E2E7E3] shadow-xs divide-y divide-[#E2E7E3]">
+    {HOMEPAGE_FAQS.map((faq, index) => (
+      <details class="group py-4 sm:py-5 first:pt-0 last:pb-0 cursor-pointer" open={index === 0}>
+        <summary class="list-none flex items-center justify-between gap-4 text-left select-none">
+          <div class="flex items-start gap-3">
+            <span class="text-xs font-mono font-bold text-[#0B5D45] bg-[#E9F3EE] px-2 py-1 rounded-md shrink-0 font-tabular mt-0.5">
+              Q{index + 1 < 10 ? `0${index + 1}` : index + 1}
+            </span>
+            <span class="text-sm sm:text-base font-extrabold text-[#17201D] group-hover:text-[#0B5D45] transition-colors leading-snug">
+              {faq.question}
+            </span>
+          </div>
+          <div class="w-7 h-7 rounded-full bg-[#F7F7F4] group-hover:bg-[#E9F3EE] flex items-center justify-center shrink-0 transition-transform duration-200 group-open:rotate-180">
+            <ChevronDown className="w-4 h-4 text-[#5F6B66] group-hover:text-[#0B5D45]" />
+          </div>
+        </summary>
+        <div class="mt-3.5 pl-10 pr-2 sm:pr-8 text-xs sm:text-sm text-[#5F6B66] leading-relaxed animate-fadeIn">
+          <p>{faq.answer}</p>
+          {faq.category && (
+            <span class="inline-block mt-2.5 text-[10px] font-bold uppercase tracking-wider text-[#0B5D45] bg-[#F4F5F2] px-2 py-0.5 rounded font-tabular">
+              Topic: {faq.category}
+            </span>
+          )}
+        </div>
+      </details>
+    ))}
+  </div>
+</div>

@@ -1,0 +1,204 @@
+---
+/**
+ * Official Kerala State Lottery Weekly Draw Schedule & Bumper Jackpots Matrix.
+ * 100% Server Rendered in Astro (0 KB JavaScript client bundle).
+ * Perfect SEO semantic hierarchy with structured internal links.
+ */
+import { ArrowRight, Calendar, Award, Clock, Sparkles } from 'lucide-react';
+
+const WEEKLY_DRAWS = [
+  { day: 'Monday', name: 'Bhagya Thara', code: 'BT', slug: 'bhagya-thara', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore', color: '#0B5D45' },
+  { day: 'Tuesday', name: 'Sthree Sakthi', code: 'SS', slug: 'sthree-sakthi', time: '3:00 PM IST', price: '₹50', firstPrize: '₹1 Crore', color: '#0B5D45' },
+  { day: 'Wednesday', name: 'Fifty-Fifty / Dhanalekshmi', code: 'FF', slug: 'fifty-fifty', time: '3:00 PM IST', price: '₹50', firstPrize: '₹1 Crore', color: '#0B5D45' },
+  { day: 'Thursday', name: 'Karunya Plus', code: 'KN', slug: 'karunya-plus', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore', color: '#0B5D45' },
+  { day: 'Friday', name: 'Suvarna Keralam / Nirmal', code: 'SK', slug: 'suvarna-keralam', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore', color: '#0B5D45' },
+  { day: 'Saturday', name: 'Karunya', code: 'KR', slug: 'karunya', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore', color: '#0B5D45' },
+  { day: 'Sunday', name: 'Samrudhi / Akshaya', code: 'SM', slug: 'samrudhi', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore', color: '#0B5D45' },
+];
+
+const BUMPERS = [
+  { name: 'Thiruvonam Bumper', season: 'September (Annual Onam)', code: 'BR-99', slug: 'thiruvonam-bumper', price: '₹500', firstPrize: '₹25 Crore', badge: 'Largest Jackpot in India' },
+  { name: "X'mas New Year Bumper", season: 'January (New Year)', code: 'BR-98', slug: 'xmas-new-year-bumper', price: '₹400', firstPrize: '₹20 Crore', badge: 'Winter Mega Jackpot' },
+  { name: 'Vishu Bumper', season: 'May (Summer Festival)', code: 'BR-109', slug: 'vishu-bumper', price: '₹300', firstPrize: '₹12 Crore', badge: 'Spring Celebration' },
+  { name: 'Pooja Bumper', season: 'November (Festive)', code: 'BR-102', slug: 'pooja-bumper', price: '₹300', firstPrize: '₹12 Crore', badge: 'Navarathri Festival' },
+  { name: 'Monsoon Bumper', season: 'July (Monsoon Season)', code: 'BR-104', slug: 'monsoon-bumper', price: '₹250', firstPrize: '₹10 Crore', badge: 'Mid-Year Draw' },
+  { name: 'Summer Bumper', season: 'March (Spring Season)', code: 'BR-100', slug: 'summer-bumper', price: '₹250', firstPrize: '₹10 Crore', badge: 'Summer Series' },
+];
+
+const currentDayName = new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: 'Asia/Kolkata' }).format(new Date());
+---
+
+<div id="weekly-schedule" class="space-y-8 scroll-mt-24">
+  {/* Section Header */}
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E2E7E3] pb-4">
+    <div class="space-y-1">
+      <span class="text-[11px] font-bold text-[#0B5D45] uppercase tracking-wider block font-tabular">
+        Official Timetable &amp; Jackpots
+      </span>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-[#17201D] tracking-tight">
+        Kerala Lottery Weekly Draw Schedule &amp; Bumper Matrix
+      </h2>
+      <p class="text-xs sm:text-sm text-[#5F6B66] max-w-2xl">
+        Recurring daily lotteries and massive annual bumper schemes conducted under government supervision at Gorky Bhavan, Thiruvananthapuram.
+      </p>
+    </div>
+    <div class="flex items-center gap-2 text-xs font-bold text-[#0B5D45] bg-[#E9F3EE] px-3 py-1.5 rounded-full border border-[#0B5D45]/20 font-tabular shrink-0">
+      <Calendar className="w-3.5 h-3.5" />
+      <span>Today in Kerala: <strong>{currentDayName}</strong></span>
+    </div>
+  </div>
+
+  {/* Weekly Schedule Table / Responsive Card Grid */}
+  <div class="bg-white rounded-3xl border border-[#E2E7E3] shadow-xs overflow-hidden">
+    <div class="bg-[#0B3B32] text-white p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-[#C8A45D]">
+          <Calendar className="w-4 h-4" />
+        </div>
+        <div>
+          <h3 class="text-sm sm:text-base font-extrabold text-white">
+            Daily Recurring Lottery Timetable (Monday – Sunday)
+          </h3>
+          <p class="text-[11px] text-white/70">
+            Draws begin daily at 3:00 PM IST • LOTIS verified results published by 4:00 PM IST
+          </p>
+        </div>
+      </div>
+      <span class="text-[11px] font-bold bg-[#C8A45D]/20 text-[#C8A45D] border border-[#C8A45D]/40 px-2.5 py-1 rounded-full font-tabular">
+        7 Days a Week
+      </span>
+    </div>
+
+    {/* Desktop/Tablet Table */}
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs sm:text-sm">
+        <thead class="bg-[#F7F7F4] text-[#5F6B66] text-[11px] uppercase font-bold border-b border-[#E2E7E3]">
+          <tr>
+            <th class="py-3.5 px-4 sm:px-6">Draw Day</th>
+            <th class="py-3.5 px-4 sm:px-6">Lottery Scheme</th>
+            <th class="py-3.5 px-4 sm:px-6">Draw Code</th>
+            <th class="py-3.5 px-4 sm:px-6">Draw Time</th>
+            <th class="py-3.5 px-4 sm:px-6">Ticket Price</th>
+            <th class="py-3.5 px-4 sm:px-6">1st Prize</th>
+            <th class="py-3.5 px-4 sm:px-6 text-right">Scheme Page</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#E2E7E3]">
+          {WEEKLY_DRAWS.map((draw) => {
+            const isToday = draw.day.toLowerCase() === currentDayName.toLowerCase();
+            return (
+              <tr class={`transition-colors ${isToday ? 'bg-[#F0F7F4] font-semibold' : 'hover:bg-[#FAFAF7]'}`}>
+                <td class="py-4 px-4 sm:px-6">
+                  <div class="flex items-center gap-2">
+                    {isToday && (
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#16845B] animate-ping" />
+                    )}
+                    <span class={isToday ? 'text-[#0B5D45] font-extrabold text-sm' : 'text-[#17201D]'}>
+                      {draw.day}
+                    </span>
+                    {isToday && (
+                      <span class="text-[10px] bg-[#0B5D45] text-white px-2 py-0.5 rounded-md font-bold font-tabular tracking-wide shadow-2xs">
+                        TODAY
+                      </span>
+                    )}
+                  </div>
+                </td>
+                <td class="py-4 px-4 sm:px-6 font-bold text-[#17201D]">
+                  <a href={`/lottery/${draw.slug}`} class="hover:text-[#0B5D45] transition-colors underline-offset-2 hover:underline">
+                    {draw.name}
+                  </a>
+                </td>
+                <td class="py-4 px-4 sm:px-6 font-mono text-xs font-bold text-[#5F6B66]">
+                  {draw.code}
+                </td>
+                <td class="py-4 px-4 sm:px-6 text-[#5F6B66] font-tabular">
+                  {draw.time}
+                </td>
+                <td class="py-4 px-4 sm:px-6 text-[#17201D] font-bold font-tabular">
+                  {draw.price}
+                </td>
+                <td class="py-4 px-4 sm:px-6 font-extrabold text-[#0B5D45] font-tabular text-sm">
+                  {draw.firstPrize}
+                </td>
+                <td class="py-4 px-4 sm:px-6 text-right">
+                  <a
+                    href={`/lottery/${draw.slug}`}
+                    aria-label={`View ${draw.name} results and schedule`}
+                    class="inline-flex items-center gap-1 text-xs font-bold text-[#0B5D45] hover:text-[#084835] bg-[#E9F3EE] hover:bg-[#D5E8DF] px-2.5 py-1.5 rounded-lg transition-colors"
+                  >
+                    <span>View</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </a>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {/* Bumper Jackpots Showcase Section */}
+  <div id="bumper-jackpots" class="space-y-4 pt-4 scroll-mt-24">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2E7E3] pb-3">
+      <div>
+        <span class="text-[11px] font-bold text-[#C8A45D] uppercase tracking-wider block font-tabular">
+          Seasonal Jackpots
+        </span>
+        <h3 class="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight flex items-center gap-2">
+          <Award className="w-5 h-5 text-[#C8A45D]" />
+          <span>Kerala State Bumper Lotteries</span>
+        </h3>
+      </div>
+      <p class="text-xs text-[#5F6B66]">
+        Annual bumper jackpots up to ₹25 Crore with nationwide distribution
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      {BUMPERS.map((bumper) => (
+        <div class="bg-gradient-to-br from-white to-[#F9FAF8] rounded-2xl p-5 border border-[#E2E7E3] hover:border-[#0B3B32]/40 hover:shadow-md transition-all space-y-4 group relative flex flex-col justify-between">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[10px] font-bold uppercase tracking-wider bg-[#F4F5F2] text-[#5F6B66] px-2 py-0.5 rounded font-tabular">
+                {bumper.code}
+              </span>
+              <span class="text-[10px] font-bold text-[#0B5D45] bg-[#E9F3EE] px-2 py-0.5 rounded-full font-tabular">
+                {bumper.badge}
+              </span>
+            </div>
+
+            <h4 class="text-base font-extrabold text-[#17201D] group-hover:text-[#0B5D45] transition-colors">
+              <a href={`/lottery/${bumper.slug}`}>
+                {bumper.name}
+              </a>
+            </h4>
+
+            <p class="text-xs text-[#5F6B66]">
+              Draw Period: <strong class="text-[#17201D]">{bumper.season}</strong>
+            </p>
+          </div>
+
+          <div class="pt-3 border-t border-[#E2E7E3]/60 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] uppercase font-bold text-[#5F6B66] block">1st Prize Jackpot</span>
+              <span class="text-lg font-black text-[#0B5D45] font-tabular">{bumper.firstPrize}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] uppercase font-bold text-[#5F6B66] block">Ticket Cost</span>
+              <span class="text-sm font-bold text-[#17201D] font-tabular">{bumper.price}</span>
+            </div>
+          </div>
+
+          <a
+            href={`/lottery/${bumper.slug}`}
+            class="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#F7F7F4] group-hover:bg-[#0B3B32] group-hover:text-white text-xs font-bold text-[#17201D] border border-[#E2E7E3] transition-colors"
+          >
+            <span>View Jackpot Breakdown</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>

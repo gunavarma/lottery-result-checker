@@ -22,6 +22,10 @@ import { LotteryDirectoryListIsland } from '@/components/island/lottery-director
 import { NotificationBannerIsland } from '@/components/island/notification-banner';
 import { FeaturedNewsHero, NewsCard } from '@/components/NewsComponents';
 import { TrustSection } from '@/components/TrustSection';
+import HomeQuickNav from './home/HomeQuickNav.astro';
+import HomeWeeklySchedule from './home/HomeWeeklySchedule.astro';
+import HomePrizeClaimGuide from './home/HomePrizeClaimGuide.astro';
+import HomeFaqSection from './home/HomeFaqSection.astro';
 import { ArrowRight } from 'lucide-react';
 import { getHomepageData } from '@/lib/home-data';
 import { getAllNews, getFeaturedNews } from '@/lib/news';
@@ -58,7 +62,7 @@ const secondaryNews = allNews.filter((a) => a.id !== featuredArticle.id).slice(0
 
 <div class="space-y-10 sm:space-y-14 pb-16">
   {/* 1. Hero Result Terminal (Immediate 1-second Answer) */}
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 space-y-6">
+  <section id="today-result" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 space-y-6 scroll-mt-24">
     {/* client:idle because the full hero HTML is already server-rendered with
         initialData — hydration only adds the live-refresh and countdown timer,
         neither of which is needed during FCP/LCP. */}
@@ -66,8 +70,18 @@ const secondaryNews = allNews.filter((a) => a.id !== featuredArticle.id).slice(0
     <ResultFinderIsland client:visible locale={locale} lotteries={schemeOptions} />
   </section>
 
-  {/* 3. Scannable Recent Results Stream (Table / List Hybrid) */}
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+  {/* 2. Quick-Jump Navigation & Authority Bar */}
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <HomeQuickNav />
+  </section>
+
+  {/* 3. Ticket Verification Terminal */}
+  <section id="ticket-checker" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
+    <TicketCheckerIsland client:visible locale={locale} lotteries={schemeChoices} />
+  </section>
+
+  {/* 4. Scannable Recent Results Stream (Table / List Hybrid) */}
+  <section id="recent-results" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 scroll-mt-24">
     <div
       class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2E7E3] pb-3"
     >
@@ -96,18 +110,18 @@ const secondaryNews = allNews.filter((a) => a.id !== featuredArticle.id).slice(0
     <RecentResultsStreamIsland client:visible locale={locale} draws={recentDrawItems} />
   </section>
 
-  {/* 4. Ticket Verification Terminal */}
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <TicketCheckerIsland client:visible locale={locale} lotteries={schemeChoices} />
-  </section>
-
   {/* 5. Upcoming Draws Timeline */}
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <UpcomingDrawsTimelineIsland client:visible locale={locale} />
   </section>
 
-  {/* 6. Active Kerala Schemes Directory */}
-  <section id="lotteries" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+  {/* 6. Official Kerala Lottery Weekly Timetable & Bumper Matrix */}
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <HomeWeeklySchedule />
+  </section>
+
+  {/* 7. Active Kerala Schemes Directory */}
+  <section id="lotteries" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 scroll-mt-24">
     <div class="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
       <div>
         <span
@@ -116,7 +130,7 @@ const secondaryNews = allNews.filter((a) => a.id !== featuredArticle.id).slice(0
           Weekly &amp; Bumper Schemes
         </span>
         <h2 class="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
-          Active Kerala Lottery Schemes
+          Active Kerala Lottery Schemes Directory
         </h2>
       </div>
       <a
@@ -131,8 +145,18 @@ const secondaryNews = allNews.filter((a) => a.id !== featuredArticle.id).slice(0
     <LotteryDirectoryListIsland client:visible locale={locale} lotteries={directoryItems} />
   </section>
 
-  {/* 7. Editorial Gazette News & Analysis */}
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+  {/* 8. Official Prize Claim Guidelines & Legal Rules */}
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <HomePrizeClaimGuide />
+  </section>
+
+  {/* 9. SEO Frequently Asked Questions (FAQ) */}
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <HomeFaqSection />
+  </section>
+
+  {/* 10. Editorial Gazette News & Analysis */}
+  <section id="news" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 scroll-mt-24">
     <div class="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
       <div>
         <span
@@ -164,12 +188,12 @@ const secondaryNews = allNews.filter((a) => a.id !== featuredArticle.id).slice(0
     </div>
   </section>
 
-  {/* 8. Notification Opt-in Prompt */}
+  {/* 11. Notification Opt-in Prompt */}
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <NotificationBannerIsland client:visible locale={locale} />
   </section>
 
-  {/* 9. Trust & Verification 4-Step Pipeline */}
+  {/* 12. Trust & Verification 4-Step Pipeline */}
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <TrustSection />
   </section>

@@ -118,7 +118,7 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                 Every top-level heading on the site used to be an h2, which is
                 why the homepage reported "no H1 tag" in SEO audits. */}
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              {scheduledLottery?.name || 'Kerala State Lottery'} Result
+              {scheduledLottery?.name || 'Kerala State Lottery'} Result Today
             </h1>
             <p className="text-xs text-slate-300">
               Conducted by the Directorate of Kerala State Lotteries at Gorky Bhavan, Thiruvananthapuram.
