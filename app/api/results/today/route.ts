@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getOrSetCache } from '@/lib/cache';
+import { getOrSetCache, LIVE_DATA_STALE_IF_ERROR_MS } from '@/lib/cache';
 import { getTodayIstStr } from '@/lib/date';
 import { loadTodaySnapshot } from '@/lib/results/today-snapshot';
 
@@ -12,9 +12,17 @@ export async function GET() {
     // Short cache: this is the polled endpoint during the live window. The
     // database remains the source of truth; this only spares it repeated
     // identical reads from many concurrent visitors.
+    //
+    // `staleIfErrorMs` is what keeps a new device from landing on an empty
+    // hero: when the pooler refuses a connection, the last snapshot this
+    // instance read successfully is served instead of a 500. The homepage's
+    // Today card reads this endpoint, so without it an exhausted connection
+    // pool presented as "RESULT NOT PUBLISHED YET" even for a day whose draw
+    // was already stored.
     const data = await getOrSetCache(`api_results_today_${todayStr}`, loadTodaySnapshot, {
       ttlMs: 10_000,
       swrMs: 30_000,
+      staleIfErrorMs: LIVE_DATA_STALE_IF_ERROR_MS,
     });
 
     return NextResponse.json(data, {

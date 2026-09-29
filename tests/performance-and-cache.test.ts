@@ -94,6 +94,68 @@ describe('Performance & In-Memory SWR Cache Architecture', () => {
     expect(healthy).toHaveBeenCalledTimes(1);
   });
 
+  it('serves the last good value when a refresh fails within the stale-if-error window', async () => {
+    // The reported symptom: a phone with nothing cached was shown "previous
+    // results not showing" while the draws sat in the database, because the
+    // connection pool refused the read. A value this instance read moments ago
+    // is still the right answer, so a failed refresh must not blank the page.
+    const good = vi.fn().mockResolvedValue({ success: true, draws: ['SM-74'] });
+    const failing = vi.fn().mockRejectedValue(new Error('EMAXCONNSESSION'));
+
+    await getOrSetCache('stale_if_error', good, { ttlMs: 10, swrMs: 10 });
+    await new Promise((r) => setTimeout(r, 30));
+
+    const result = await getOrSetCache('stale_if_error', failing, {
+      ttlMs: 10,
+      swrMs: 10,
+      staleIfErrorMs: 60_000,
+    });
+
+    expect(result).toEqual({ success: true, draws: ['SM-74'] });
+    expect(failing).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops serving the fallback once the stale-if-error window has passed', async () => {
+    const good = vi.fn().mockResolvedValue('old');
+    const failing = vi.fn().mockRejectedValue(new Error('database unavailable'));
+
+    await getOrSetCache('expired_fallback', good, { ttlMs: 10, swrMs: 10 });
+    await new Promise((r) => setTimeout(r, 30));
+
+    await expect(
+      getOrSetCache('expired_fallback', failing, {
+        ttlMs: 10,
+        swrMs: 10,
+        staleIfErrorMs: 5,
+      })
+    ).rejects.toThrow('database unavailable');
+  });
+
+  it('still throws when there is nothing to fall back to', async () => {
+    // A cold function instance has no previous value, so the caller must be told
+    // the truth rather than handed an invented empty payload.
+    const failing = vi.fn().mockRejectedValue(new Error('EMAXCONNSESSION'));
+
+    await expect(
+      getOrSetCache('cold_instance', failing, { staleIfErrorMs: 60_000 })
+    ).rejects.toThrow('EMAXCONNSESSION');
+  });
+
+  it('prefers fresh data over the fallback when the database recovers', async () => {
+    const good = vi.fn().mockResolvedValue('good');
+    const failing = vi.fn().mockRejectedValue(new Error('EMAXCONNSESSION'));
+    const recovered = vi.fn().mockResolvedValue('recovered');
+
+    await getOrSetCache('recovery', good, { ttlMs: 10, swrMs: 10 });
+    await new Promise((r) => setTimeout(r, 30));
+    await getOrSetCache('recovery', failing, { ttlMs: 10, swrMs: 10, staleIfErrorMs: 60_000 });
+
+    await new Promise((r) => setTimeout(r, 30));
+    await expect(
+      getOrSetCache('recovery', recovered, { ttlMs: 10, swrMs: 10, staleIfErrorMs: 60_000 })
+    ).resolves.toBe('recovered');
+  });
+
   it('coalesces simultaneous cache misses into one fetch', async () => {
     const fetcher = vi.fn(
       () => new Promise((resolve) => setTimeout(() => resolve({ value: 'fresh' }), 20))

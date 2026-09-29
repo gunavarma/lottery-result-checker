@@ -10,6 +10,20 @@ interface CacheEntry<T> {
   swrMs: number;
 }
 
+/**
+ * Successfully published results are immutable — a stored draw never changes —
+ * so during a database outage the last good copy is still *correct*, just not
+ * newest. Half an hour is generous enough to ride out pooler exhaustion and
+ * short enough that a genuinely stale page cannot persist.
+ */
+export const PUBLISHED_DATA_STALE_IF_ERROR_MS = 30 * 60_000;
+
+/**
+ * Today's snapshot and the live state machine change through the day, so their
+ * last-good copy is served for a shorter window before failing loudly.
+ */
+export const LIVE_DATA_STALE_IF_ERROR_MS = 15 * 60_000;
+
 const memoryCache = new Map<string, CacheEntry<any>>();
 // When a cold or expired key is requested concurrently, all callers should
 // share one database read instead of stampeding the database.
@@ -38,6 +52,17 @@ function refreshCache<T>(
 export interface CacheOptions {
   ttlMs?: number; // Time in ms before considered stale (default: 30 seconds)
   swrMs?: number; // Time in ms data can be served stale while refreshing in background (default: 5 minutes)
+  /**
+   * Serve the last known-good value when a refresh *fails*, instead of throwing.
+   *
+   * Without this, a database that is briefly unreachable turns into a 500 from
+   * the API and an empty-state page for the visitor, even though a perfectly
+   * good answer was sitting in this map moments earlier. `ttlMs`/`swrMs` govern
+   * how long data may be served without a *successful* refresh; this governs how
+   * long it may be served when refreshing is impossible. Bounded deliberately —
+   * past this window, failing loudly is better than showing something ancient.
+   */
+  staleIfErrorMs?: number;
 }
 
 /**
@@ -78,7 +103,28 @@ export async function getOrSetCache<T>(
   // 3. Cache miss or expired beyond SWR: share one synchronous refresh among
   // all concurrent callers. This is important for result pages after a cache
   // expiry, when many visitors may arrive at once.
-  return refreshCache(key, fetcher, ttlMs, swrMs);
+  const refresh = refreshCache(key, fetcher, ttlMs, swrMs);
+
+  if (options.staleIfErrorMs === undefined) return refresh;
+
+  // A failed refresh leaves the previous entry in place (see refreshCache), so
+  // there is something to fall back to. This is what keeps a database hiccup
+  // from blanking a page that had rendered correctly a minute ago.
+  try {
+    return await refresh;
+  } catch (error: any) {
+    const previous = memoryCache.get(key) as CacheEntry<T> | undefined;
+    const age = previous ? now - previous.cachedAt : Infinity;
+
+    if (previous && age <= options.staleIfErrorMs) {
+      console.warn(
+        `[Cache stale-if-error for key: ${key}] serving ${Math.round(age / 1000)}s-old data: ${error?.message}`
+      );
+      return previous.data;
+    }
+
+    throw error;
+  }
 }
 
 /**

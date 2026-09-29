@@ -154,15 +154,43 @@ $ curl -s https://www.keraladraws.com/api/results/latest?limit=6
   Postgres connection; once the pooler's session limit is reached it refuses new ones, and Prisma
   reports "Can't reach database server".
 
+Re-checked 2026-09-28 and the same failure is **still live** — and now explicit:
+
+```
+$ curl -s https://www.keraladraws.com/api/results/today     # http=500, 6.1s
+{"success":false,"error":"... FATAL: (EMAXCONNSESSION) max clients reached in session
+ mode - max clients are limited to pool_size: 15"}
+$ curl -s https://www.keraladraws.com/api/live               # http=500, 6.0s, same error
+$ curl -s 'https://www.keraladraws.com/api/results/latest?limit=6'  # http=200, 0.36s, 6 draws
+```
+
+Three requests, seconds apart, two refused and one served — hence "it works on my laptop, it is
+blank on my phone".
+
 **Fix (Vercel dashboard — cannot be done from the repo):** set production `DATABASE_URL` to the
 port 6543 transaction pooler form with a small `connection_limit` (see README §3), and keep
-`DIRECT_URL` on 5432 for migrations. `lib/db-url.ts` additionally appends `connect_timeout=10` so
-the 5s cold-connect timeout is no longer the failure point.
+`DIRECT_URL` on 5432 for migrations.
 
-App-side mitigation already in place: the homepage's client components treat a `success: false`
-payload as untrusted and refetch (`/api/results/today`, `/api/results/latest`, `/api/lotteries`),
-and `getHomepageData()` no longer caches a degraded payload, so one failed read cannot pin an
-empty homepage for minutes after the database recovers.
+App-side defence, so the backend being misconfigured can no longer blank a page:
+
+| Mechanism | File | What it stops |
+| --- | --- | --- |
+| `connection_limit=1&pool_timeout=20` forced on any serverless runtime, replacing a larger value the deployment already carries | `lib/db-url.ts` → `lib/prisma.ts` | the exhaustion itself — 15 instances per instance-pool instead of 1.5 |
+| `connect_timeout=10` appended, so the 5 s cold-connect default is no longer the failure point | `lib/db-url.ts` | cold starts failing at exactly 5.44 s |
+| `withDbRetry` (3 attempts, 150/400 ms, transient errors only) around the public read paths | `lib/db-retry.ts` | a refusal that would have succeeded 200 ms later |
+| `staleIfErrorMs` on the cache | `lib/cache.ts`; `PUBLISHED_DATA_STALE_IF_ERROR_MS` 30 min, `LIVE_DATA_STALE_IF_ERROR_MS` 15 min | an error page when a good answer was in memory |
+| `/api/live` degrades to a clock-derived state instead of throwing | `app/api/live/route.ts` | the live page breaking while the DB is unreachable |
+
+`getHomepageData()` no longer caches a degraded payload, and the homepage's client components still
+treat a `success: false` payload as untrusted and refetch (`/api/results/today`,
+`/api/results/latest`, `/api/lotteries`).
+
+Verified locally on a production-simulated server (`VERCEL=1 next start`): with a working database
+all five public read routes return 200 while `connection_limit=1` is in force, and with an
+unreachable database `/api/live` returns **200** with a truthful clock-derived state
+(`countdownSeconds: 4174` at 13:50 IST) instead of a 500, while `/api/results/latest` fails
+honestly in 0.6 s after logging three retry attempts. The stale-if-error window itself is covered
+by unit tests in `tests/performance-and-cache.test.ts`.
 
 ## Deployment
 

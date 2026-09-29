@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getOrSetCache } from '@/lib/cache';
+import { getOrSetCache, PUBLISHED_DATA_STALE_IF_ERROR_MS } from '@/lib/cache';
+import { withDbRetry } from '@/lib/db-retry';
 import { formatDateOnly } from '@/lib/date';
 
 export const dynamic = 'force-dynamic';
@@ -11,12 +12,14 @@ export async function GET() {
       'api_results_available_dates',
       async () => {
         // Fast distinct draw dates with published results
-        const draws = await prisma.draw.findMany({
-          where: { status: 'PUBLISHED' },
-          select: { drawDate: true },
-          distinct: ['drawDate'],
-          orderBy: { drawDate: 'desc' },
-        });
+        const draws = await withDbRetry(() =>
+          prisma.draw.findMany({
+            where: { status: 'PUBLISHED' },
+            select: { drawDate: true },
+            distinct: ['drawDate'],
+            orderBy: { drawDate: 'desc' },
+          })
+        );
 
         const dates = draws.map((d) => formatDateOnly(d.drawDate));
 
@@ -28,7 +31,13 @@ export async function GET() {
           earliestDate: dates[dates.length - 1] || null,
         };
       },
-      { ttlMs: 10_000, swrMs: 30_000 }
+      {
+        ttlMs: 10_000,
+        swrMs: 30_000,
+        // The date picker on the results pages is fed from here; an error would
+        // leave it with no selectable dates at all.
+        staleIfErrorMs: PUBLISHED_DATA_STALE_IF_ERROR_MS,
+      }
     );
 
     return NextResponse.json(data, {

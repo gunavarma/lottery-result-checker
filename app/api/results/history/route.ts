@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/prisma';
 import { startOfMonth, endOfMonth, startOfYear, endOfYear, parse } from 'date-fns';
-import { getOrSetCache } from '@/lib/cache';
+import { getOrSetCache, PUBLISHED_DATA_STALE_IF_ERROR_MS } from '@/lib/cache';
+import { withDbRetry } from '@/lib/db-retry';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,34 +62,44 @@ export async function GET(request: NextRequest) {
     const [total, draws] = await Promise.all([
       getOrSetCache(
         `${cacheKey}_count`,
-        () => prisma.draw.count({ where }),
-        { ttlMs: 60_000, swrMs: 300_000 }
+        () => withDbRetry(() => prisma.draw.count({ where })),
+        {
+          ttlMs: 60_000,
+          swrMs: 300_000,
+          staleIfErrorMs: PUBLISHED_DATA_STALE_IF_ERROR_MS,
+        }
       ),
       getOrSetCache(
         cacheKey,
         () =>
-          prisma.draw.findMany({
-            where,
-            orderBy: {
-              drawDate: 'desc',
-            },
-            skip,
-            take: limit,
-            include: {
-              lottery: true,
-              prizes: {
-                where: {
-                  orderIndex: 0, // 1st prize only for summary cards
-                },
-                include: {
-                  winningNumbers: {
-                    take: 1,
+          withDbRetry(() =>
+            prisma.draw.findMany({
+              where,
+              orderBy: {
+                drawDate: 'desc',
+              },
+              skip,
+              take: limit,
+              include: {
+                lottery: true,
+                prizes: {
+                  where: {
+                    orderIndex: 0, // 1st prize only for summary cards
+                  },
+                  include: {
+                    winningNumbers: {
+                      take: 1,
+                    },
                   },
                 },
               },
-            },
-          }),
-        { ttlMs: 60_000, swrMs: 300_000 }
+            })
+          ),
+        {
+          ttlMs: 60_000,
+          swrMs: 300_000,
+          staleIfErrorMs: PUBLISHED_DATA_STALE_IF_ERROR_MS,
+        }
       ),
     ]);
 

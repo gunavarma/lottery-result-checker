@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { prisma, serializeData } from '@/lib/prisma';
-import { getOrSetCache } from '@/lib/cache';
+import { getOrSetCache, PUBLISHED_DATA_STALE_IF_ERROR_MS } from '@/lib/cache';
 import { loadTodaySnapshot } from '@/lib/results/today-snapshot';
 
 // Shared homepage data loader used by both the (en) and /[locale] home pages
@@ -65,7 +65,12 @@ export async function getHomepageData() {
           popularLotteries,
         });
       },
-      { ttlMs: 30_000, swrMs: 300_000 }
+      // `staleIfErrorMs` is the second half of that defence: when the database
+      // refuses a connection, a warm instance re-renders from the payload it read
+      // minutes ago instead of throwing and letting the page's degraded branch
+      // take over. A slightly old homepage is strictly better than an empty one,
+      // and the values in it (published results) do not go out of date.
+      { ttlMs: 30_000, swrMs: 300_000, staleIfErrorMs: PUBLISHED_DATA_STALE_IF_ERROR_MS }
     );
   } catch (error) {
     console.error('Error fetching homepage data:', error);

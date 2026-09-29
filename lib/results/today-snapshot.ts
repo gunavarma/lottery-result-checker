@@ -1,8 +1,9 @@
 import 'server-only';
 
 import { prisma, serializeData } from '@/lib/prisma';
-import { getIstDateRange, getTodayIstStr, parseDateOnlyUtc } from '@/lib/date';
+import { getIstDateRange, parseDateOnlyUtc } from '@/lib/date';
 import { computeLiveState, type LiveStatus } from '@/lib/live-state';
+import { withDbRetry } from '@/lib/db-retry';
 
 /**
  * The single loader for "today" used by both `/api/results/today` and the
@@ -62,30 +63,37 @@ export interface TodaySnapshot {
 }
 
 export async function loadTodaySnapshot(): Promise<TodaySnapshot> {
-  const todayDateStr = getTodayIstStr();
-  const todayDate = parseDateOnlyUtc(todayDateStr);
+  const now = new Date();
+  // Both calls get the same instant, so the date and the weekday can never
+  // straddle midnight, and the clock-only fields below cannot disagree with the
+  // status computed after the reads.
+  const clock = computeLiveState(false, now);
+  const todayDate = parseDateOnlyUtc(clock.todayDate);
 
-  const todayDraw = await prisma.draw.findFirst({
-    where: { drawDate: todayDate, status: 'PUBLISHED' },
-    include: DRAW_INCLUDE,
-  });
+  const [todayDraw, latestDraw, scheduledLottery] = await withDbRetry(() =>
+    Promise.all([
+      prisma.draw.findFirst({
+        where: { drawDate: todayDate, status: 'PUBLISHED' },
+        include: DRAW_INCLUDE,
+      }),
+      prisma.draw.findFirst({
+        where: { status: 'PUBLISHED' },
+        orderBy: { drawDate: 'desc' },
+        include: DRAW_INCLUDE,
+      }),
+      prisma.lottery.findFirst({
+        where: {
+          drawDay: { contains: clock.todayDayOfWeek, mode: 'insensitive' },
+          active: true,
+        },
+        select: SCHEDULED_LOTTERY_SELECT,
+      }),
+    ])
+  );
 
-  const live = computeLiveState(Boolean(todayDraw));
-
-  const [latestDraw, scheduledLottery] = await Promise.all([
-    prisma.draw.findFirst({
-      where: { status: 'PUBLISHED' },
-      orderBy: { drawDate: 'desc' },
-      include: DRAW_INCLUDE,
-    }),
-    prisma.lottery.findFirst({
-      where: {
-        drawDay: { contains: live.todayDayOfWeek, mode: 'insensitive' },
-        active: true,
-      },
-      select: SCHEDULED_LOTTERY_SELECT,
-    }),
-  ]);
+  // Only the published-flag derived fields depend on the reads; recomputing from
+  // the same instant keeps every other field identical to `clock`.
+  const live = computeLiveState(Boolean(todayDraw), now);
 
   const { formattedDisplay } = getIstDateRange(live.todayDate);
 

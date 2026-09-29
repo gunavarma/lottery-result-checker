@@ -177,12 +177,19 @@ Create `.env` based on `.env.example`:
 # (aws-0-<region>.pooler.supabase.com) — the direct `db.<ref>.supabase.co` host
 # is IPv6-only and Vercel has no IPv6 egress.
 #
-# On serverless, DATABASE_URL must be the *transaction* pooler on port **6543**
-# with `pgbouncer=true` and a small connection_limit. Pointing it at the
-# *session* pooler on 5432 lets every concurrent lambda hold a real Postgres
-# connection, the pooler starts refusing them, and Prisma reports
-# "Can't reach database server" — which renders as an empty results page for
-# whichever visitor lands on the affected instance.
+# On serverless, DATABASE_URL should be the *transaction* pooler on port **6543**
+# with `pgbouncer=true`. Pointing it at the *session* pooler on 5432 lets every
+# concurrent lambda hold a real Postgres connection; past `pool_size` the pooler
+# refuses them with `FATAL: (EMAXCONNSESSION) max clients reached in session
+# mode`, which Prisma surfaces as a query error and the page renders empty — the
+# "previous results not showing on my phone" symptom.
+#
+# The client does not rely on the URL being right: `lib/db-url.ts` pins
+# `connection_limit=1&pool_timeout=20` whenever it detects a serverless runtime
+# (VERCEL / AWS_LAMBDA_FUNCTION_NAME / NETLIFY), replacing any larger value the
+# deployment already carries. Override with DATABASE_CONNECTION_LIMIT if a
+# workload genuinely needs more, and see lib/db-retry.ts for the retry that
+# absorbs a refusal before it becomes a failed request.
 DATABASE_URL="postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
 DIRECT_URL="postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres"
 CRON_SECRET="<generated-32-byte-random-secret>"

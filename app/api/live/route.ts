@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/prisma';
 import { getTodayIstStr, parseDateOnlyUtc, IST_OFFSET_MS } from '@/lib/date';
-import { getOrSetCache } from '@/lib/cache';
+import { getOrSetCache, LIVE_DATA_STALE_IF_ERROR_MS } from '@/lib/cache';
+import { withDbRetry } from '@/lib/db-retry';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,7 +57,16 @@ export async function GET() {
     const payload = await getOrSetCache(
       'api_live_state',
       () => loadLiveState(new Date()),
-      { ttlMs: 5_000, swrMs: 60_000 }
+      {
+        ttlMs: 5_000,
+        swrMs: 60_000,
+        // The live page polls this every 10s, so a connection refused here used
+        // to surface as a broken-looking "live status unavailable" for the whole
+        // time the pool stayed exhausted. Serving the last good state keeps the
+        // page coherent; the countdown it shows is derived from the clock and is
+        // therefore still correct.
+        staleIfErrorMs: LIVE_DATA_STALE_IF_ERROR_MS,
+      }
     );
 
     // The header stays no-store so browsers/CDNs never pin the state; the
@@ -72,6 +82,54 @@ export async function GET() {
     );
   }
 }
+
+/** The four independent reads the live state machine needs. */
+function readLiveData() {  const todayDateOnly = parseDateOnlyUtc(getTodayIstStr());
+
+  return Promise.all([
+    prisma.draw.findFirst({
+      where: { drawDate: todayDateOnly },
+      include: {
+        lottery: true,
+        prizes: {
+          orderBy: { orderIndex: 'asc' },
+          include: { winningNumbers: true },
+        },
+      },
+    }),
+    prisma.draw.findFirst({
+      where: { status: 'PUBLISHED' },
+      orderBy: { drawDate: 'desc' },
+      include: {
+        lottery: true,
+        prizes: {
+          orderBy: { orderIndex: 'asc' },
+          take: 3,
+          include: { winningNumbers: { take: 5 } },
+        },
+      },
+    }),
+    prisma.syncLog.findFirst({
+      orderBy: { startedAt: 'desc' },
+      select: { status: true, startedAt: true, completedAt: true, errorMessage: true },
+    }),
+    prisma.lottery.findMany({
+      where: { active: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        code: true,
+        drawDay: true,
+        drawTime: true,
+        ticketPrice: true,
+        isBumper: true,
+      },
+    }),
+  ]);
+}
+
+type LiveData = Awaited<ReturnType<typeof readLiveData>>;
 
 async function loadLiveState(now: Date) {
 
@@ -90,53 +148,27 @@ async function loadLiveState(now: Date) {
       countdownSeconds = Math.floor((targetIstDraw.getTime() - istNow.getTime()) / 1000);
     }
 
-    const todayDateOnly = parseDateOnlyUtc(getTodayIstStr());
-
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const todayDayName = daysOfWeek[istNow.getUTCDay()];
 
     // All reads are independent: run them concurrently instead of sequentially.
-    const [todayDraw, latestDraw, latestSyncLog, activeLotteries] = await Promise.all([
-      prisma.draw.findFirst({
-        where: { drawDate: todayDateOnly },
-        include: {
-          lottery: true,
-          prizes: {
-            orderBy: { orderIndex: 'asc' },
-            include: { winningNumbers: true },
-          },
-        },
-      }),
-      prisma.draw.findFirst({
-        where: { status: 'PUBLISHED' },
-        orderBy: { drawDate: 'desc' },
-        include: {
-          lottery: true,
-          prizes: {
-            orderBy: { orderIndex: 'asc' },
-            take: 3,
-            include: { winningNumbers: { take: 5 } },
-          },
-        },
-      }),
-      prisma.syncLog.findFirst({
-        orderBy: { startedAt: 'desc' },
-        select: { status: true, startedAt: true, completedAt: true, errorMessage: true },
-      }),
-      prisma.lottery.findMany({
-        where: { active: true },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          code: true,
-          drawDay: true,
-          drawTime: true,
-          ticketPrice: true,
-          isBumper: true,
-        },
-      }),
-    ]);
+    //
+    // The whole set is retried on a transient connection failure and, if it still
+    // fails, replaced by empty reads rather than an exception. Every field of the
+    // response that is not read from the database — status, countdown, scheduled
+    // draw time, server clock — is derived from the wall clock, so the page keeps
+    // a truthful state machine ("draw at 3 PM", "waiting for release") instead of
+    // collapsing into an error box.
+    const [todayDraw, latestDraw, latestSyncLog, activeLotteries] = await withDbRetry(
+      readLiveData
+    ).catch((error) => {
+      console.error(
+        'Live state database reads failed; falling back to clock-derived state:',
+        error instanceof Error ? error.message : error
+      );
+      const degraded: LiveData = [null, null, null, []];
+      return degraded;
+    });
 
     // Resolve the scheme drawn today (drawDay may be a composite like "Monday, Thursday").
     const scheduledLottery =
