@@ -6,9 +6,9 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { LotteryCalendarPageIsland } from '@/components/island/lottery-calendar-page';
 import { metadata, getCalendarDraws } from '@/components/pages/LotteryCalendarPage';
-import { setNoStoreHeaders } from '../lib/cache-headers';
+import { REVALIDATE, setRevalidateHeaders } from '../lib/cache-headers';
 
-setNoStoreHeaders(Astro);
+setRevalidateHeaders(Astro, REVALIDATE.CONTENT);
 
 const publishedDraws = await getCalendarDraws();
 ---

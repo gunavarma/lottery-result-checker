@@ -10,7 +10,8 @@ import {
   buildMetadataFromData,
   getHistoricalDrawData,
 } from '@/components/pages/KeralaLotteryResultDatePage';
-import { REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
+import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
+import { getTodayIstStr } from '@/lib/date';
 
 // Astro only matches a dynamic route when the segment is present.
 const dateStr = Astro.params.date as string;
@@ -22,7 +23,25 @@ if (!data || !data.draws || data.draws.length === 0) {
   return Astro.rewrite('/404');
 }
 
-setRevalidateHeaders(Astro, REVALIDATE.RESULT_PAGE);
+// A gazetted past date is immutable, so it gets the long window; today's page
+// still changes as the draw publishes, so it keeps the live one. A date whose
+// draws are not all OFFICIAL yet stays on the short window — a PROVISIONAL draw
+// can still be upgraded in place, and caching that for a day would serve a
+// "provisional" badge long after the gazette confirmed it.
+const isToday = getTodayIstStr() === dateStr;
+const allDrawsOfficial = data.draws.every(
+  (d: any) => (d.verificationLevel ?? 'OFFICIAL') === 'OFFICIAL'
+);
+const cacheSeconds = isToday
+  ? REVALIDATE.LIVE
+  : allDrawsOfficial
+    ? REVALIDATE.HISTORICAL
+    : REVALIDATE.RESULT_PAGE;
+
+setRevalidateHeaders(Astro, cacheSeconds, {
+  tags: [CACHE_TAG.date(dateStr), CACHE_TAG.RESULTS],
+  staleWhileRevalidate: Math.min(cacheSeconds * 10, REVALIDATE.HISTORICAL_SWR),
+});
 
 // Construct metadata directly from loaded data without re-fetching
 const head = buildMetadataFromData(data, dateStr);

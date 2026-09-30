@@ -7,6 +7,7 @@ import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema, SITE_URL } from '@/lib/seo';
 import { formatDateOnly, formatIstDate } from '@/lib/date';
 import { getOrSetCache } from '@/lib/cache';
+import { drawCardView } from '@/lib/results/projections';
 import {
   Calendar as CalendarIcon,
   ChevronRight,
@@ -41,15 +42,7 @@ export async function getYearArchiveData(yearStr: string) {
           status: 'PUBLISHED',
         },
         orderBy: { drawDate: 'desc' },
-        include: {
-          lottery: true,
-          prizes: {
-            where: { orderIndex: 0 },
-            include: {
-              winningNumbers: { take: 1 },
-            },
-          },
-        },
+        select: drawCardView(1, 1, true),
       });
 
       if (!draws || draws.length === 0) return null;

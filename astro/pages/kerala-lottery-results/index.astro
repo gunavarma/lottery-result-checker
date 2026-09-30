@@ -12,9 +12,11 @@ import KeralaLotteryResultsArchivePage, {
   generateMetadata,
   getArchiveData,
 } from '@/components/pages/KeralaLotteryResultsIndexPage';
-import { setNoStoreHeaders } from '../../lib/cache-headers';
+import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
 
-setNoStoreHeaders(Astro);
+// A crawlable archive page, not private state. `no-store` here meant every
+// crawler hit re-rendered the whole index from Postgres.
+setRevalidateHeaders(Astro, REVALIDATE.RESULT_PAGE, { tags: [CACHE_TAG.RESULTS] });
 
 const lotterySlug = Astro.url.searchParams.get('lottery') || undefined;
 const currentPage = Math.max(1, parseInt(Astro.url.searchParams.get('page') || '1', 10) || 1);

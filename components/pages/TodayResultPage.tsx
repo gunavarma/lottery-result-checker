@@ -44,6 +44,7 @@ export async function generateMetadata() {
 }
 
 import { getOrSetCache } from '@/lib/cache';
+import { DRAW_FULL } from '@/lib/results/projections';
 
 export async function getTodayResultData() {
   return getOrSetCache(
@@ -61,17 +62,7 @@ export async function getTodayResultData() {
               lte: todayEnd,
             },
           },
-          include: {
-            lottery: true,
-            prizes: {
-              orderBy: { orderIndex: 'asc' },
-              include: {
-                winningNumbers: {
-                  orderBy: { id: 'asc' },
-                },
-              },
-            },
-          },
+          select: DRAW_FULL,
         });
 
         let isFromToday = true;
@@ -80,17 +71,7 @@ export async function getTodayResultData() {
           draw = await prisma.draw.findFirst({
             where: { status: 'PUBLISHED' },
             orderBy: { drawDate: 'desc' },
-            include: {
-              lottery: true,
-              prizes: {
-                orderBy: { orderIndex: 'asc' },
-                include: {
-                  winningNumbers: {
-                    orderBy: { id: 'asc' },
-                  },
-                },
-              },
-            },
+            select: DRAW_FULL,
           });
         }
 

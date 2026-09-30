@@ -1,4 +1,7 @@
-import { MetadataRoute } from 'next';
+// Type-only on purpose: this module is imported by the Astro endpoint
+// (`astro/pages/sitemap.xml.ts`) too, and a value import would pull the Next
+// runtime into that bundle.
+import type { MetadataRoute } from 'next';
 import { prisma } from '@/lib/prisma';
 import { SITE_URL } from '@/lib/seo';
 import { getAllNews } from '@/lib/news';

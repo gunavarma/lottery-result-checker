@@ -7,9 +7,9 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { PreviousResultsPageIsland } from '@/components/island/previous-results-page';
 import { constructMetadata } from '@/lib/seo';
-import { setNoStoreHeaders } from '../lib/cache-headers';
+import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../lib/cache-headers';
 
-setNoStoreHeaders(Astro);
+setRevalidateHeaders(Astro, REVALIDATE.CONTENT, { tags: [CACHE_TAG.RESULTS] });
 
 const head = constructMetadata({
   title: 'Previous Kerala Lottery Results | KeralaDraws',

@@ -6,7 +6,7 @@
  */
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PermanentResultPage, { generateMetadata, getDrawResultData } from '@/components/pages/PermanentResultPage';
-import { REVALIDATE, setRevalidateHeaders } from '../../../lib/cache-headers';
+import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../../lib/cache-headers';
 
 const slug = Astro.params.slug as string;
 const drawNumber = Astro.params.drawNumber as string;
@@ -18,7 +18,14 @@ if (!data || !data.draw) {
   return Astro.rewrite('/404');
 }
 
-setRevalidateHeaders(Astro, REVALIDATE.RESULT_PAGE);
+// Official permanent URLs are immutable — a day-long CDN window. A provisional
+// draw can still be upgraded to OFFICIAL in place, so it keeps the short window
+// until the gazette confirms it.
+const isOfficial = ((data.draw as any).verificationLevel ?? 'OFFICIAL') === 'OFFICIAL';
+setRevalidateHeaders(Astro, isOfficial ? REVALIDATE.HISTORICAL : REVALIDATE.RESULT_PAGE, {
+  tags: [CACHE_TAG.lottery(slug), CACHE_TAG.RESULTS],
+  ...(isOfficial ? { staleWhileRevalidate: REVALIDATE.HISTORICAL_SWR } : {}),
+});
 
 const head = await generateMetadata({ params: Promise.resolve({ slug, drawNumber }) });
 ---

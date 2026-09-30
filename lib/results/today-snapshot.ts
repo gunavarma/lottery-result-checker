@@ -6,6 +6,7 @@ import { prisma, serializeData } from '@/lib/prisma';
 import { getIstDateRange, parseDateOnlyUtc } from '@/lib/date';
 import { computeLiveState, type LiveStatus } from '@/lib/live-state';
 import { withDbRetry } from '@/lib/db-retry';
+import { DRAW_REFERENCE, todayDrawView } from '@/lib/results/projections';
 
 /**
  * The single loader for "today" used by both `/api/results/today` and the
@@ -18,17 +19,15 @@ import { withDbRetry } from '@/lib/db-retry';
  * spinning. Sharing one loader is the fix; it also removes a duplicate query set.
  */
 
-const DRAW_INCLUDE = {
-  lottery: true,
-  prizes: {
-    orderBy: { orderIndex: 'asc' },
-    include: {
-      winningNumbers: {
-        orderBy: { id: 'asc' },
-      },
-    },
-  },
-} as const;
+// Projections live in `lib/results/projections.ts`. They replaced a
+// `lottery: true, prizes: { include: { winningNumbers: true } }` include, which
+// transferred every prize of every tier *and* the Draw table's `rawText` audit
+// column (up to 20 KB, ~7.4 KB average) on every read. This is the polled
+// endpoint, so that cost was multiplied by every open tab.
+const TODAY_DRAW_SELECT = todayDrawView();
+
+/** The "previous draw" strip shows a name and a code — never a prize table. */
+const LATEST_DRAW_SELECT = DRAW_REFERENCE;
 
 const SCHEDULED_LOTTERY_SELECT = {
   id: true,
@@ -76,12 +75,12 @@ export async function loadTodaySnapshot(): Promise<TodaySnapshot> {
     Promise.all([
       prisma.draw.findFirst({
         where: { drawDate: todayDate, status: 'PUBLISHED' },
-        include: DRAW_INCLUDE,
+        select: TODAY_DRAW_SELECT,
       }),
       prisma.draw.findFirst({
         where: { status: 'PUBLISHED' },
         orderBy: { drawDate: 'desc' },
-        include: DRAW_INCLUDE,
+        select: LATEST_DRAW_SELECT,
       }),
       prisma.lottery.findFirst({
         where: {

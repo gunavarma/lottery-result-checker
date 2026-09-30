@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/prisma';
 import { getOrSetCache, PUBLISHED_DATA_STALE_IF_ERROR_MS } from '@/lib/cache';
 import { withDbRetry } from '@/lib/db-retry';
+import { drawCardView } from '@/lib/results/projections';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,18 +33,12 @@ export async function GET(request: NextRequest) {
               drawDate: 'desc',
             },
             take: limit,
-            include: {
-              lottery: true,
-              prizes: {
-                orderBy: { orderIndex: 'asc' },
-                take: 3, // first 3 prizes for compact summary cards
-                include: {
-                  winningNumbers: {
-                    take: 5,
-                  },
-                },
-              },
-            },
+            // Both consumers of this fallback — `ResultCard` (My Lotteries) and
+            // `RecentResultsStream` (homepage) — read the headline prize and its
+            // first winning number, which is exactly the shape the server render
+            // now uses. The previous `take: 3` tiers × `take: 5` numbers shipped
+            // ~15× the winning-number rows the cards could ever display.
+            select: drawCardView(1, 1, true),
           })
         ),
       { ttlMs: 60_000, swrMs: 300_000, staleIfErrorMs: PUBLISHED_DATA_STALE_IF_ERROR_MS }

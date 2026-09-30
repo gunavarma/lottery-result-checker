@@ -7,6 +7,7 @@
 import { prisma, serializeData } from '@/lib/prisma';
 import { getOrSetCache, PUBLISHED_DATA_STALE_IF_ERROR_MS } from '@/lib/cache';
 import { loadTodaySnapshot } from '@/lib/results/today-snapshot';
+import { LOTTERY_SUMMARY, drawCardView } from '@/lib/results/projections';
 
 // Shared homepage data loader used by both the (en) and /[locale] home pages
 // so the two locale trees always render identical information.
@@ -28,33 +29,46 @@ export async function getHomepageData() {
       async () => {
         const [today, latestDraws, popularLotteries] = await Promise.all([
           loadTodaySnapshot(),
+          // `drawCardView` keeps the same shape the recent-results list renders
+          // (three tiers, head numbers only) while dropping the Draw table's
+          // `rawText` audit column, which the old `include` carried — and, under
+          // Next, re-serialized into the RSC payload sent to the browser.
           prisma.draw.findMany({
             where: { status: 'PUBLISHED' },
             orderBy: { drawDate: 'desc' },
             take: 6,
-            include: {
-              lottery: true,
-              prizes: {
-                orderBy: { orderIndex: 'asc' },
-                take: 3,
-                include: {
-                  winningNumbers: { take: 5 },
-                },
-              },
-            },
+            select: drawCardView(3, 5),
           }),
           prisma.lottery.findMany({
             where: { active: true },
             take: 8,
-            include: {
+            select: {
+              ...LOTTERY_SUMMARY,
               draws: {
                 where: { status: 'PUBLISHED' },
                 orderBy: { drawDate: 'desc' },
                 take: 1,
-                include: {
+                select: {
+                  id: true,
+                  drawNumber: true,
+                  drawDate: true,
+                  status: true,
+                  verificationLevel: true,
+                  sourceDocumentUrl: true,
                   prizes: {
                     where: { orderIndex: 0 },
-                    include: { winningNumbers: { take: 1 } },
+                    orderBy: { orderIndex: 'asc' },
+                    take: 1,
+                    select: {
+                      id: true,
+                      category: true,
+                      amount: true,
+                      orderIndex: true,
+                      winningNumbers: {
+                        take: 1,
+                        select: { id: true, displayNumber: true, series: true, number: true, location: true },
+                      },
+                    },
                   },
                 },
               },

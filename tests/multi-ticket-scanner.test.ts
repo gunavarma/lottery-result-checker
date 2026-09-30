@@ -31,52 +31,53 @@ describe('Multi-Ticket Scanner & Batch Verification System', () => {
   });
 
   it('evaluates batch of tickets against published draw mock and returns structured win/no-win results', async () => {
-    // Mock prisma.draw.findMany to return a mock published draw
+    // The checker now resolves draws by identity (no prize tree) and then makes
+    // one indexed WinningNumber read for the candidate numbers, so both reads
+    // are mocked here. This is the shape the real queries return.
     const mockDraw = {
       id: 'mock-draw-1',
       drawNumber: 'SK-67',
       drawDate: new Date('2026-08-28T00:00:00.000Z'),
       sourceUrl: 'https://lotteryagent.kerala.gov.in/results/mock-1',
       lottery: {
-        id: 'lottery-sk',
         name: 'Suvarna Keralam',
         slug: 'suvarna-keralam',
       },
-      prizes: [
-        {
+    };
+
+    const mockCandidates = [
+      {
+        id: 'win-1',
+        series: 'SK',
+        number: '320327',
+        displayNumber: 'SK 320327',
+        location: 'Kozhikode',
+        prize: {
           id: 'prize-1',
           category: '1st Prize',
           amount: BigInt(10000000),
           orderIndex: 0,
-          winningNumbers: [
-            {
-              id: 'win-1',
-              series: 'SK',
-              number: '320327',
-              displayNumber: 'SK 320327',
-              location: 'Kozhikode',
-            },
-          ],
+          drawId: 'mock-draw-1',
         },
-        {
+      },
+      {
+        id: 'win-7-1',
+        series: null,
+        number: '1234',
+        displayNumber: '1234',
+        location: null,
+        prize: {
           id: 'prize-7',
           category: '7th Prize',
           amount: BigInt(500),
           orderIndex: 6,
-          winningNumbers: [
-            {
-              id: 'win-7-1',
-              series: null,
-              number: '1234',
-              displayNumber: '1234',
-              location: null,
-            },
-          ],
+          drawId: 'mock-draw-1',
         },
-      ],
-    };
+      },
+    ];
 
     vi.spyOn(prisma.draw, 'findMany').mockResolvedValueOnce([mockDraw as any]);
+    vi.spyOn(prisma.winningNumber, 'findMany').mockResolvedValueOnce(mockCandidates as any);
 
     const batchCheckResult = await checkTicketsHandler({
       tickets: ['SK 320327', '1234', '999999'],

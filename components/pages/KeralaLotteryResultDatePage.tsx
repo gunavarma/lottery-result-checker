@@ -10,6 +10,7 @@ import { ProvisionalResultBanner } from '@/components/ProvisionalResultBanner';
 import { ResultShareBar } from '@/components/ResultShareBar';
 import { constructMetadata, getBreadcrumbSchema, getFAQSchema, SITE_URL } from '@/lib/seo';
 import { getOrSetCache } from '@/lib/cache';
+import { DRAW_FULL } from '@/lib/results/projections';
 import {
   isValidDateFormat,
   parseDateOnlyUtc,
@@ -59,17 +60,7 @@ export async function getHistoricalDrawData(dateStr: string) {
             drawDate: targetDate,
             status: 'PUBLISHED',
           },
-          include: {
-            lottery: true,
-            prizes: {
-              orderBy: { orderIndex: 'asc' },
-              include: {
-                winningNumbers: {
-                  orderBy: { id: 'asc' },
-                },
-              },
-            },
-          },
+          select: DRAW_FULL,
           orderBy: { createdAt: 'desc' },
         }),
       ]);
@@ -88,8 +79,8 @@ export async function getHistoricalDrawData(dateStr: string) {
         draws,
       });
     },
-    // Historical draws are immutable once published. Cache for 1 hour with 24hr SWR.
-    // Today's live draw keeps a fast 10s cache to refresh as numbers are published.
+    // Gazette-verified historical pages are immutable. Cache them aggressively;
+    // today's in-progress draw stays on the short live window.
     { ttlMs: isToday ? 10_000 : 3_600_000, swrMs: isToday ? 30_000 : 86_400_000 }
   );
 }

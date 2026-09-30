@@ -96,6 +96,7 @@ export async function generateMetadata({
 }
 
 import { getOrSetCache } from '@/lib/cache';
+import { DRAW_FULL } from '@/lib/results/projections';
 
 export async function getDrawResultData(slug: string, drawNumber: string) {
   const cacheKey = `draw_result_${slug}_${drawNumber.toLowerCase()}`;
@@ -114,17 +115,7 @@ export async function getDrawResultData(slug: string, drawNumber: string) {
               { drawNumber: { contains: cleanDrawNumber } },
             ],
           },
-          include: {
-            lottery: true,
-            prizes: {
-              orderBy: { orderIndex: 'asc' },
-              include: {
-                winningNumbers: {
-                  orderBy: { id: 'asc' },
-                },
-              },
-            },
-          },
+          select: DRAW_FULL,
         });
 
         if (!draw) return null;

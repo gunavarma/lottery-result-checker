@@ -4,6 +4,7 @@ import { prisma, formatINR } from '../prisma';
 import { getLotterySlug, type ParsedDrawResult, type ParsedPrize } from '../parser/lotis-parser';
 import { sendResultPublishedPushNotification } from '../firebase/fcm';
 import { SITE_URL } from '@/lib/site-url';
+import { invalidatePublishedDrawCaches } from '../cache-purge';
 
 /**
  * The single writer for parsed lottery results.
@@ -359,6 +360,11 @@ export async function persistParsedDraw(
       console.warn('Failed to dispatch FCM draw notifications:', dispatchErr);
     }
   }
+
+  // 7. Invalidate only the caches this publication can change. Runs after the
+  //    transaction has committed, and is best-effort: a cache-purge failure must
+  //    never roll back a stored result.
+  await invalidatePublishedDrawCaches({ ...baseOutcome, upgraded });
 
   return {
     status: isNew ? 'CREATED' : 'UPDATED',

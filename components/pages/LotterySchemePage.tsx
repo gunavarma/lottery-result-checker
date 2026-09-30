@@ -14,6 +14,7 @@ import { NewsCard } from '@/components/NewsComponents';
 import { Award, Calendar, Clock, Ticket, ShieldCheck, ChevronRight, FileText, ArrowRight, CheckCircle2, HelpCircle } from 'lucide-react';
 import { formatDateOnly, formatIstDate } from '@/lib/date';
 import { getOrSetCache } from '@/lib/cache';
+import { DRAW_FULL, drawCardView, LOTTERY_DIRECTORY } from '@/lib/results/projections';
 
 // Scheme pages change at most once a day (a new draw), so a cached render with
 // background revalidation is both safe and much faster than re-querying.
@@ -29,27 +30,40 @@ export async function getLotterySchemeData(slug: string) {
     cacheKey,
     async () => {
       try {
-        const lottery = await prisma.lottery.findUnique({
-          where: { slug },
-          include: {
-            draws: {
-              where: { status: 'PUBLISHED' },
-              orderBy: { drawDate: 'desc' },
-              take: 15,
-              include: {
-                lottery: true,
-                prizes: {
-                  orderBy: { orderIndex: 'asc' },
-                  include: {
-                    winningNumbers: true,
-                  },
-                },
+        // The page renders exactly one full prize table — the latest draw — and
+        // 14 small result cards below it. It used to fetch the complete prize
+        // tree for all fifteen draws, which is why this single page could move
+        // close to a megabyte per render. The full tree is now fetched once and
+        // the cards get only their headline winner.
+        const [lottery, latestDraw] = await Promise.all([
+          prisma.lottery.findUnique({
+            where: { slug },
+            select: {
+              ...LOTTERY_DIRECTORY,
+              draws: {
+                where: { status: 'PUBLISHED' },
+                orderBy: { drawDate: 'desc' },
+                skip: 1,
+                take: 14,
+                select: drawCardView(1, 1, true),
               },
             },
-          },
-        });
+          }),
+          prisma.draw.findFirst({
+            where: { status: 'PUBLISHED', lottery: { slug } },
+            orderBy: { drawDate: 'desc' },
+            select: DRAW_FULL,
+          }),
+        ]);
 
-        return lottery ? serializeData(lottery) : null;
+        if (!lottery) return null;
+
+        const draws = [
+          ...(latestDraw ? [latestDraw] : []),
+          ...(lottery.draws ?? []),
+        ];
+
+        return serializeData({ ...lottery, draws });
       } catch (error) {
         console.error('Error in getLotterySchemeData:', error);
         return null;

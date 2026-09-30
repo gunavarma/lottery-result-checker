@@ -9,19 +9,37 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId') || 'anonymous-device';
 
+    // This endpoint is per-user and therefore never CDN-cached, so its query is
+    // paid in full on every watchlist load. The matcher below reads only the
+    // winning number strings, the prize category/amount and the draw identity —
+    // `include:` pulled every prize column plus full winning-number rows (ids,
+    // series, locations, timestamps) for the latest draw of *each* saved scheme.
     const savedTickets = await prisma.ticketWatchlist.findMany({
       where: { userId, active: true },
-      include: {
+      select: {
+        id: true,
+        ticketNumber: true,
+        series: true,
+        createdAt: true,
         lottery: {
-          include: {
+          select: {
+            name: true,
+            slug: true,
+            code: true,
             draws: {
               where: { status: 'PUBLISHED' },
               orderBy: { drawDate: 'desc' },
               take: 1,
-              include: {
+              select: {
+                drawNumber: true,
+                drawDate: true,
                 prizes: {
-                  include: {
-                    winningNumbers: true,
+                  select: {
+                    category: true,
+                    amount: true,
+                    winningNumbers: {
+                      select: { number: true, displayNumber: true },
+                    },
                   },
                 },
               },

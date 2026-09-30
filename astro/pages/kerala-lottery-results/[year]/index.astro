@@ -11,7 +11,7 @@ import YearArchivePage, {
   generateMetadata,
   getYearArchiveData,
 } from '@/components/pages/KeralaLotteryResultsYearPage';
-import { setNoStoreHeaders } from '../../../lib/cache-headers';
+import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../../lib/cache-headers';
 
 // Astro only matches a dynamic route when the segment is present.
 const year = Astro.params.year as string;
@@ -22,7 +22,7 @@ if (!data) {
   return Astro.rewrite('/404');
 }
 
-setNoStoreHeaders(Astro);
+setRevalidateHeaders(Astro, REVALIDATE.CONTENT, { tags: [CACHE_TAG.RESULTS] });
 
 const head = await generateMetadata({ params: Promise.resolve({ year }) });
 ---

@@ -8,6 +8,7 @@ import { OfficialSourceBadge } from '@/components/OfficialSourceBadge';
 import { constructMetadata, getBreadcrumbSchema, SITE_URL } from '@/lib/seo';
 import { formatDateOnly, formatIstDate } from '@/lib/date';
 import { getOrSetCache } from '@/lib/cache';
+import { DRAW_SCALARS } from '@/lib/results/projections';
 import {
   Calendar as CalendarIcon,
   ChevronRight,
@@ -63,19 +64,23 @@ export async function getArchiveData(lotterySlug?: string, pageNumber: number = 
         }
       }
 
-      const [totalCount, draws, lotteries, allDrawDates] = await Promise.all([
+      const [totalCount, draws, lotteries, monthRows] = await Promise.all([
         prisma.draw.count({ where: whereClause }),
         prisma.draw.findMany({
           where: whereClause,
           orderBy: { drawDate: 'desc' },
           skip,
           take: pageSize,
-          include: {
-            lottery: true,
+          select: {
+            ...DRAW_SCALARS,
+            lottery: { select: { name: true, slug: true, code: true, drawDay: true } },
             prizes: {
               where: { orderIndex: 0 },
-              include: {
-                winningNumbers: { take: 1 },
+              take: 1,
+              select: {
+                amount: true,
+                category: true,
+                winningNumbers: { take: 1, select: { displayNumber: true } },
               },
             },
           },
@@ -85,32 +90,31 @@ export async function getArchiveData(lotterySlug?: string, pageNumber: number = 
           select: { id: true, name: true, slug: true, code: true },
           orderBy: { name: 'asc' },
         }),
-        prisma.draw.findMany({
-          where: { status: 'PUBLISHED' },
-          select: { drawDate: true },
-          orderBy: { drawDate: 'desc' },
-        }),
+        // The month directory only needs *counts*, per month. It used to read
+        // every published `drawDate` — 1 848 rows on every uncached render — and
+        // tally them in JavaScript. The aggregate returns ~60 rows instead, and
+        // runs on the existing `status` + `drawDate` index.
+        prisma.$queryRaw<{ ym: string; count: number }[]>`
+          SELECT to_char("drawDate", 'YYYY-MM') AS ym, count(*)::int AS count
+          FROM "Draw"
+          WHERE status = 'PUBLISHED'
+          GROUP BY 1
+          ORDER BY 1 DESC
+        `,
       ]);
 
       // Calculate distinct years and months with verified data
       const monthMap = new Map<string, { year: string; month: string; label: string; count: number }>();
-      for (const d of allDrawDates) {
-        const dateStr = formatDateOnly(d.drawDate);
-        const [y, m] = dateStr.split('-');
-        const key = `${y}-${m}`;
-        const existing = monthMap.get(key);
-        if (existing) {
-          existing.count++;
-        } else {
-          const dateObj = new Date(Date.UTC(Number(y), Number(m) - 1, 15));
-          const monthName = dateObj.toLocaleString('en-US', { month: 'long', timeZone: 'UTC' });
-          monthMap.set(key, {
-            year: y,
-            month: m,
-            label: `${monthName} ${y}`,
-            count: 1,
-          });
-        }
+      for (const row of monthRows) {
+        const [y, m] = row.ym.split('-');
+        const dateObj = new Date(Date.UTC(Number(y), Number(m) - 1, 15));
+        const monthName = dateObj.toLocaleString('en-US', { month: 'long', timeZone: 'UTC' });
+        monthMap.set(row.ym, {
+          year: y,
+          month: m,
+          label: `${monthName} ${y}`,
+          count: Number(row.count),
+        });
       }
 
       return serializeData({

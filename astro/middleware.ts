@@ -68,7 +68,9 @@ export const onRequest = defineMiddleware(async (_ctx, next) => {
   headers.set('content-length', String(compressed.byteLength));
   headers.set('vary', 'Accept-Encoding');
 
-  return new Response(compressed, {
+  // `compressed` is a Node Buffer; copying it into a plain Uint8Array keeps it
+  // assignable to `BodyInit` under the newer generic `ArrayBufferLike` typings.
+  return new Response(new Uint8Array(compressed), {
     status: response.status,
     statusText: response.statusText,
     headers,

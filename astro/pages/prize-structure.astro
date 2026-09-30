@@ -7,9 +7,9 @@
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PrizeStructurePage, { metadata, getPrizeStructureData } from '@/components/pages/PrizeStructurePage';
-import { setNoStoreHeaders } from '../lib/cache-headers';
+import { REVALIDATE, setRevalidateHeaders } from '../lib/cache-headers';
 
-setNoStoreHeaders(Astro);
+setRevalidateHeaders(Astro, REVALIDATE.CONTENT);
 
 const scheme = Astro.url.searchParams.get('scheme') || undefined;
 const lotteries = await getPrizeStructureData();

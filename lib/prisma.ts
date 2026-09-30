@@ -20,17 +20,52 @@ const datasourceUrl = withServerlessPoolLimits(withConnectTimeout(process.env.DA
     : {}),
 });
 
-// Prevent multiple instances of Prisma Client in development
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
-
-export const prisma =
-  globalForPrisma.prisma ??
+// Prevent multiple instances of Prisma Client in development. The client is
+// built through a factory so the global's type is the *inferred* client type
+// (with its omit configuration) instead of the bare `PrismaClient`, which the
+// configured client is not assignable to.
+const createPrismaClient = () =>
   new PrismaClient({
     ...(datasourceUrl ? { datasourceUrl } : {}),
+    omit: omitAuditColumns,
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });
+
+type AppPrismaClient = ReturnType<typeof createPrismaClient>;
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: AppPrismaClient | undefined;
+};
+
+// 3. Global column omission — the single biggest egress fix in this file.
+//
+// `include: { ... }` in Prisma selects **every scalar field** of the included
+// model. That meant every draw read carried `rawText` — the source Gazette/LOTIS
+// document text, stored up to 20 KB per draw (`keralalotteries/parser.ts`
+// truncates at 20 000 chars) and ~7.4 KB on average across all 1 848 draws in
+// production. Measured: 84.5 KB transferred for a single draw, 260 KB for the
+// 30-draw archive page, 845 KB for one ticket check. The column is an audit
+// trail that **no code path reads** (verified by grepping every consumer for
+// `.rawText`, `.sourceHash`, `.sourceItemId`, `.sourceProvider`,
+// `.lastCheckedAt`) and, under Next.js, it was even shipped to the browser in the
+// RSC payload.
+//
+// Declaring the omission on the client strips these columns from *every* read
+// path — including the queries that still use `include` — so no future call site
+// can reintroduce the leak by forgetting a projection. Writes are unaffected:
+// ingestion still stores the full document text; it is simply never sent back
+// out over the wire unless a query asks for it by name.
+const omitAuditColumns = {
+  draw: {
+    rawText: true,
+    sourceHash: true,
+    sourceItemId: true,
+    sourceProvider: true,
+    lastCheckedAt: true,
+  },
+} as const;
+
+export const prisma: AppPrismaClient = globalForPrisma.prisma ?? createPrismaClient();
 
 globalForPrisma.prisma = prisma;
 
