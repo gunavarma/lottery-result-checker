@@ -1,5 +1,5 @@
 import React from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { prisma } from '@/lib/prisma';
 import { serializeData, formatINR } from '@/lib/format';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
@@ -11,12 +11,11 @@ import {
   ArrowRight,
   ShieldCheck,
   Sparkles,
-  Ticket,
   Search,
 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { getOrSetCache } from '@/lib/cache';
-import { drawView } from '@/lib/results/projections';
+import { drawView, LOTTERY_DIRECTORY } from '@/lib/results/projections';
 
 
 export const metadata = constructMetadata({
@@ -46,10 +45,12 @@ export async function getResultsHubData() {
           prisma.draw.findMany({
             where: { status: 'PUBLISHED' },
             orderBy: { drawDate: 'desc' },
-            take: 25,
-            // The hub renders the headline winner of each of 25 draws. Measured
-            // before this projection: 192.5 KB per uncached render; after: 46.4 KB
-            // (and with `onlyHeadlinePrize` narrower still).
+            // The landing screen is a current-results dashboard, not the archive.
+            // Twelve rows cover almost two weeks of daily draws; the dedicated
+            // archive is linked immediately below. Rendering 25 rows delayed LCP
+            // and doubled the database payload before a visitor saw the first
+            // useful result.
+            take: 12,
             select: drawView({ prizeTake: 1, winningNumberTake: 1, onlyHeadlinePrize: true }),
           }),
           prisma.lottery.findMany({
@@ -58,6 +59,7 @@ export async function getResultsHubData() {
               { isBumper: 'asc' },
               { name: 'asc' },
             ],
+            select: LOTTERY_DIRECTORY,
           }),
         ]);
 
@@ -298,11 +300,11 @@ export function ResultsHubPage({
           </div>
 
           <Link
-            href="/check-ticket"
+            href="/kerala-lottery-results"
             className="font-bold text-[#0B3B32] hover:underline inline-flex items-center gap-1"
           >
-            <Ticket className="w-3.5 h-3.5" />
-            <span>Check your physical ticket</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+            <span>Browse the complete results archive</span>
           </Link>
         </div>
       </div>

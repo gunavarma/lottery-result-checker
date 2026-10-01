@@ -51,7 +51,8 @@ export function Link({
   // A single full-result document is small in the browser cache and is exactly
   // the destination a visitor has indicated they want to open.
   const isResultDetail =
-    href.startsWith('/kerala-lottery-result/') || href.startsWith('/results/');
+    /^\/kerala-lottery-result\/[^/?]+(?:[?#]|$)/.test(href) ||
+    /^\/results\/(?!date\/)[^/?]+\/[^/?]+(?:[?#]|$)/.test(href);
   const astroPrefetch = prefetch && isResultDetail ? 'hover' : undefined;
 
   return <a href={href} data-astro-prefetch={astroPrefetch} {...anchorProps} />;
