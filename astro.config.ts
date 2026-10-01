@@ -32,6 +32,14 @@ export default defineConfig({
   // rather than derived from the static route list.
   integrations: [react()],
 
+  // Result-detail documents are warmed only when a visitor signals intent
+  // (hover/focus/tap).  This makes “View result” feel immediate without the
+  // egress cost of prefetching every archive, scheme, and navigation link.
+  prefetch: {
+    prefetchAll: false,
+    defaultStrategy: 'hover',
+  },
+
   i18n: {
     defaultLocale: 'en',
     locales: ['en', 'ml', 'ta', 'hi'],

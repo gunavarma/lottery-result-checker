@@ -3,15 +3,15 @@ import React from 'react';
 /**
  * Astro-native replacement for `next/link`.
  *
- * Astro navigates with real, full-page requests (there is no client-side router
- * in the default, non-view-transition setup), so the correct rendering of an
- * internal link is a plain `<a href>`. Next.js's `<Link>` only existed to hook
- * into its client-side prefetch/push machinery, which no longer exists.
+ * Astro renders standard, crawlable anchors. Its small built-in prefetch
+ * runtime can warm a document before navigation, so result-detail links are
+ * fetched on user intent (hover/focus/tap). This preserves normal browser
+ * navigation while removing the wait after “View result”.
  *
  * The Next-only props are accepted and intentionally ignored rather than being
  * deleted from ~40 call sites: keeping them is what let each component port as a
  * one-line import change, and it keeps the diff reviewable. They are typed as
- * optional so a stray `prefetch` or `replace` is a no-op instead of a crash.
+ * optional so a stray `replace` is a no-op instead of a crash.
  *
  * Relative hrefs are passed through untouched, exactly as Next.js emitted them,
  * so every existing internal URL keeps working.
@@ -19,7 +19,7 @@ import React from 'react';
 export interface LinkProps
   extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
   href: string;
-  /** Next.js-only. Ignored: there is no client-side prefetch cache. */
+  /** Set false to opt out of intent prefetching for a result-detail link. */
   prefetch?: boolean;
   /** Next.js-only. Ignored: a plain anchor always replaces the history entry's target. */
   replace?: boolean;
@@ -37,7 +37,7 @@ export interface LinkProps
 
 export function Link({
   href,
-  prefetch: _prefetch,
+  prefetch = true,
   replace: _replace,
   scroll: _scroll,
   locale: _locale,
@@ -46,7 +46,15 @@ export function Link({
   shallow: _shallow,
   ...anchorProps
 }: LinkProps) {
-  return <a href={href} {...anchorProps} />;
+  // Do not prefetch directory/list pages: a grid can contain many links and
+  // eagerly fetching all of them would recreate the Supabase egress spike.
+  // A single full-result document is small in the browser cache and is exactly
+  // the destination a visitor has indicated they want to open.
+  const isResultDetail =
+    href.startsWith('/kerala-lottery-result/') || href.startsWith('/results/');
+  const astroPrefetch = prefetch && isResultDetail ? 'hover' : undefined;
+
+  return <a href={href} data-astro-prefetch={astroPrefetch} {...anchorProps} />;
 }
 
 export default Link;
