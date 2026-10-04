@@ -16,18 +16,6 @@ import { withDbRetry } from '@/lib/db-retry';
  * spinning. Sharing one loader is the fix; it also removes a duplicate query set.
  */
 
-const DRAW_INCLUDE = {
-  lottery: true,
-  prizes: {
-    orderBy: { orderIndex: 'asc' },
-    include: {
-      winningNumbers: {
-        orderBy: { id: 'asc' },
-      },
-    },
-  },
-} as const;
-
 const SCHEDULED_LOTTERY_SELECT = {
   id: true,
   name: true,
@@ -37,6 +25,42 @@ const SCHEDULED_LOTTERY_SELECT = {
   drawTime: true,
   ticketPrice: true,
   isBumper: true,
+} as const;
+
+const DRAW_SELECT = {
+    id: true,
+    drawNumber: true,
+    drawDate: true,
+    drawTime: true,
+    status: true,
+    verificationLevel: true,
+    sourceDocumentUrl: true,
+    lottery: { select: SCHEDULED_LOTTERY_SELECT },
+    prizes: {
+      orderBy: { orderIndex: 'asc' },
+      select: {
+        id: true,
+        category: true,
+        description: true,
+        amount: true,
+        orderIndex: true,
+        // The hero shows a count for consolation, not every consolation
+        // number. Returning the relation count avoids downloading hundreds of
+        // rows on every live poll.
+        _count: { select: { winningNumbers: true } },
+        winningNumbers: {
+          orderBy: { id: 'asc' },
+          take: 1,
+          select: {
+            id: true,
+            series: true,
+            number: true,
+            displayNumber: true,
+            location: true,
+          },
+        },
+      },
+    },
 } as const;
 
 export interface TodaySnapshot {
@@ -74,12 +98,12 @@ export async function loadTodaySnapshot(): Promise<TodaySnapshot> {
     Promise.all([
       prisma.draw.findFirst({
         where: { drawDate: todayDate, status: 'PUBLISHED' },
-        include: DRAW_INCLUDE,
+        select: DRAW_SELECT,
       }),
       prisma.draw.findFirst({
         where: { status: 'PUBLISHED' },
         orderBy: { drawDate: 'desc' },
-        include: DRAW_INCLUDE,
+        select: DRAW_SELECT,
       }),
       prisma.lottery.findFirst({
         where: {

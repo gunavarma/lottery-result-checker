@@ -377,7 +377,7 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                       {t('ui.consolation_prize', 'Consolation')} ({formatINR(consolationPrize.amount)})
                     </span>
                     <span className="font-semibold text-slate-200 text-xs mt-1 block font-tabular">
-                      {consolationPrize.winningNumbers?.length || 0} Winning Tickets
+                      {consolationPrize._count?.winningNumbers ?? consolationPrize.winningNumbers?.length ?? 0} Winning Tickets
                     </span>
                   </div>
                 )}

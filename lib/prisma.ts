@@ -20,17 +20,33 @@ const datasourceUrl = withServerlessPoolLimits(withConnectTimeout(process.env.DA
     : {}),
 });
 
-// Prevent multiple instances of Prisma Client in development
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
-
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+function createPrismaClient() {
+  return new PrismaClient({
     ...(datasourceUrl ? { datasourceUrl } : {}),
+    // `rawText` is the captured source-document audit trail (up to 20 KB for
+    // each draw). Public pages and API responses never render it, yet Prisma's
+    // default `include` returned it whenever a Draw was loaded. Omitting it at
+    // the client boundary protects every read path from accidentally turning
+    // audit storage into Supabase egress or browser payload.
+    omit: {
+      draw: {
+        rawText: true,
+      },
+    },
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });
+}
+
+// `omit` changes Prisma's result type, so retain the precise factory return
+// type in the development singleton rather than widening it to `PrismaClient`.
+type AppPrismaClient = ReturnType<typeof createPrismaClient>;
+
+// Prevent multiple instances of Prisma Client in development.
+const globalForPrisma = globalThis as unknown as {
+  prisma: AppPrismaClient | undefined;
+};
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
