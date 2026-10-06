@@ -1,5 +1,7 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
+
 import React from 'react';
 import Link from 'next/link';
 import { Calendar, Clock, ArrowRight, ChevronRight, CheckCircle2 } from 'lucide-react';
@@ -17,6 +19,15 @@ interface ScheduleItem {
 }
 
 export function UpcomingDrawsTimeline() {
+  const { t, localizedHref } = useLanguage();
+  // The schedule builder emits English sentinels (TODAY / TOMORROW / weekday
+  // names), so they are mapped through the dictionary at render time.
+  const dayLabel = (raw: string) =>
+    raw === 'TODAY'
+      ? t('schedule.today', 'Today')
+      : raw === 'TOMORROW'
+        ? t('schedule.tomorrow', 'Tomorrow')
+        : t(`day.${raw.toLowerCase()}`, raw);
   const today = new Date();
 
   // Generate real upcoming schedule based on Kerala weekly schemes
@@ -52,17 +63,17 @@ export function UpcomingDrawsTimeline() {
       <div className="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
         <div>
           <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
-            Draw Schedule Timeline
+            {t('schedule.eyebrow', 'Draw Schedule Timeline')}
           </span>
           <h2 className="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
-            Upcoming Kerala Lottery Draws
+            {t('schedule.heading', 'Upcoming Kerala Lottery Draws')}
           </h2>
         </div>
         <Link
-          href="/calendar"
+          href={localizedHref('/lottery-calendar')}
           className="text-xs font-bold text-[#0B3B32] hover:text-[#16845B] inline-flex items-center gap-1 transition-colors"
         >
-          <span>Full 2026 Calendar</span>
+          <span>{t('schedule.full_calendar', 'Full 2026 Calendar')}</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
@@ -92,7 +103,7 @@ export function UpcomingDrawsTimeline() {
                           : 'bg-[#F1F4F2] text-[#0B3B32]'
                       }`}
                     >
-                      {item.dayName}
+                      {dayLabel(item.dayName)}
                     </span>
                     <span
                       className={`text-[11px] font-mono font-bold ${
@@ -122,12 +133,12 @@ export function UpcomingDrawsTimeline() {
                     <span>{item.drawTime}</span>
                   </span>
                   <Link
-                    href={`/lottery/${item.slug}`}
+                    href={localizedHref(`/lottery/${item.slug}`)}
                     className={`font-bold inline-flex items-center gap-0.5 hover:underline ${
                       item.isToday ? 'text-[#C8A45D]' : 'text-[#0B3B32]'
                     }`}
                   >
-                    <span>Details</span>
+                    <span>{t('common.details', 'Details')}</span>
                     <ChevronRight className="w-3 h-3" />
                   </Link>
                 </div>

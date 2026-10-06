@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { LanguageSelector } from './LanguageSelector';
 import { useLanguage } from '@/context/LanguageContext';
+import { stripLocale } from '@/lib/i18n/config';
 
 // Lazy-load heavy modals so their JS (including Firebase SDK) is deferred
 // until the user actually opens them, reducing initial bundle by ~72 KiB.
@@ -35,7 +36,10 @@ const NotificationModal = dynamic(
 
 export function Navbar() {
   const pathname = usePathname();
-  const { t } = useLanguage();
+  const { t, localizedHref } = useLanguage();
+  // Locale prefixes are stripped before active-link comparison, otherwise every
+  // nav item looks inactive on /ml, /ta and /hi pages.
+  const activePath = stripLocale(pathname || '/').path;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [notificationModalOpen, setNotificationModalOpen] = useState(false);
@@ -74,7 +78,7 @@ export function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-18">
             {/* Brand Logo */}
-            <Link href="/" className="flex items-center gap-3 group">
+            <Link href={localizedHref('/')} className="flex items-center gap-3 group">
               <div className="w-14 h-14 flex items-center justify-center p-1 shrink-0">
                 <Image
                   src="/logo.svg"
@@ -99,11 +103,12 @@ export function Navbar() {
             <nav className="hidden lg:flex items-center gap-1">
               {navLinks.map((item) => {
                 const isActive =
-                  pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                  activePath === item.href ||
+                  (item.href !== '/' && activePath.startsWith(item.href));
                 return (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    href={localizedHref(item.href)}
                     className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors ${
                       isActive
                         ? 'bg-[#F1F4F2] text-[#0B3B32]'
@@ -183,11 +188,11 @@ export function Navbar() {
 
             <div className="space-y-1">
               {navLinks.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = activePath === item.href;
                 return (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    href={localizedHref(item.href)}
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
                       isActive
@@ -218,18 +223,18 @@ export function Navbar() {
         className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E2E7E3] py-2 px-3 flex items-center justify-around lg:hidden shadow-lg"
       >
         <Link
-          href="/"
+          href={localizedHref('/')}
           className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
-            pathname === '/' ? 'text-[#0B5D45]' : 'text-[#5F6B66] hover:text-[#0B5D45]'
+            activePath === '/' ? 'text-[#0B5D45]' : 'text-[#5F6B66] hover:text-[#0B5D45]'
           }`}
         >
           <Home className="w-5 h-5" />
           <span>{t('nav.today', 'Today')}</span>
         </Link>
         <Link
-          href="/results"
+          href={localizedHref('/results')}
           className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
-            pathname.startsWith('/result')
+            activePath.startsWith('/result')
               ? 'text-[#0B5D45]'
               : 'text-[#5F6B66] hover:text-[#0B5D45]'
           }`}
@@ -238,9 +243,9 @@ export function Navbar() {
           <span>{t('nav.results', 'Results')}</span>
         </Link>
         <Link
-          href="/ticket-checker"
+          href={localizedHref('/ticket-checker')}
           className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
-            pathname === '/ticket-checker' || pathname === '/check-ticket'
+            activePath === '/ticket-checker' || activePath === '/check-ticket'
               ? 'text-[#0B5D45]'
               : 'text-[#5F6B66] hover:text-[#0B5D45]'
           }`}
@@ -249,9 +254,9 @@ export function Navbar() {
           <span>{t('ui.check', 'Check')}</span>
         </Link>
         <Link
-          href="/lottery-calendar"
+          href={localizedHref('/lottery-calendar')}
           className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
-            pathname.startsWith('/lottery-calendar')
+            activePath.startsWith('/lottery-calendar')
               ? 'text-[#0B5D45]'
               : 'text-[#5F6B66] hover:text-[#0B5D45]'
           }`}
@@ -260,9 +265,9 @@ export function Navbar() {
           <span>{t('nav.upcoming', 'Upcoming')}</span>
         </Link>
         <Link
-          href="/news"
+          href={localizedHref('/news')}
           className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
-            pathname.startsWith('/news')
+            activePath.startsWith('/news')
               ? 'text-[#0B5D45]'
               : 'text-[#5F6B66] hover:text-[#0B5D45]'
           }`}

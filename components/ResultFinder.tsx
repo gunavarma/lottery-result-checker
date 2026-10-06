@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Search, Calendar, ChevronRight, Filter } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { useLotteries } from '@/hooks/queries/useLotteries';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ResultFinderProps {
   lotteries?: Array<{ id: string; name: string; slug: string; code: string }>;
@@ -12,6 +13,7 @@ interface ResultFinderProps {
 
 export function ResultFinder({ lotteries = [] }: ResultFinderProps) {
   const router = useRouter();
+  const { t, localizedHref } = useLanguage();
   // If the server render arrived without schemes (failed database read or a
   // stale cached render), fetch the directory on the client so the selector is
   // never empty on a fresh device.
@@ -25,19 +27,21 @@ export function ResultFinder({ lotteries = [] }: ResultFinderProps) {
 
   const handleQuickJump = (dateVal: string) => {
     setSelectedDate(dateVal);
+    // Both targets are legacy aliases that redirect inside the active locale
+    // tree, so a Malayalam visitor is never bounced back to the English tree.
     if (selectedLottery !== 'all') {
-      router.push(`/result/${dateVal}/${selectedLottery}`);
+      router.push(localizedHref(`/result/${dateVal}/${selectedLottery}`));
     } else {
-      router.push(`/results/date/${dateVal}`);
+      router.push(localizedHref(`/results/date/${dateVal}`));
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedLottery !== 'all') {
-      router.push(`/result/${selectedDate}/${selectedLottery}`);
+      router.push(localizedHref(`/result/${selectedDate}/${selectedLottery}`));
     } else {
-      router.push(`/results/date/${selectedDate}`);
+      router.push(localizedHref(`/results/date/${selectedDate}`));
     }
   };
 
@@ -47,7 +51,7 @@ export function ResultFinder({ lotteries = [] }: ResultFinderProps) {
         {/* Left: Quick Date Presets */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[11px] font-bold uppercase tracking-wider text-[#5F6B66] mr-1 font-tabular">
-            Quick Jump:
+            {t('hero.quick_jump', 'Quick Jump:')}
           </span>
           <button
             type="button"
@@ -58,7 +62,7 @@ export function ResultFinder({ lotteries = [] }: ResultFinderProps) {
                 : 'bg-[#F4F5F2] hover:bg-[#E2E7E3] text-[#17201D]'
             }`}
           >
-            Today's Draw
+            {t('hero.today_draw', "Today's Draw")}
           </button>
           <button
             type="button"
@@ -94,10 +98,10 @@ export function ResultFinder({ lotteries = [] }: ResultFinderProps) {
             <select
               value={selectedLottery}
               onChange={(e) => setSelectedLottery(e.target.value)}
-              aria-label="Select Lottery Scheme"
+              aria-label={t('hero.select_scheme', 'Select Lottery Scheme')}
               className="bg-transparent text-xs font-bold text-[#17201D] focus:outline-hidden cursor-pointer"
             >
-              <option value="all">All Lotteries</option>
+              <option value="all">{t('hero.all_lotteries', 'All Lotteries')}</option>
               {lotteryOptions.map((lot) => (
                 <option key={lot.id} value={lot.slug}>
                   {lot.name} ({lot.code})
@@ -111,7 +115,7 @@ export function ResultFinder({ lotteries = [] }: ResultFinderProps) {
             type="submit"
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#0B5D45] hover:bg-[#084835] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
-            <span>Show Results</span>
+            <span>{t('hero.show_results', 'Show Results')}</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>

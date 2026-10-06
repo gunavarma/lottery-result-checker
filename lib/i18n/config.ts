@@ -23,10 +23,40 @@ export function localePath(path: string, locale: Language): string {
 export function stripLocale(pathname: string): { path: string; locale: Language | null } {
   const seg = pathname.split('/')[1];
   if (seg && isLocale(seg)) {
+    // slice() already lands on the leading slash of the remainder
+    // ('/ml/results' -> '/results'), so prefixing it again produced '//results'
+    // — which broke switchLocalePath (/ta//results) and active-link matching
+    // on every localised page.
     const rest = pathname.slice(seg.length + 1);
-    return { path: rest ? `/${rest}` : '/', locale: seg };
+    return { path: rest || '/', locale: seg };
   }
   return { path: pathname || '/', locale: null };
+}
+
+// Cookie used to remember an explicit language choice. Middleware-free: the URL
+// is still the source of truth (so SSR, canonicals and caching stay intact); the
+// cookie only lets client code pre-select the right option.
+export const LOCALE_COOKIE = 'NEXT_LOCALE';
+
+// Convert an arbitrary path from one locale to another: replaces an existing
+// locale prefix when there is one, and *adds* the prefix when there is not.
+// `localePath()` alone only prefixes, so `switchLocalePath('/results', 'ml')`
+// returns '/ml/results' (the old implementation used a bare replace, which
+// silently no-oped on the unprefixed English tree and made the selector look
+// broken on every English page).
+export function switchLocalePath(pathname: string, locale: Language): string {
+  return localePath(stripLocale(pathname || '/').path, locale);
+}
+
+// True for app paths that have a localised counterpart. API routes, Next
+// internals and static files (anything with a file extension) never do, so they
+// are excluded from locale prefixing and from the language switcher's redirect.
+export function isLocalizedPath(path: string): boolean {
+  if (!path.startsWith('/')) return false;
+  if (path.startsWith('/api/') || path.startsWith('/_next/') || path.startsWith('/.well-known/')) {
+    return false;
+  }
+  return !/\.[a-z0-9]{2,5}$/i.test(path);
 }
 
 // HTML lang values per locale.

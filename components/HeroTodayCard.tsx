@@ -27,7 +27,7 @@ interface HeroTodayCardProps {
 }
 
 export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
-  const { t } = useLanguage();
+  const { t, localizedHref } = useLanguage();
   const { data: queryData, isFetching, error, refetch } = useLotteryResults({ initialData });
   const data = queryData || initialData;
   const errorMsg = error ? 'Temporarily unable to connect to results feed.' : null;
@@ -93,7 +93,9 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-bold text-[#C8A45D] uppercase tracking-wider block font-tabular">
-                {isTodayAvailable ? "TODAY'S VERIFIED RESULT" : "TODAY'S SCHEDULED DRAW"}
+                {isTodayAvailable
+                  ? t('hero.verified_result', "TODAY'S VERIFIED RESULT")
+                  : t('hero.eyebrow', "TODAY'S SCHEDULED DRAW")}
               </span>
               <SyncIndicator isFetching={isFetching} compact className="text-white bg-white/10 border-white/20" />
             </div>
@@ -101,10 +103,15 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                 Every top-level heading on the site used to be an h2, which is
                 why the homepage reported "no H1 tag" in SEO audits. */}
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              {scheduledLottery?.name || 'Kerala State Lottery'} Result
+              {scheduledLottery?.name
+                ? `${scheduledLottery.name} ${t('common.result', 'Result')}`
+                : t('hero.title', 'Kerala State Lottery Result')}
             </h1>
             <p className="text-xs text-slate-300">
-              Conducted by the Directorate of Kerala State Lotteries at Gorky Bhavan, Thiruvananthapuram.
+              {t(
+                'hero.subtitle',
+                'Conducted by the Directorate of Kerala State Lotteries at Gorky Bhavan, Thiruvananthapuram.'
+              )}
             </p>
           </div>
 
@@ -124,7 +131,7 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                  rather than animating a spinner that will never stop. */
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#A66A00]/25 text-[#F2D07C] border border-[#A66A00]/50 font-tabular">
                 <Clock className="w-3.5 h-3.5" />
-                <span>AWAITING OFFICIAL PUBLICATION</span>
+                <span>{t('hero.awaiting', 'AWAITING OFFICIAL PUBLICATION')}</span>
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#A66A00]/25 text-[#F2D07C] border border-[#A66A00]/50 font-tabular">
@@ -133,7 +140,8 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
               </span>
             )}
             <span className="text-[11px] text-slate-300/80 font-tabular">
-              Official Draw Day: <strong>{scheduledLottery?.drawDay || 'Scheduled'}</strong>
+              Official Draw Day:{' '}
+              <strong>{scheduledLottery?.drawDay || t('hero.scheduled', 'Scheduled')}</strong>
             </span>
           </div>
         </div>
@@ -152,7 +160,7 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                       DRAW STATUS
                     </span>
                     <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
-                      RESULT NOT PUBLISHED YET
+                      {t('hero.not_published', 'RESULT NOT PUBLISHED YET')}
                     </h2>
                   </div>
                   <div className="text-xs text-slate-300">
@@ -216,14 +224,16 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                 </div>
                 <div className="space-y-1.5">
                   <span className="text-[10px] font-extrabold text-[#C8A45D] uppercase tracking-widest block">
-                    AWAITING OFFICIAL PUBLICATION
+                    {t('hero.awaiting', 'AWAITING OFFICIAL PUBLICATION')}
                   </span>
                   <h2 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">
-                    RESULT NOT PUBLISHED YET
+                    {t('hero.not_published', 'RESULT NOT PUBLISHED YET')}
                   </h2>
                   <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
-                    Today&apos;s official result has not been published yet. We are checking automatically and will
-                    update this page as soon as it becomes available.
+                    {t(
+                      'hero.not_published_body',
+                      "Today's official result has not been published yet. We are checking automatically and will update this page as soon as it becomes available."
+                    )}
                   </p>
                 </div>
 
@@ -234,7 +244,11 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-slate-100 border border-white/15 font-bold text-xs transition-colors cursor-pointer"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
-                    <span>{isFetching ? 'Checking official sources...' : 'Check again now'}</span>
+                    <span>
+                      {isFetching
+                        ? t('hero.checking_sources', 'Checking official sources…')
+                        : t('hero.check_again', 'Check again now')}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -271,7 +285,7 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
                   <strong className="text-white uppercase">{latestDraw.lottery?.name} ({latestDraw.drawNumber})</strong>
                 </div>
                 <Link
-                  href={`/results/${latestDraw.lottery?.slug}/${latestDraw.drawNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                  href={localizedHref(`/results/${latestDraw.lottery?.slug}/${latestDraw.drawNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)}
                   className="text-[#C8A45D] hover:underline font-bold inline-flex items-center gap-1"
                 >
                   <span>{t('ui.view_result', "View Yesterday's Result")}</span>
@@ -386,7 +400,7 @@ export function HeroTodayCard({ initialData }: HeroTodayCardProps) {
               {/* Action Buttons */}
               <div className="pt-2 flex flex-col sm:flex-row gap-3">
                 <Link
-                  href={`/results/date/${drawDateSlug}`}
+                  href={localizedHref(`/results/date/${drawDateSlug}`)}
                   className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#16845B] hover:bg-[#16845B]/90 text-white font-bold text-xs transition-colors group shadow-sm cursor-pointer"
                 >
                   <span>{t('ui.view_result', 'View Complete Prize Table')}</span>

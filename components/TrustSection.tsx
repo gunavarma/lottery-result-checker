@@ -1,30 +1,44 @@
 import React from 'react';
 import { Database, RefreshCw, ShieldCheck, Globe, HelpCircle } from 'lucide-react';
+import { getTranslation, Language } from '@/lib/translations';
 
-export function TrustSection() {
+export function TrustSection({ locale = 'en' }: { locale?: Language }) {
+  const t = (key: string, fallback?: string) => getTranslation(locale, key, fallback);
   const steps = [
     {
       num: '01',
-      title: 'Official LOTIS Source',
-      desc: 'Draws are conducted under public scrutiny by the Directorate of Kerala State Lotteries at Gorky Bhavan, Thiruvananthapuram.',
+      title: t('trust.step1_title', 'Official LOTIS Source'),
+      desc: t(
+        'trust.step1_body',
+        'Draws are conducted under public scrutiny by the Directorate of Kerala State Lotteries at Gorky Bhavan, Thiruvananthapuram.'
+      ),
       icon: Database,
     },
     {
       num: '02',
-      title: 'Automated Retrieval',
-      desc: 'Our ingestion service connects directly to the official LOTIS publication feed to capture verified draw records. Winning numbers are also shown live from the public source keralalotteries.net the moment they are announced — always labelled unofficial until verified.',
+      title: t('trust.step2_title', 'Automated Retrieval'),
+      desc: t(
+        'trust.step2_body',
+        'Our ingestion service connects directly to the official LOTIS publication feed to capture verified draw records. Winning numbers are also shown live from the public source keralalotteries.net the moment they are announced — always labelled unofficial until verified.'
+      ),
       icon: RefreshCw,
     },
     {
       num: '03',
-      title: 'Data Integrity Audit',
-      desc: 'Winning numbers, series distributions, and prize structures are verified against official Gazette PDF documents. Live (unverified) numbers are replaced by the gazette record and can never overwrite it.',
+      title: t('trust.step3_title', 'Data Integrity Audit'),
+      desc: t(
+        'trust.step3_body',
+        'Winning numbers, series distributions, and prize structures are verified against official Gazette PDF documents. Live (unverified) numbers are replaced by the gazette record and can never overwrite it.'
+      ),
       icon: ShieldCheck,
     },
     {
       num: '04',
-      title: 'Instant Publication',
-      desc: 'Validated draw results and ticket search indices are published immediately to ensure speed and accuracy.',
+      title: t('trust.step4_title', 'Instant Publication'),
+      desc: t(
+        'trust.step4_body',
+        'Validated draw results and ticket search indices are published immediately to ensure speed and accuracy.'
+      ),
       icon: Globe,
     },
   ];
@@ -33,13 +47,16 @@ export function TrustSection() {
     <section className="bg-white rounded-3xl p-6 sm:p-8 lg:p-10 border border-[#E2E7E3] shadow-sm space-y-8">
       <div className="border-b border-[#E2E7E3] pb-4 space-y-1">
         <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
-          Verification & Integrity Workflow
+          {t('trust.eyebrow', 'Verification & Integrity Workflow')}
         </span>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17201D] tracking-tight">
-          How Kerala Lottery Results Are Synchronized
+          {t('trust.heading', 'How Kerala Lottery Results Are Synchronized')}
         </h2>
         <p className="text-xs sm:text-sm text-[#68736E] max-w-2xl">
-          An automated, four-stage verification architecture ensuring transparent, accurate, and rapid delivery of official lottery results.
+          {t(
+            'trust.subheading',
+            'An automated, four-stage verification architecture ensuring transparent, accurate, and rapid delivery of official lottery results.'
+          )}
         </p>
       </div>
 

@@ -1,5 +1,7 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
+
 import React, { useState } from 'react';
 import { Bell, ShieldCheck } from 'lucide-react';
 import { NotificationModal } from './NotificationModal';
@@ -11,6 +13,7 @@ interface NotificationBannerProps {
 }
 
 export function NotificationBanner({ lotteryId, lotteryName, className = '' }: NotificationBannerProps) {
+  const { t } = useLanguage();
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -30,10 +33,15 @@ export function NotificationBanner({ lotteryId, lotteryName, className = '' }: N
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
             </div>
             <h2 className="text-lg sm:text-xl font-black text-white">
-              {lotteryName ? `Never Miss ${lotteryName} Results` : 'Get Kerala Lottery Result Alerts'}
+              {lotteryName
+                ? `Never Miss ${lotteryName} ${t('common.result', 'Result')}`
+                : t('notify.heading', 'Get Kerala Lottery Result Alerts')}
             </h2>
             <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
-              Receive an automatic push notification the moment official results are published by the Directorate of Kerala State Lotteries.
+              {t(
+                'notify.body',
+                'Receive an automatic push notification the moment official results are published by the Directorate of Kerala State Lotteries.'
+              )}
             </p>
           </div>
         </div>
@@ -45,7 +53,7 @@ export function NotificationBanner({ lotteryId, lotteryName, className = '' }: N
             className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-[#0B3B32] hover:bg-[#072B24] text-white font-bold text-xs shadow-md border border-[#C8A45D]/50 transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
           >
             <Bell className="w-4 h-4 text-[#C8A45D]" />
-            <span>Enable Notifications</span>
+            <span>{t('notify.enable', 'Enable Notifications')}</span>
           </button>
         </div>
       </div>

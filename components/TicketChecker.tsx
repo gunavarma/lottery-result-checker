@@ -36,7 +36,7 @@ interface TicketCheckerProps {
 }
 
 export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketCheckerProps) {
-  const { t } = useLanguage();
+  const { t, localizedHref } = useLanguage();
   const [lotteries, setLotteries] = useState<any[]>([]);
   const [selectedLottery, setSelectedLottery] = useState(initialLotteryId || 'all');
   const [ticketInput, setTicketInput] = useState('');
@@ -167,7 +167,7 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
       <div className="border-b border-[#E2E7E3] pb-4 space-y-1">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
-            Financial Lookup Tool
+            {t('ticket.eyebrow', 'Financial Lookup Tool')}
           </span>
 
           {/* Quick Trigger Button for Scanner */}
@@ -176,15 +176,18 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white text-xs font-extrabold shadow-sm transition-all cursor-pointer font-tabular"
           >
             <Camera className="w-4 h-4 text-[#C8A45D]" />
-            <span>Scan Tickets (Multi-Scan)</span>
+            <span>{t('ticket.scan_multi', 'Scan Tickets (Multi-Scan)')}</span>
           </button>
         </div>
 
         <h2 className="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
-          Check Your Tickets
+          {t('ticket.heading', 'Check Your Tickets')}
         </h2>
         <p className="text-xs sm:text-sm text-[#68736E]">
-          Scan barcodes or enter 6-digit series/4-digit slips to verify against official Kerala LOTIS gazette results.
+          {t(
+            'ticket.subheading',
+            'Scan barcodes or enter 6-digit series/4-digit slips to verify against official Kerala LOTIS gazette results.'
+          )}
         </p>
       </div>
 
@@ -202,7 +205,7 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
               onChange={(e) => setSelectedLottery(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] text-xs font-bold text-[#17201D] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B3B32] transition-colors"
             >
-              <option value="all">All Active Schemes</option>
+              <option value="all">{t('ticket.all_schemes', 'All Active Schemes')}</option>
               {lotteries.map((lot) => (
                 <option key={lot.id} value={lot.id}>
                   {lot.name} ({lot.code})
@@ -254,7 +257,7 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
                 title="Scan multiple tickets via camera"
               >
                 <Camera className="w-4 h-4 text-[#0B3B32]" />
-                <span className="hidden sm:inline">Scan</span>
+                <span className="hidden sm:inline">{t('ticket.scan', 'Scan')}</span>
               </button>
             </div>
           </div>
@@ -267,7 +270,12 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
         <div className="flex items-center justify-between flex-wrap gap-2 text-[11px] text-[#68736E]">
           <p className="flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-[#16845B]" />
-            <span>Checks directly against published official Kerala Government LOTIS results.</span>
+            <span>
+              {t(
+                'ticket.note',
+                'Checks directly against published official Kerala Government LOTIS results.'
+              )}
+            </span>
           </p>
           <button
             type="button"
@@ -275,7 +283,7 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
             className="font-bold text-[#0B3B32] hover:underline flex items-center gap-1 cursor-pointer"
           >
             <QrCode className="w-3.5 h-3.5" />
-            <span>Need to check multiple tickets? Open Multi-Scanner</span>
+            <span>{t('ticket.multi_cta', 'Need to check multiple tickets? Open Multi-Scanner')}</span>
           </button>
         </div>
       </form>
@@ -498,7 +506,7 @@ export function TicketChecker({ initialLotteryId, initialDrawNumber }: TicketChe
                           Draw Date: {drawDateFormatted}
                         </span>
                         <Link
-                          href={`/result/${drawDateFormatted}/${lottery?.slug}`}
+                          href={localizedHref(`/result/${drawDateFormatted}/${lottery?.slug}`)}
                           className="font-bold text-[#0B3B32] hover:text-[#16845B] flex items-center gap-1 transition-colors"
                         >
                           <span>View Full Result</span>

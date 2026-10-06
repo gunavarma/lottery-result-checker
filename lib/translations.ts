@@ -1,3 +1,5 @@
+import { EXTENDED_TRANSLATIONS } from '@/lib/translations-extended';
+
 export type Language = 'en' | 'ml' | 'ta' | 'hi';
 
 export interface LanguageOption {
@@ -272,6 +274,13 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'ui.disclaimer_note': 'स्वतंत्र सूचना मंच। आधिकारिक केरल सरकार राजपत्र से सत्यापित आंकड़े।',
   },
 };
+
+// Extended chrome / homepage / footer keys live in their own module so the two
+// surfaces stay reviewable. Merging here keeps `t()` and `getTranslation()`
+// unaware of the split, and missing extended keys still fall back to English.
+for (const code of Object.keys(TRANSLATIONS) as Language[]) {
+  Object.assign(TRANSLATIONS[code], EXTENDED_TRANSLATIONS[code]);
+}
 
 export function getTranslation(lang: Language, key: string, fallback?: string): string {
   const dict = TRANSLATIONS[lang] || TRANSLATIONS.en;
