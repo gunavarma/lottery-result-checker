@@ -1,0 +1,76 @@
+---
+/**
+ * Modern Quick-Jump Navigation & Authority Bar for Homepage.
+ * Pure Astro (0 KB JavaScript). Provides immediate scannability,
+ * anchor jumps, and prominent trust signals for players and search engines.
+ */
+---
+
+<nav aria-label="Quick Lottery Navigation" class="bg-white/80 backdrop-blur-md border border-[#E2E7E3] rounded-2xl p-3 sm:p-4 shadow-xs">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+    {/* Quick Jump Anchor Pills */}
+    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 text-xs font-semibold">
+      <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#0B5D45] shrink-0 font-tabular">
+        Quick Jump:
+      </span>
+      <a
+        href="#ticket-checker"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F7F7F4] hover:bg-[#0B3B32] hover:text-white text-[#17201D] border border-[#E2E7E3] transition-all whitespace-nowrap shrink-0"
+      >
+        <span class="text-xs">🔍</span>
+        <span>Ticket Checker</span>
+      </a>
+      <a
+        href="#recent-results"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F7F7F4] hover:bg-[#0B3B32] hover:text-white text-[#17201D] border border-[#E2E7E3] transition-all whitespace-nowrap shrink-0"
+      >
+        <span class="text-xs">📊</span>
+        <span>Recent Results</span>
+      </a>
+      <a
+        href="#weekly-schedule"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F7F7F4] hover:bg-[#0B3B32] hover:text-white text-[#17201D] border border-[#E2E7E3] transition-all whitespace-nowrap shrink-0"
+      >
+        <span class="text-xs">📅</span>
+        <span>Weekly Schedule</span>
+      </a>
+      <a
+        href="#bumper-jackpots"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F7F7F4] hover:bg-[#0B3B32] hover:text-white text-[#17201D] border border-[#E2E7E3] transition-all whitespace-nowrap shrink-0"
+      >
+        <span class="text-xs">🏆</span>
+        <span>Bumper Jackpots</span>
+      </a>
+      <a
+        href="#prize-guide"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F7F7F4] hover:bg-[#0B3B32] hover:text-white text-[#17201D] border border-[#E2E7E3] transition-all whitespace-nowrap shrink-0"
+      >
+        <span class="text-xs">📜</span>
+        <span>Claim Guide</span>
+      </a>
+      <a
+        href="#faqs"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F7F7F4] hover:bg-[#0B3B32] hover:text-white text-[#17201D] border border-[#E2E7E3] transition-all whitespace-nowrap shrink-0"
+      >
+        <span class="text-xs">❓</span>
+        <span>FAQs</span>
+      </a>
+    </div>
+
+    {/* Trust & Live Highlights */}
+    <div class="flex items-center gap-3 text-[11px] text-[#5F6B66] font-medium shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[#E2E7E3]/60">
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-[#16845B] animate-pulse"></span>
+        <span class="font-bold text-[#17201D]">3:00 PM Daily Live</span>
+      </div>
+      <span class="text-[#CBD5CE]">|</span>
+      <div class="flex items-center gap-1">
+        <span class="font-tabular font-bold text-[#0B5D45]">100% LOTIS Sync</span>
+      </div>
+      <span class="text-[#CBD5CE]">|</span>
+      <div class="flex items-center gap-1">
+        <span class="font-tabular text-[#17201D]">90-Day Claim Window</span>
+      </div>
+    </div>
+  </div>
+</nav>

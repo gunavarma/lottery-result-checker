@@ -3,6 +3,7 @@ import { prisma, serializeData } from '@/lib/prisma';
 import { getTodayIstStr, parseDateOnlyUtc, IST_OFFSET_MS } from '@/lib/date';
 import { getOrSetCache, LIVE_DATA_STALE_IF_ERROR_MS } from '@/lib/cache';
 import { withDbRetry } from '@/lib/db-retry';
+import { drawView } from '@/lib/results/projections';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,10 +70,17 @@ export async function GET() {
       }
     );
 
-    // The header stays no-store so browsers/CDNs never pin the state; the
-    // freshness window above is what keeps the database load bounded.
+    // `no-store` used to force every poll of every open tab through to a
+    // function instance. The live page polls this every 10s, so with a shared
+    // 10s CDN window the edge answers the overwhelming majority of those polls
+    // and the origin sees roughly one read per 10s no matter how many tabs are
+    // open. Freshness is unchanged in practice: `sync-live` itself only runs
+    // once a minute, so the payload cannot be newer than that anyway.
     return NextResponse.json(serializeData(payload), {
-      headers: { 'Cache-Control': 'no-store' },
+      headers: {
+        'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
+        'Vercel-CDN-Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
+      },
     });
   } catch (error: any) {
     console.error('Error in /api/live:', error);
@@ -89,25 +97,16 @@ function readLiveData() {  const todayDateOnly = parseDateOnlyUtc(getTodayIstStr
   return Promise.all([
     prisma.draw.findFirst({
       where: { drawDate: todayDateOnly },
-      include: {
-        lottery: true,
-        prizes: {
-          orderBy: { orderIndex: 'asc' },
-          include: { winningNumbers: true },
-        },
-      },
+      // The live page renders the whole prize table, so every tier and every
+      // winning number stays — but the projection keeps the Draw table's audit
+      // columns (`rawText` and friends) out of the response, which an `include`
+      // would have shipped.
+      select: drawView(),
     }),
     prisma.draw.findFirst({
       where: { status: 'PUBLISHED' },
       orderBy: { drawDate: 'desc' },
-      include: {
-        lottery: true,
-        prizes: {
-          orderBy: { orderIndex: 'asc' },
-          take: 3,
-          include: { winningNumbers: { take: 5 } },
-        },
-      },
+      select: drawView({ prizeTake: 3, winningNumberTake: 5 }),
     }),
     prisma.syncLog.findFirst({
       orderBy: { startedAt: 'desc' },

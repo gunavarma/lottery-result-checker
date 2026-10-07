@@ -124,7 +124,7 @@ export async function getAdjacentAvailableDates(currentDateStr: string): Promise
   try {
     const targetDate = parseDateOnlyUtc(currentDateStr);
 
-    const [prevDraw, nextDraw, allDraws] = await Promise.all([
+    const [prevDraw, nextDraw] = await Promise.all([
       prisma.draw.findFirst({
         where: {
           drawDate: { lt: targetDate },
@@ -141,26 +141,15 @@ export async function getAdjacentAvailableDates(currentDateStr: string): Promise
         orderBy: { drawDate: 'asc' },
         select: { drawDate: true },
       }),
-      prisma.draw.findMany({
-        where: { status: 'PUBLISHED' },
-        orderBy: { drawDate: 'desc' },
-        take: 100,
-        select: { drawDate: true },
-      }),
     ]);
 
     const prevAvailableDate = prevDraw ? formatDateOnly(prevDraw.drawDate) : null;
     const nextAvailableDate = nextDraw ? formatDateOnly(nextDraw.drawDate) : null;
-    
-    // Distinct set of YYYY-MM-DD dates
-    const allAvailableDates = Array.from(
-      new Set(allDraws.map((d) => formatDateOnly(d.drawDate)))
-    );
 
     return {
       prevAvailableDate,
       nextAvailableDate,
-      allAvailableDates,
+      allAvailableDates: [],
     };
   } catch (error) {
     console.error('Error in getAdjacentAvailableDates:', error);

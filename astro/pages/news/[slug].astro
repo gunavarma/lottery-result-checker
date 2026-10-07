@@ -1,0 +1,38 @@
+---
+/**
+ * Ported from `app/(en)/news/[slug]/page.tsx`.
+ *
+ * Two things had to change shape. `params` is a plain object in Astro rather
+ * than a promise, so the slug is read directly and passed to the page as a prop.
+ * And Astro has no `generateMetadata`, so the exported metadata builder is
+ * called here instead — it is unchanged, because `await` on a plain object is a
+ * no-op, so passing `{ params: { slug } }` satisfies it exactly as before.
+ *
+ * An unknown slug rewrites to the shared 404 route with a real 404 status,
+ * replacing Next's `notFound()`.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import NewsArticlePage, { generateMetadata } from '@/components/pages/NewsArticlePage';
+import { getNewsBySlug } from '@/lib/news';
+import { REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
+
+// Astro only matches a dynamic route when the segment is present.
+const slug = Astro.params.slug as string;
+const article = getNewsBySlug(slug);
+
+if (!article) {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+setRevalidateHeaders(Astro, REVALIDATE.CONTENT);
+
+// `generateMetadata` is typed against Next's awaiting `params` object. Wrapping
+// the slug in a resolved promise satisfies that type exactly while keeping the
+// metadata builder byte-identical to the original.
+const head = await generateMetadata({ params: Promise.resolve({ slug }) });
+---
+
+<BaseLayout head={head} locale="en">
+  <NewsArticlePage slug={slug} />
+</BaseLayout>

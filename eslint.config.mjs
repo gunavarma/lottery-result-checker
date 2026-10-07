@@ -13,8 +13,14 @@ const eslintConfig = defineConfig([
       "react-hooks/set-state-in-effect": "off",
     },
   },
+  // Build output is not source. Without the Astro/Vercel entries ESLint walked
+  // `dist/**` and `.vercel/output/**`, which produced ~4 200 findings against
+  // minified bundles and made `npm run lint` useless as a gate.
   globalIgnores([
     ".next/**",
+    ".astro/**",
+    "dist/**",
+    ".vercel/**",
     "out/**",
     "build/**",
     "next-env.d.ts",

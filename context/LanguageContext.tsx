@@ -1,26 +1,16 @@
 'use client';
 
 import React, { createContext, useContext, useCallback, useMemo } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
 import {
   Language,
   SUPPORTED_LANGUAGES,
   LanguageOption,
   getTranslation,
 } from '@/lib/translations';
-import {
-  isLocale,
-  localePath,
-  switchLocalePath,
-  LOCALE_COOKIE,
-  isLocalizedPath,
-} from '@/lib/i18n/config';
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  /** Prefix an internal path with the active locale ("/results" -> "/ml/results"). */
-  localizedHref: (href: string) => string;
   t: (key: string, fallback?: string) => string;
   languages: LanguageOption[];
   currentOption: LanguageOption;
@@ -29,102 +19,92 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType>({
   language: 'en',
   setLanguage: () => {},
-  localizedHref: (href) => href,
   t: (key, fallback) => fallback || key,
   languages: SUPPORTED_LANGUAGES,
   currentOption: SUPPORTED_LANGUAGES[0],
 });
 
 const STORAGE_KEY = 'keraladraws_lang';
+// Was `NEXT_LOCALE`. Nothing in the codebase ever read it back — the locale
+// lives in the URL — so this is kept only as a neutral breadcrumb for other
+// tooling and renamed so no Next.js-shaped identifier survives the migration.
+const LOCALE_COOKIE = 'keraladraws_locale';
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
+/**
+ * Locale provider.
+ *
+ * Under Next.js this derived the language from `usePathname()` so that it was
+ * identical on the server and the client. That worked because a layout could
+ * wrap every consumer in one React tree.
+ *
+ * Astro islands hydrate as independent React roots, so a layout-level provider
+ * cannot span them — each island must mount its own. That makes the locale a
+ * *prop* rather than a subscription: every Astro route already knows its
+ * `locale` parameter, so it is passed in and the server and client render agree
+ * by construction. No hydration mismatch, and no flash of English on `/ml`.
+ *
+ * `setLanguage` navigates to the locale-prefixed URL instead of swapping state,
+ * because with full-page rendering the URL is what selects the server-rendered
+ * locale.
+ */
+export function LanguageProvider({
+  children,
+  language = 'en',
+}: {
+  children: React.ReactNode;
+  /** Locale rendered by this page. Supplied by the Astro route. */
+  language?: Language;
+}) {
+  const resolvedLanguage: Language = SUPPORTED_LANGUAGES.some((l) => l.code === language)
+    ? language
+    : 'en';
 
-  // /ml/... renders Malayalam, /ta/... Tamil, /hi/... Hindi; everything else
-  // (the unprefixed en route group) is English. Derived synchronously from the
-  // pathname on server and client alike, so there is no hydration mismatch.
-  // No separate state: usePathname triggers re-render on navigation.
-  const language: Language = useMemo(() => {
-    const seg = (pathname || '').split('/')[1];
-    return seg && isLocale(seg) ? (seg as Language) : 'en';
-  }, [pathname]);
+  const setLanguage = useCallback((lang: Language) => {
+    if (!SUPPORTED_LANGUAGES.some((l) => l.code === lang)) return;
 
-  // Locale-aware href. Applied to every internal link in the shared chrome so a
-  // chosen language survives navigation instead of silently reverting to the
-  // English tree on the next click.
-  const localizedHref = useCallback(
-    (href: string) => {
-      if (!href || !href.startsWith('/') || !isLocalizedPath(href)) return href;
-      const [path, hash = ''] = href.split('#');
-      const [barePath, query = ''] = path.split('?');
-      return `${localePath(barePath, language)}${query ? `?${query}` : ''}${
-        hash ? `#${hash}` : ''
-      }`;
-    },
-    [language]
-  );
+    try {
+      localStorage.setItem(STORAGE_KEY, lang);
+      document.cookie = `${LOCALE_COOKIE}=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+    } catch {
+      // Ignore storage exceptions (private mode, blocked cookies).
+    }
 
-  const setLanguage = useCallback(
-    (lang: Language) => {
-      if (!SUPPORTED_LANGUAGES.some((l) => l.code === lang)) return;
+    // Native i18n: navigate to the locale-prefixed route (en stays unprefixed).
+    // The current path is read at click time rather than during render, which is
+    // both correct and free of any SSR/hydration concerns.
+    const currentPath = window.location.pathname || '/';
+    const target =
+      currentPath.replace(/^\/(en|ml|ta|hi)(?=\/|$)/, lang === 'en' ? '' : `/${lang}`) ||
+      '/';
 
-      try {
-        localStorage.setItem(STORAGE_KEY, lang);
-        document.cookie = `${LOCALE_COOKIE}=${lang}; path=/; max-age=31536000; SameSite=Lax`;
-      } catch {
-        // Ignore storage exceptions
-      }
+    window.location.assign(target);
 
-      // Nothing to do when the active locale already matches the selection.
-      if (lang === language) return;
-
-      // Native i18n: navigate to the locale-prefixed route (en stays unprefixed)
-      // so the URL, the SSR'd HTML, <html lang> and the canonical tag all agree.
-      // Swapping state alone would leave the URL on the old locale's server copy.
-      const current = pathname || '/';
-      const target = isLocalizedPath(current) ? switchLocalePath(current, lang) : `/${lang}`;
-
-      // Preserve any active query string (search pages, filtered result lists).
-      const search = typeof window === 'undefined' ? '' : window.location.search;
-
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('keraladraws_language_changed', { detail: { language: lang } })
-        );
-      }
-
-      // Navigating between the two trees crosses root layouts, so Next performs a
-      // full document load: the new <html lang>, SSR'd copy and metadata all come
-      // straight from the server. No extra router.refresh() fetch is needed (and
-      // an extra RSC request per switch is exactly what the egress budget avoids).
-      router.push(`${target}${search}`, { scroll: false });
-    },
-    [router, pathname, language]
-  );
+    // Dispatch event for any non-React listeners.
+    window.dispatchEvent(
+      new CustomEvent('keraladraws_language_changed', { detail: { language: lang } })
+    );
+  }, []);
 
   const t = useCallback(
-    (key: string, fallback?: string): string => getTranslation(language, key, fallback),
-    [language]
+    (key: string, fallback?: string): string => getTranslation(resolvedLanguage, key, fallback),
+    [resolvedLanguage]
   );
 
   const currentOption =
-    SUPPORTED_LANGUAGES.find((opt) => opt.code === language) || SUPPORTED_LANGUAGES[0];
+    SUPPORTED_LANGUAGES.find((opt) => opt.code === resolvedLanguage) || SUPPORTED_LANGUAGES[0];
 
-  return (
-    <LanguageContext.Provider
-      value={{
-        language,
-        setLanguage,
-        localizedHref,
-        t,
-        languages: SUPPORTED_LANGUAGES,
-        currentOption,
-      }}
-    >
-      {children}
-    </LanguageContext.Provider>
+  const value = useMemo(
+    () => ({
+      language: resolvedLanguage,
+      setLanguage,
+      t,
+      languages: SUPPORTED_LANGUAGES,
+      currentOption,
+    }),
+    [resolvedLanguage, setLanguage, t, currentOption]
   );
+
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 
 export function useLanguage() {
@@ -133,7 +113,6 @@ export function useLanguage() {
     return {
       language: 'en' as Language,
       setLanguage: () => {},
-      localizedHref: (href: string) => href,
       t: (key: string, fallback?: string) => fallback || key,
       languages: SUPPORTED_LANGUAGES,
       currentOption: SUPPORTED_LANGUAGES[0],

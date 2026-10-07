@@ -1,1 +1,0 @@
-import{n as e}from"./query-vendor.D2woYqRo.js";import{i as t,t as n}from"./keys.DdMsekEj.js";function r(r={}){return e({queryKey:n.lotteries(),queryFn:t,enabled:r.enabled??!0,staleTime:3e5,gcTime:6e5})}export{r as t};

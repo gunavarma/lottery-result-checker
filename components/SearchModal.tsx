@@ -3,8 +3,8 @@
 import { useLanguage } from '@/context/LanguageContext';
 
 import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import Link from '@/components/Link';
+import { useRouter } from '@/hooks/astro-navigation';
 import {
   Search,
   X,
@@ -17,7 +17,7 @@ import {
   Clock,
   Sparkles
 } from 'lucide-react';
-import { formatINR } from '@/lib/prisma';
+import { formatINR } from '@/lib/format';
 import { getAllNews } from '@/lib/news';
 
 interface SearchModalProps {

@@ -3,9 +3,9 @@
 import { useLanguage } from '@/context/LanguageContext';
 
 import React from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { ArrowRight } from 'lucide-react';
-import { formatINR } from '@/lib/prisma';
+import { formatINR } from '@/lib/format';
 import { format } from 'date-fns';
 
 interface ResultRowProps {

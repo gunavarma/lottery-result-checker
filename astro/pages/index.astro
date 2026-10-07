@@ -1,0 +1,47 @@
+---
+/**
+ * English homepage — canonical unprefixed route.
+ * Ported from `app/(en)/page.tsx`.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeContent from '../components/HomeContent.astro';
+import { constructMetadata, getFAQSchema } from '@/lib/seo';
+import { HOMEPAGE_FAQS } from '@/lib/home-faqs';
+import { REVALIDATE, setRevalidateHeaders } from '../lib/cache-headers';
+
+// Was `export const revalidate = 30` under Next.js ISR.
+setRevalidateHeaders(Astro, REVALIDATE.LIVE);
+
+const HOMEPAGE_TITLE = 'Kerala Lottery Result Today (Live) — Winning Numbers & Draw Schedule';
+const HOMEPAGE_DESCRIPTION =
+  'Kerala lottery result today live from Gorky Bhavan at 3:00 PM. Verified winning numbers, official weekly draw timetable, prize claim guide & instant ticket search.';
+
+const head = constructMetadata({
+  path: '/',
+  title: HOMEPAGE_TITLE,
+  description: HOMEPAGE_DESCRIPTION,
+  openGraphTitle: HOMEPAGE_TITLE,
+  openGraphDescription: HOMEPAGE_DESCRIPTION,
+  keywords: [
+    'Kerala Lottery Result Today',
+    'Kerala Lottery Winning Numbers',
+    'Kerala State Lottery Weekly Schedule',
+    'Bhagya Thara Result',
+    'Sthree Sakthi Result',
+    'Fifty Fifty Lottery Result',
+    'Karunya Plus Result',
+    'Nirmal Lottery Result',
+    'Karunya Lottery Result',
+    'Akshaya Samrudhi Result',
+    'Thiruvonam Bumper Result',
+    'Kerala Lottery Prize Claim Process',
+    'Kerala Lottery Tax TDS',
+  ],
+});
+
+const faqSchema = getFAQSchema(HOMEPAGE_FAQS);
+---
+
+<BaseLayout head={head} locale="en" jsonLd={[faqSchema]}>
+  <HomeContent locale="en" />
+</BaseLayout>

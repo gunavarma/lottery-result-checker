@@ -1,0 +1,9 @@
+---
+/** Ported from `app/(en)/privacy-policy/page.tsx`. Presentational, ships no JS. */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PrivacyPolicyPage, { metadata } from '@/components/pages/PrivacyPolicyPage';
+---
+
+<BaseLayout head={metadata} locale="en">
+  <PrivacyPolicyPage />
+</BaseLayout>

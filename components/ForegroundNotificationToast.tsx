@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { Award, Bell, X, ArrowRight } from 'lucide-react';
 import { onForegroundFcmMessage } from '@/lib/firebase/client';
 

@@ -1,4 +1,10 @@
-import type { Metadata } from 'next';
+import type {
+  SeoGoogleBot,
+  SeoHead,
+  SeoIconEntry,
+  SeoImage,
+  SeoRobots,
+} from '@/lib/seo/types';
 import { languageAlternates } from '@/lib/i18n/config';
 import { SITE_URL } from '@/lib/site-url';
 
@@ -32,6 +38,8 @@ export function constructMetadata({
   image = '/logo.svg',
   noIndex = false,
   keywords = [],
+  openGraphTitle,
+  openGraphDescription,
 }: {
   title?: string;
   description?: string;
@@ -39,12 +47,22 @@ export function constructMetadata({
   image?: string;
   noIndex?: boolean;
   keywords?: string[];
-}): Metadata {
+  /**
+   * Override just the Open Graph/Twitter title. The homepage, for example, wants
+   * the branded "... | KeralaDraws" suffix in `<title>` but the bare headline in
+   * share cards, which the default derivation from `fullTitle` cannot express.
+   */
+  openGraphTitle?: string;
+  /** Override just the Open Graph/Twitter description. */
+  openGraphDescription?: string;
+}): SeoHead {
   const cleanTitle = title
     ? title.replace(new RegExp(`(\\s*\\|\\s*${SITE_NAME})+$`, 'gi'), '').trim()
     : undefined;
   const fullTitle = cleanTitle ? `${cleanTitle} | ${SITE_NAME}` : `${SITE_NAME} | ${SITE_TAGLINE}`;
   const canonical = getCanonicalUrl(path);
+  const socialTitle = openGraphTitle ?? fullTitle;
+  const socialDescription = openGraphDescription ?? description;
 
   const defaultKeywords = [
     'Kerala Lottery Results',
@@ -80,38 +98,34 @@ export function constructMetadata({
     creator: SITE_NAME,
     publisher: SITE_NAME,
     icons: {
-      icon: '/logo.svg',
+      icon: [{ url: '/logo.svg' }] satisfies SeoIconEntry[],
       shortcut: '/logo.svg',
       apple: '/logo.svg',
-    },
-    openGraph: {
-      title: fullTitle,
-      description,
+    },    openGraph: {
+      title: socialTitle,
+      description: socialDescription,
       url: canonical,
       siteName: SITE_NAME,
       locale: 'en_IN',
       type: 'website',
       images: [
-        {
-          url: image.startsWith('http') ? image : `${SITE_URL}${image}`,
-          width: 1200,
-          height: 630,
-          alt: fullTitle,
-        },
-      ],
-    },
-    twitter: {
+          {
+            url: image.startsWith('http') ? image : `${SITE_URL}${image}`,
+            width: 1200,
+            height: 630,
+            alt: socialTitle,
+          } satisfies SeoImage,
+        ],
+      },
+      twitter: {
       card: 'summary_large_image',
-      title: fullTitle,
-      description,
+      title: socialTitle,
+      description: socialDescription,
       images: [image.startsWith('http') ? image : `${SITE_URL}${image}`],
     },
     robots: noIndex
-      ? {
-          index: false,
-          follow: false,
-        }
-      : {
+      ? ({ index: false, follow: false } satisfies SeoRobots)
+      : ({
           index: true,
           follow: true,
           googleBot: {
@@ -120,8 +134,8 @@ export function constructMetadata({
             'max-video-preview': -1,
             'max-image-preview': 'large',
             'max-snippet': -1,
-          },
-        },
+          } satisfies SeoGoogleBot,
+        } satisfies SeoRobots),
   };
 }
 

@@ -1,0 +1,10 @@
+---
+/**
+ * Legacy `/lotteries` index. Ported from `app/(en)/lotteries/page.tsx`.
+ *
+ * Astro redirects from the frontmatter via `Astro.redirect`, which returns a
+ * `Response` — the exact equivalent of Next's `redirect()`. 308 is used rather
+ * than 302 because this route did not return to the client on later navigation.
+ */
+return Astro.redirect('/results', 308);
+---

@@ -1,0 +1,91 @@
+---
+/**
+ * Renders a framework-agnostic `SeoHead` (see `lib/seo/types.ts`) as real tags.
+ *
+ * This is the Astro counterpart of Next.js's `Metadata` export: it is the single
+ * place where title, description, canonical, hreflang alternates, robots, Open
+ * Graph, Twitter cards, icons and JSON-LD turn into markup, so every ported page
+ * gets an identical head without repeating any of it.
+ */
+import type { JsonLd, SeoHead } from '@/lib/seo/types';
+
+interface Props {
+  head: SeoHead;
+  /** Extra JSON-LD blocks (breadcrumbs, FAQ, Article...) for this route. */
+  jsonLd?: (JsonLd | null | undefined)[];
+}
+
+const { head, jsonLd = [] } = Astro.props;
+
+// `@graph` keeps the blocks in one script tag while staying valid JSON-LD.
+const graphs = jsonLd.filter((entry): entry is JsonLd => Boolean(entry));
+
+// JSON.stringify cannot emit `</script>`, but the raw string can still contain
+// `<`, which would let a value break out of the script element. Escaping it is
+// what Next.js's metadata layer did for us before.
+const serialize = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c');
+
+const alternates = Object.entries(head.alternates.languages);
+---
+
+<title>{head.title}</title>
+<meta name="description" content={head.description} />
+{head.keywords.length > 0 && <meta name="keywords" content={head.keywords.join(', ')} />}
+
+<link rel="canonical" href={head.alternates.canonical} />
+{
+  alternates.map(([hreflang, href]) => (
+    <link rel="alternate" hreflang={hreflang} href={href} />
+  ))
+}
+
+<meta
+  name="robots"
+  content={`${head.robots.index ? 'index' : 'noindex'}, ${head.robots.follow ? 'follow' : 'nofollow'}`}
+/>
+{
+  head.robots.googleBot && (
+    <meta
+      name="googlebot"
+      content={`${head.robots.googleBot.index ? 'index' : 'noindex'}, ${
+        head.robots.googleBot.follow ? 'follow' : 'nofollow'
+      }, max-video-preview:${head.robots.googleBot['max-video-preview'] ?? -1}, max-image-preview:${
+        head.robots.googleBot['max-image-preview'] ?? 'large'
+      }, max-snippet:${head.robots.googleBot['max-snippet'] ?? -1}`}
+    />
+  )
+}
+
+<meta name="author" content={head.authors[0]?.name} />
+
+{
+  head.icons.icon.map((icon) => (
+    <link rel="icon" href={icon.url} sizes={icon.sizes} type={icon.type} />
+  ))
+}
+<link rel="shortcut icon" href={head.icons.shortcut} />
+<link rel="apple-touch-icon" href={head.icons.apple} />
+
+<meta property="og:type" content={head.openGraph.type} />
+<meta property="og:title" content={head.openGraph.title} />
+<meta property="og:description" content={head.openGraph.description} />
+<meta property="og:url" content={head.openGraph.url} />
+<meta property="og:site_name" content={head.openGraph.siteName} />
+<meta property="og:locale" content={head.openGraph.locale} />
+{
+  head.openGraph.images.map((image) => (
+    <>
+      <meta property="og:image" content={image.url} />
+      {image.width && <meta property="og:image:width" content={String(image.width)} />}
+      {image.height && <meta property="og:image:height" content={String(image.height)} />}
+      {image.alt && <meta property="og:image:alt" content={image.alt} />}
+    </>
+  ))
+}
+
+<meta name="twitter:card" content={head.twitter.card} />
+<meta name="twitter:title" content={head.twitter.title} />
+<meta name="twitter:description" content={head.twitter.description} />
+{head.twitter.images.map((image) => <meta name="twitter:image" content={image} />)}
+
+{graphs.length > 0 && <script type="application/ld+json" set:html={serialize(graphs)} />}

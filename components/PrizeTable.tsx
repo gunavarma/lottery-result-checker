@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Award, Copy, Check, Printer, FileText, MapPin } from 'lucide-react';
-import { formatINR, formatINRExact } from '@/lib/prisma';
+import { formatINR, formatINRExact } from '@/lib/format';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface PrizeTableProps {

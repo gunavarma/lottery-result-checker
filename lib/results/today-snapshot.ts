@@ -1,9 +1,12 @@
-import 'server-only';
+// See lib/home-data.ts: `server-only` was a Next.js bundler alias, not a real
+// dependency, so it could not survive the move to Vite/Astro.
+
 
 import { prisma, serializeData } from '@/lib/prisma';
 import { getIstDateRange, parseDateOnlyUtc } from '@/lib/date';
 import { computeLiveState, type LiveStatus } from '@/lib/live-state';
 import { withDbRetry } from '@/lib/db-retry';
+import { DRAW_REFERENCE, todayDrawView } from '@/lib/results/projections';
 
 /**
  * The single loader for "today" used by both `/api/results/today` and the
@@ -16,6 +19,16 @@ import { withDbRetry } from '@/lib/db-retry';
  * spinning. Sharing one loader is the fix; it also removes a duplicate query set.
  */
 
+// Projections live in `lib/results/projections.ts`. They replaced a
+// `lottery: true, prizes: { include: { winningNumbers: true } }` include, which
+// transferred every prize of every tier *and* the Draw table's `rawText` audit
+// column (up to 20 KB, ~7.4 KB average) on every read. This is the polled
+// endpoint, so that cost was multiplied by every open tab.
+const TODAY_DRAW_SELECT = todayDrawView();
+
+/** The "previous draw" strip shows a name and a code — never a prize table. */
+const LATEST_DRAW_SELECT = DRAW_REFERENCE;
+
 const SCHEDULED_LOTTERY_SELECT = {
   id: true,
   name: true,
@@ -25,42 +38,6 @@ const SCHEDULED_LOTTERY_SELECT = {
   drawTime: true,
   ticketPrice: true,
   isBumper: true,
-} as const;
-
-const DRAW_SELECT = {
-    id: true,
-    drawNumber: true,
-    drawDate: true,
-    drawTime: true,
-    status: true,
-    verificationLevel: true,
-    sourceDocumentUrl: true,
-    lottery: { select: SCHEDULED_LOTTERY_SELECT },
-    prizes: {
-      orderBy: { orderIndex: 'asc' },
-      select: {
-        id: true,
-        category: true,
-        description: true,
-        amount: true,
-        orderIndex: true,
-        // The hero shows a count for consolation, not every consolation
-        // number. Returning the relation count avoids downloading hundreds of
-        // rows on every live poll.
-        _count: { select: { winningNumbers: true } },
-        winningNumbers: {
-          orderBy: { id: 'asc' },
-          take: 1,
-          select: {
-            id: true,
-            series: true,
-            number: true,
-            displayNumber: true,
-            location: true,
-          },
-        },
-      },
-    },
 } as const;
 
 export interface TodaySnapshot {
@@ -98,12 +75,12 @@ export async function loadTodaySnapshot(): Promise<TodaySnapshot> {
     Promise.all([
       prisma.draw.findFirst({
         where: { drawDate: todayDate, status: 'PUBLISHED' },
-        select: DRAW_SELECT,
+        select: TODAY_DRAW_SELECT,
       }),
       prisma.draw.findFirst({
         where: { status: 'PUBLISHED' },
         orderBy: { drawDate: 'desc' },
-        select: DRAW_SELECT,
+        select: LATEST_DRAW_SELECT,
       }),
       prisma.lottery.findFirst({
         where: {

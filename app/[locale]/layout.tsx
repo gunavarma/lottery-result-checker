@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
-import '../globals.css';
+import '../../styles/globals.css';
 import { RootChrome } from '@/components/layout/RootChrome';
 import { StructuredData } from '@/components/StructuredData';
 import { Language, SUPPORTED_LANGUAGES } from '@/lib/translations';

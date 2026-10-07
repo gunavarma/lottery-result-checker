@@ -1,0 +1,34 @@
+---
+/**
+ * Ported from `app/(en)/kerala-lottery-results/page.tsx`.
+ *
+ * Query parameters replace Next's `searchParams` promise, and `force-dynamic`
+ * becomes `no-store`: this page's content is entirely a function of `?lottery=`
+ * and `?page=`, so a shared CDN copy keyed only by path would serve one
+ * visitor's filter to the next.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import KeralaLotteryResultsArchivePage, {
+  generateMetadata,
+  getArchiveData,
+} from '@/components/pages/KeralaLotteryResultsIndexPage';
+import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
+
+// A crawlable archive page, not private state. `no-store` here meant every
+// crawler hit re-rendered the whole index from Postgres.
+setRevalidateHeaders(Astro, REVALIDATE.RESULT_PAGE, { tags: [CACHE_TAG.RESULTS] });
+
+const lotterySlug = Astro.url.searchParams.get('lottery') || undefined;
+const currentPage = Math.max(1, parseInt(Astro.url.searchParams.get('page') || '1', 10) || 1);
+
+const data = await getArchiveData(lotterySlug, currentPage);
+const head = await generateMetadata();
+---
+
+<BaseLayout head={head} locale="en">
+  <KeralaLotteryResultsArchivePage
+    lotterySlug={lotterySlug}
+    currentPage={currentPage}
+    data={data}
+  />
+</BaseLayout>

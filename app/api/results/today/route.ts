@@ -25,9 +25,16 @@ export async function GET() {
       staleIfErrorMs: LIVE_DATA_STALE_IF_ERROR_MS,
     });
 
+    // A 15s shared window covers a whole client poll cycle (the hook polls every
+    // 30s), so the CDN answers almost every poll for today's result while the
+    // page stays at most ~15s behind a publication — which itself lands via a
+    // 1-minute cron, making the cache window the smaller of the two lags.
+    // Without this the endpoint was a MISS on every poll from every visitor,
+    // each one a full four-query read of a 84.6 KB draw.
     return NextResponse.json(data, {
       headers: {
-        'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=15',
+        'Cache-Control': 'public, s-maxage=15, stale-while-revalidate=45',
+        'Vercel-CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=45',
       },
     });
   } catch (error: any) {

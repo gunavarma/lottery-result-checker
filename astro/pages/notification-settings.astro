@@ -1,0 +1,24 @@
+---
+/**
+ * Ported from `app/(en)/notification-settings/page.tsx`. Personal preference
+ * page backed by browser notification state: noIndex and never CDN-cached.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { NotificationSettingsPageIsland } from '@/components/island/notification-settings-page';
+import { constructMetadata } from '@/lib/seo';
+import { setNoStoreHeaders } from '../lib/cache-headers';
+
+setNoStoreHeaders(Astro);
+
+const head = constructMetadata({
+  title: 'Notification Settings | KeralaDraws',
+  description:
+    'Choose which Kerala lottery draw alerts you receive and how they are delivered.',
+  path: '/notification-settings',
+  noIndex: true,
+});
+---
+
+<BaseLayout head={head} locale="en">
+  <NotificationSettingsPageIsland client:load locale="en" />
+</BaseLayout>

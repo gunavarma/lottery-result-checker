@@ -1,0 +1,9 @@
+---
+/** Ported from `app/(en)/about/page.tsx`. Presentational, ships no JS. */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AboutPage, { metadata } from '@/components/pages/AboutPage';
+---
+
+<BaseLayout head={metadata} locale="en">
+  <AboutPage />
+</BaseLayout>

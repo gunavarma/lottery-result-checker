@@ -1,0 +1,26 @@
+---
+/**
+ * Ported from `app/(en)/lottery/[slug]/page.tsx`.
+ * Was `export const revalidate = 300`.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { LotterySchemePageIsland } from '@/components/island/lottery-scheme-page';
+import { generateMetadata, getLotterySchemeData } from '@/components/pages/LotterySchemePage';
+import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
+
+const slug = Astro.params.slug as string;
+const lottery = await getLotterySchemeData(slug);
+
+if (!lottery) {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+setRevalidateHeaders(Astro, REVALIDATE.CONTENT, { tags: [CACHE_TAG.lottery(slug), CACHE_TAG.RESULTS] });
+
+const head = await generateMetadata({ params: Promise.resolve({ slug }) });
+---
+
+<BaseLayout head={head} locale="en">
+  <LotterySchemePageIsland client:load locale="en" lottery={lottery} />
+</BaseLayout>

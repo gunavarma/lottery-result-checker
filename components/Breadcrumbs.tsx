@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { ChevronRight, Home } from 'lucide-react';
 import { SITE_URL } from '@/lib/site-url';
 import { useLanguage } from '@/context/LanguageContext';

@@ -1,0 +1,31 @@
+---
+/**
+ * Ported from `app/(en)/kerala-lottery-results/[year]/[month]/page.tsx`.
+ * The month archive keeps its strict anti-soft-404 behaviour: a month with no
+ * gazette-verified draws returns a real 404 rather than an empty 200.
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import MonthArchivePage, {
+  generateMetadata,
+  getMonthArchiveData,
+} from '@/components/pages/KeralaLotteryResultsMonthPage';
+import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../../lib/cache-headers';
+
+// Astro only matches a dynamic route when both segments are present.
+const year = Astro.params.year as string;
+const month = Astro.params.month as string;
+const data = await getMonthArchiveData(year, month);
+
+if (!data) {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+setRevalidateHeaders(Astro, REVALIDATE.CONTENT, { tags: [CACHE_TAG.RESULTS] });
+
+const head = await generateMetadata({ params: Promise.resolve({ year, month }) });
+---
+
+<BaseLayout head={head} locale="en">
+  <MonthArchivePage yearStr={year} monthStr={month} data={data} />
+</BaseLayout>

@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import Link from '@/components/Link';
+import Image from '@/components/Image';
 import { ShieldCheck, ExternalLink, Award, FileText, HelpCircle, CheckCircle } from 'lucide-react';
 import { LanguageSelector } from './LanguageSelector';
 import { useLanguage } from '@/context/LanguageContext';

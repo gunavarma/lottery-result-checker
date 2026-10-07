@@ -1,1 +1,0 @@
-"use client";import{n as e}from"./with-providers.ynV1j64U.js";import{t}from"./NotificationBanner.Co0FE5l6.js";var n=e(t);export{n as NotificationBannerIsland};

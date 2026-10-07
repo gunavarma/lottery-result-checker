@@ -1,5 +1,5 @@
 import React from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { HeroTodayCard } from '@/components/HeroTodayCard';
 import { ResultFinder } from '@/components/ResultFinder';
 import { RecentResultsStream } from '@/components/RecentResultsStream';

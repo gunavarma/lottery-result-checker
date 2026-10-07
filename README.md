@@ -221,6 +221,17 @@ NEXT_PUBLIC_FIREBASE_APP_ID="1:123456789012:web:abcdef1234567890"
 NEXT_PUBLIC_FIREBASE_VAPID_KEY="BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBKr3qBUYIhbQFLXYp5Nksh8U"
 
 # ==========================================
+# Google Analytics 4 (PUBLIC, Astro build)
+# ==========================================
+# The GA4 web-stream measurement ID. Astro only inlines `PUBLIC_`-prefixed
+# variables into the client, so this name is required for the Astro build (the
+# Next.js app read `NEXT_PUBLIC_GA_ID`; set both only if both are deployed). The
+# tag is rendered by `astro/layouts/BaseLayout.astro` — never by a page — and no
+# event is sent at all when the variable is empty. Never a secret: the ID is
+# visible in every page's HTML.
+PUBLIC_GA_MEASUREMENT_ID="G-XXXXXXXXXX"
+
+# ==========================================
 # Firebase Admin SDK Credentials (SERVER ONLY)
 # ==========================================
 FIREBASE_PROJECT_ID="kerala-lottery-results"

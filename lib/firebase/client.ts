@@ -1,5 +1,5 @@
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getMessaging, getToken, onMessage, Messaging, isSupported } from 'firebase/messaging';
+import type { FirebaseApp } from 'firebase/app';
+import type { Messaging } from 'firebase/messaging';
 
 export const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'AIzaSyDemoDummyApiKeyForFirebase12345',
@@ -22,16 +22,15 @@ export function isFirebaseConfigured(): boolean {
 let clientApp: FirebaseApp | null = null;
 let clientMessaging: Messaging | null = null;
 
-export function getClientFirebaseApp(): FirebaseApp | null {
-  if (typeof window === 'undefined') {
+export async function getClientFirebaseApp(): Promise<FirebaseApp | null> {
+  if (typeof window === 'undefined' || !isFirebaseConfigured()) {
     return null;
   }
 
-  if (!isFirebaseConfigured()) {
-    return null;
-  }
+  if (clientApp) return clientApp;
 
   try {
+    const { initializeApp, getApps, getApp } = await import('firebase/app');
     if (getApps().length > 0) {
       clientApp = getApp();
     } else {
@@ -45,19 +44,18 @@ export function getClientFirebaseApp(): FirebaseApp | null {
 
 export async function getClientMessaging(): Promise<Messaging | null> {
   if (typeof window === 'undefined' || !isFirebaseConfigured()) return null;
+  if (clientMessaging) return clientMessaging;
 
   try {
+    const { getMessaging, isSupported } = await import('firebase/messaging');
     const supported = await isSupported().catch(() => false);
     if (!supported) {
       return null;
     }
 
-    if (!clientMessaging) {
-      const app = getClientFirebaseApp();
-      if (!app) return null;
-      clientMessaging = getMessaging(app);
-    }
-
+    const app = await getClientFirebaseApp();
+    if (!app) return null;
+    clientMessaging = getMessaging(app);
     return clientMessaging;
   } catch {
     return null;
@@ -102,6 +100,7 @@ export async function requestFcmToken(customVapidKey?: string): Promise<string |
     'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBKr3qBUYIhbQFLXYp5Nksh8U';
 
   try {
+    const { getToken } = await import('firebase/messaging');
     const token = await getToken(messaging, {
       vapidKey,
       serviceWorkerRegistration: swRegistration,
@@ -118,18 +117,37 @@ export async function requestFcmToken(customVapidKey?: string): Promise<string |
 }
 
 /**
- * Subscribe to Foreground FCM Notifications
+ * Subscribe to Foreground FCM Notifications (lazy-loaded on idle)
  */
-export function onForegroundFcmMessage(callback: (payload: any) => void) {
-  if (typeof window === 'undefined') return () => {};
+export function onForegroundFcmMessage(callback: (payload: any) => void): () => void {
+  if (typeof window === 'undefined' || !isFirebaseConfigured()) return () => {};
 
-  getClientMessaging().then((messaging) => {
-    if (messaging) {
-      return onMessage(messaging, (payload) => {
-        callback(payload);
-      });
+  let unsubscribe: (() => void) | undefined;
+  let cancelled = false;
+
+  const init = async () => {
+    try {
+      const messaging = await getClientMessaging();
+      if (messaging && !cancelled) {
+        const { onMessage } = await import('firebase/messaging');
+        unsubscribe = onMessage(messaging, (payload) => {
+          callback(payload);
+        });
+      }
+    } catch {
+      // Ignore background registration errors
     }
-  });
+  };
 
-  return () => {};
+  // Wait until main thread is idle so Firebase is not in the critical path
+  if ('requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(init);
+  } else {
+    setTimeout(init, 3000);
+  }
+
+  return () => {
+    cancelled = true;
+    if (typeof unsubscribe === 'function') unsubscribe();
+  };
 }

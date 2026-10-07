@@ -1,0 +1,9 @@
+---
+/** Ported from `app/(en)/guides/page.tsx`. Presentational, ships no JS. */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import GuidesIndexPage, { metadata } from '@/components/pages/GuidesIndexPage';
+---
+
+<BaseLayout head={metadata} locale="en">
+  <GuidesIndexPage />
+</BaseLayout>

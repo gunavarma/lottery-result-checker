@@ -1,4 +1,5 @@
-import { MetadataRoute } from 'next';
+// Type-only on purpose: also imported by `astro/pages/robots.txt.ts`.
+import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/seo';
 
 const PRIVATE_PATHS = [

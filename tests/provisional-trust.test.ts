@@ -203,14 +203,17 @@ describe('Trust gating in the read surfaces', () => {
   });
 
   it('keeps provisional results out of search-engine indexing', () => {
+    // The Astro migration moved the metadata builders out of the route files and
+    // into the shared page modules, which both the Astro and Next routes import.
+    // The guard follows the code it is guarding.
     const datePage = fs.readFileSync(
-      path.join(projectRoot, 'app/(en)/kerala-lottery-result/[date]/page.tsx'),
+      path.join(projectRoot, 'components/pages/KeralaLotteryResultDatePage.tsx'),
       'utf8'
     );
     expect(datePage).toContain('noIndex: !hasOfficialDraw');
 
     const todayPage = fs.readFileSync(
-      path.join(projectRoot, 'app/(en)/kerala-lottery-result-today/page.tsx'),
+      path.join(projectRoot, 'components/pages/TodayResultPage.tsx'),
       'utf8'
     );
     expect(todayPage).toContain('noIndex: isProvisional');

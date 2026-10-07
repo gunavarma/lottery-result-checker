@@ -1,0 +1,34 @@
+---
+/**
+ * Ported from `app/(en)/kerala-lottery-result-today/page.tsx`.
+ * Was `export const revalidate = 30` under Next.js ISR.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TodayResultPage, { generateMetadata, getTodayResultData } from '@/components/pages/TodayResultPage';
+import { REVALIDATE, setRevalidateHeaders } from '../lib/cache-headers';
+import { resultViewEvent } from '@/lib/analytics';
+
+setRevalidateHeaders(Astro, REVALIDATE.LIVE);
+
+const head = await generateMetadata();
+const { isFromToday, draw } = await getTodayResultData();
+
+// `verification_status` is the whole point of this event on the live page: a
+// PROVISIONAL draw (aggregator numbers, not yet gazetted) and an OFFICIAL one
+// are reported side by side, which is how the two-tier trust model can be
+// measured. Reported by the layout's head script; no island is involved.
+const analyticsEvents = draw
+  ? [
+      resultViewEvent({
+        lotteryName: draw.lottery.name,
+        drawDate: draw.drawDate,
+        drawNumber: draw.drawNumber,
+        verificationStatus: (draw as { verificationLevel?: string | null }).verificationLevel,
+      }),
+    ]
+  : [];
+---
+
+<BaseLayout head={head} locale="en" analyticsEvents={analyticsEvents}>
+  <TodayResultPage isFromToday={isFromToday} draw={draw} />
+</BaseLayout>

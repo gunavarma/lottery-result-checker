@@ -20,64 +20,57 @@ const datasourceUrl = withServerlessPoolLimits(withConnectTimeout(process.env.DA
     : {}),
 });
 
-function createPrismaClient() {
-  return new PrismaClient({
+// Prevent multiple instances of Prisma Client in development. The client is
+// built through a factory so the global's type is the *inferred* client type
+// (with its omit configuration) instead of the bare `PrismaClient`, which the
+// configured client is not assignable to.
+const createPrismaClient = () =>
+  new PrismaClient({
     ...(datasourceUrl ? { datasourceUrl } : {}),
-    // `rawText` is the captured source-document audit trail (up to 20 KB for
-    // each draw). Public pages and API responses never render it, yet Prisma's
-    // default `include` returned it whenever a Draw was loaded. Omitting it at
-    // the client boundary protects every read path from accidentally turning
-    // audit storage into Supabase egress or browser payload.
-    omit: {
-      draw: {
-        rawText: true,
-      },
-    },
+    omit: omitAuditColumns,
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });
-}
 
-// `omit` changes Prisma's result type, so retain the precise factory return
-// type in the development singleton rather than widening it to `PrismaClient`.
 type AppPrismaClient = ReturnType<typeof createPrismaClient>;
 
-// Prevent multiple instances of Prisma Client in development.
 const globalForPrisma = globalThis as unknown as {
   prisma: AppPrismaClient | undefined;
 };
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+// 3. Global column omission — the single biggest egress fix in this file.
+//
+// `include: { ... }` in Prisma selects **every scalar field** of the included
+// model. That meant every draw read carried `rawText` — the source Gazette/LOTIS
+// document text, stored up to 20 KB per draw (`keralalotteries/parser.ts`
+// truncates at 20 000 chars) and ~7.4 KB on average across all 1 848 draws in
+// production. Measured: 84.5 KB transferred for a single draw, 260 KB for the
+// 30-draw archive page, 845 KB for one ticket check. The column is an audit
+// trail that **no code path reads** (verified by grepping every consumer for
+// `.rawText`, `.sourceHash`, `.sourceItemId`, `.sourceProvider`,
+// `.lastCheckedAt`) and, under Next.js, it was even shipped to the browser in the
+// RSC payload.
+//
+// Declaring the omission on the client strips these columns from *every* read
+// path — including the queries that still use `include` — so no future call site
+// can reintroduce the leak by forgetting a projection. Writes are unaffected:
+// ingestion still stores the full document text; it is simply never sent back
+// out over the wire unless a query asks for it by name.
+const omitAuditColumns = {
+  draw: {
+    rawText: true,
+    sourceHash: true,
+    sourceItemId: true,
+    sourceProvider: true,
+    lastCheckedAt: true,
+  },
+} as const;
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+export const prisma: AppPrismaClient = globalForPrisma.prisma ?? createPrismaClient();
 
-// BigInt JSON serializer helper for Next.js API routes and server components
-export function serializeData<T>(data: T): T {
-  return JSON.parse(
-    JSON.stringify(data, (_, value) =>
-      typeof value === 'bigint' ? Number(value) : value
-    )
-  );
-}
+globalForPrisma.prisma = prisma;
 
-export function formatINR(amount: number | bigint | string | null | undefined): string {
-  if (amount === null || amount === undefined) return '₹0';
-  const num = typeof amount === 'bigint' ? Number(amount) : Number(amount);
-  if (isNaN(num)) return '₹0';
-  
-  if (num >= 10000000) {
-    const cr = (num / 10000000).toLocaleString('en-IN', { maximumFractionDigits: 2 });
-    return `₹${cr} Crore`;
-  }
-  if (num >= 100000) {
-    const lk = (num / 100000).toLocaleString('en-IN', { maximumFractionDigits: 2 });
-    return `₹${lk} Lakh`;
-  }
-  return `₹${num.toLocaleString('en-IN')}`;
-}
-
-export function formatINRExact(amount: number | bigint | string | null | undefined): string {
-  if (amount === null || amount === undefined) return '₹0';
-  const num = typeof amount === 'bigint' ? Number(amount) : Number(amount);
-  if (isNaN(num)) return '₹0';
-  return `₹${num.toLocaleString('en-IN')}`;
-}
+// The pure helpers now live in `lib/format.ts` and are re-exported here so
+// server-side imports of them keep working. They were moved because importing
+// this module for a formatter pulled the whole Prisma client into the *browser*
+// bundle; see the note in `lib/format.ts`.
+export { serializeData, formatINR, formatINRExact } from './format';

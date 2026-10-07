@@ -1,0 +1,18 @@
+---
+/**
+ * Ported from `app/(en)/lottery-calendar/page.tsx`. Was `force-dynamic`, so it
+ * keeps `no-store` semantics.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { LotteryCalendarPageIsland } from '@/components/island/lottery-calendar-page';
+import { metadata, getCalendarDraws } from '@/components/pages/LotteryCalendarPage';
+import { REVALIDATE, setRevalidateHeaders } from '../lib/cache-headers';
+
+setRevalidateHeaders(Astro, REVALIDATE.CONTENT);
+
+const publishedDraws = await getCalendarDraws();
+---
+
+<BaseLayout head={metadata} locale="en">
+  <LotteryCalendarPageIsland client:load locale="en" publishedDraws={publishedDraws} />
+</BaseLayout>

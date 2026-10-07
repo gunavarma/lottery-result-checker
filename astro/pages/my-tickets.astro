@@ -1,0 +1,25 @@
+---
+/**
+ * Ported from `app/(en)/my-tickets/page.tsx` + `my-tickets/layout.tsx`.
+ * Personal watchlist page, so it stays `noIndex` and must never be cached by the
+ * CDN — hence `setNoStoreHeaders` rather than a revalidate window.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { MyTicketsPageIsland } from '@/components/island/my-tickets-page';
+import { constructMetadata } from '@/lib/seo';
+import { setNoStoreHeaders } from '../lib/cache-headers';
+
+setNoStoreHeaders(Astro);
+
+const head = constructMetadata({
+  title: 'My Saved Lottery Tickets | KeralaDraws Watchlist',
+  description:
+    'Monitor your saved Kerala lottery tickets in real time. Automatic winning number evaluation against official 3:00 PM LOTIS certified draw gazettes.',
+  path: '/my-tickets',
+  noIndex: true, // User personal state page
+});
+---
+
+<BaseLayout head={head} locale="en">
+  <MyTicketsPageIsland client:load locale="en" />
+</BaseLayout>

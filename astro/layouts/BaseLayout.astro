@@ -1,0 +1,223 @@
+---
+/**
+ * Shared document shell and page chrome for every route.
+ *
+ * Replaces both Next.js root layouts (`app/(en)/layout.tsx`,
+ * `app/[locale]/layout.tsx`) *and* `components/layout/RootChrome.tsx`. Under
+ * Next.js the chrome had to be a React component so it could sit inside the
+ * provider tree; in Astro the chrome is markup plus islands, and the document
+ * itself is the right place for it. Collapsing three files into one removes the
+ * opportunity for the two locale trees to drift apart.
+ *
+ * The two browser-only prompts render with `client:only="react"`, which is
+ * Astro's equivalent of Next's `dynamic(..., { ssr: false })`: they touch
+ * `navigator`/`beforeinstallprompt` and Firebase, so they must never run during
+ * the server render, and shipping no HTML for them is correct.
+ */
+import '@/styles/globals.css';
+import SeoHead from '../components/SeoHead.astro';
+import type { JsonLd, SeoHead as SeoHeadData } from '@/lib/seo/types';
+import { getOrganizationSchema, getWebSiteSchema } from '@/lib/seo';
+import { LOCALE_HTML_LANG } from '@/lib/i18n/config';
+import type { Language } from '@/lib/translations';
+import { sanitizeAnalyticsParams, type AnalyticsEvent } from '@/lib/analytics';
+import { Footer } from '@/components/Footer';
+import {
+  NavbarIsland,
+  PwaInstallPromptIsland,
+} from '@/components/islands';
+import { ForegroundNotificationToastIsland } from '@/components/island/foreground-notification-toast';
+
+interface Props {
+  /** Locale being rendered. English is the unprefixed canonical tree. */
+  locale?: Language;
+  head: SeoHeadData;
+  /** Route-specific JSON-LD (breadcrumbs, FAQPage, NewsArticle...). */
+  jsonLd?: (JsonLd | null | undefined)[];
+  themeColor?: string;
+  /**
+   * GA4 events this route wants reported exactly once, on load.
+   *
+   * Pages that Astro renders without any island (a permanent result page, for
+   * instance) cannot report from React, so they declare the event here and the
+   * document's single GA script emits it. Declaring is not loading: the tag
+   * itself still exists only in this file, which is what keeps `page_view` and
+   * every event to one sender per document.
+   */
+  analyticsEvents?: AnalyticsEvent[];
+}
+
+const {
+  locale = 'en',
+  head,
+  jsonLd = [],
+  themeColor = '#0B3B32',
+  analyticsEvents = [],
+} = Astro.props;
+
+// The Organization + WebSite graph is emitted once per document, from here;
+// individual pages only add their own breadcrumb/FAQ/Article nodes on top.
+const graph = [getOrganizationSchema(), getWebSiteSchema(), ...jsonLd];
+const htmlLang = LOCALE_HTML_LANG[locale] ?? 'en';
+
+// Both the active nav-link state and the locale-aware navigation need to know
+// where we are. Astro already knows, so it is handed to the islands rather than
+// rediscovered from `window.location` after hydration.
+const pathname = Astro.url.pathname;
+
+// GA4 is opt-in through the environment, and the measurement ID is never
+// hardcoded: with no variable set the tag is not rendered at all and every
+// `trackEvent()` call degrades to a no-op. `PUBLIC_GA_ID` is still honoured so a
+// project that already configured it keeps working.
+const gaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? import.meta.env.PUBLIC_GA_ID;
+
+// Server-declared events are read back by the head script through a JSON script
+// tag rather than interpolated into JavaScript, so a lottery name can never
+// terminate the script early.
+const gaEvents = analyticsEvents
+  .filter((event): event is AnalyticsEvent => Boolean(event?.name))
+  .map((event) => ({ name: event.name, params: sanitizeAnalyticsParams(event.params) }));
+---
+
+<!doctype html>
+<html lang={htmlLang} class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="theme-color" content={themeColor} />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="format-detection" content="telephone=no" />
+
+    {/* Preconnect to GA origin only when gaId is actually configured to prevent unused preconnect warnings */}
+    {
+      gaId && (
+        <>
+          <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+          <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        </>
+      )
+    }
+
+    <SeoHead head={head} jsonLd={graph} />
+
+    {/* Server-declared events for this route. Inert JSON, no JavaScript. */}
+    {
+      gaId && gaEvents.length > 0 && (
+        <script
+          type="application/json"
+          id="kd-analytics-events"
+          set:html={JSON.stringify(gaEvents).replace(/</g, '\\u003c')}
+        />
+      )
+    }
+
+    {/* The one and only Google tag on the site.
+
+        Two parts, in this order:
+
+        1. The `dataLayer` + `gtag` shim runs synchronously, so an event an
+           island reports while it is hydrating is queued in the order it
+           happened and replayed by gtag.js when it arrives.
+        2. Only the network request for gtag.js is deferred: to idle, or to the
+           first real interaction, whichever comes first. The tag therefore
+           never competes with FCP/LCP, and a user who clicks immediately does
+           not lose the event. */}
+    {
+      gaId && (
+        <script is:inline define:vars={{ gaId }}>
+          (function(){
+            var d = window.dataLayer = window.dataLayer || [];
+            function gtag(){ d.push(arguments); }
+            window.gtag = gtag;
+
+            gtag('js', new Date());
+            // The single `page_view` for this document. Nothing else on the
+            // site calls `config` and nothing sends a manual page_view, so
+            // hydration, island updates and client-side re-renders cannot
+            // produce a second one.
+            gtag('config', gaId, { send_page_view: true });
+
+            // Events declared by the page, emitted from this same script so a
+            // route without islands still reports exactly once.
+            try {
+              var node = document.getElementById('kd-analytics-events');
+              var events = node ? JSON.parse(node.textContent || '[]') : [];
+              for (var i = 0; i < events.length; i++) {
+                gtag('event', events[i].name, events[i].params || {});
+              }
+            } catch (e) { /* malformed payload: skip the extras, keep the tag */ }
+
+            var loaded = false;
+            function load(){
+              if (loaded) return;
+              loaded = true;
+              var s = document.createElement('script');
+              s.async = true;
+              s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(gaId);
+              document.head.appendChild(s);
+            }
+
+            if('requestIdleCallback' in window){ requestIdleCallback(load, { timeout: 2500 }); }
+            else { setTimeout(load, 1500); }
+
+            ['pointerdown','keydown','touchstart'].forEach(function(type){
+              window.addEventListener(type, load, { once: true, passive: true });
+            });
+          })();
+        </script>
+      )
+    }
+  </head>
+  <body
+    class="min-h-screen flex flex-col bg-[#F7F7F4] text-[#17201D] font-sans antialiased selection:bg-[#0B3B32] selection:text-white pb-14 xl:pb-0"
+  >
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-[#0B3B32] focus:text-white focus:rounded-xl focus:shadow-xl focus:font-bold focus:text-xs"
+    >
+      Skip to main content
+    </a>
+
+    {/* Pure HTML offline banner with zero React / JS bundle overhead */}
+    <div id="offline-banner" class="hidden bg-amber-600 text-white text-xs font-semibold py-2 px-4 text-center items-center justify-center gap-2 z-50">
+      <svg class="w-4 h-4 inline-block mr-1.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+      <span>You are currently offline. Showing previously cached lottery results. Fresh data will reload automatically when connected.</span>
+    </div>
+    <script is:inline>
+      (function(){
+        function updateOnlineStatus(){
+          var el = document.getElementById('offline-banner');
+          if (!el) return;
+          if (navigator.onLine) {
+            el.classList.add('hidden');
+            el.classList.remove('flex');
+          } else {
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+          }
+        }
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        if (typeof navigator !== 'undefined' && !navigator.onLine) updateOnlineStatus();
+      })();
+    </script>
+
+    {/* Switched from client:load to client:idle so hydration doesn't compete
+        with FCP/LCP. The server-rendered HTML is identical either way. */}
+    <NavbarIsland client:idle locale={locale} pathname={pathname} />
+
+    <main id="main-content" class="flex-grow">
+      <slot />
+    </main>
+
+    {/* The footer needs no hydration: with no `client:*` directive Astro
+        server-renders it and ships no JavaScript for it at all. */}
+    <Footer />
+
+    {/* client:idle ensures neither prompt blocks the critical path or FCP/LCP */}
+    <PwaInstallPromptIsland client:idle />
+    <ForegroundNotificationToastIsland client:idle />
+
+    <slot name="chrome-bottom" />
+  </body>
+</html>

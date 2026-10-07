@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/prisma';
 import { getTodayIstStr, isValidDateFormat, parseDateOnlyUtc } from '@/lib/date';
-import { getOrSetCache } from '@/lib/cache';
+import {
+  getOrSetCache,
+  LIVE_DATA_STALE_IF_ERROR_MS,
+  PUBLISHED_DATA_STALE_IF_ERROR_MS,
+} from '@/lib/cache';
+import { DRAW_FULL } from '@/lib/results/projections';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +29,13 @@ export async function GET(
     // A draw can move from provisional to official, or receive corrected
     // historical data. Keep the current date especially fresh, and cap
     // historical staleness so corrections become visible promptly.
+    //
+    // This route returns the *full* prize tree of every draw on a date (the
+    // previous-results page renders complete prize tables), so a 5 s window was
+    // the most expensive origin read in the archive: one full multi-draw read
+    // every 5 s per region for the date a visitor lands on by default. 15 s
+    // matches `/api/results/today` and is still far inside the one-minute
+    // publication cron, so nothing a visitor can perceive is lost.
     const isToday = date === getTodayIstStr();
 
     const data = await getOrSetCache(
@@ -34,17 +46,7 @@ export async function GET(
             drawDate: targetDate,
             status: 'PUBLISHED',
           },
-          include: {
-            lottery: true,
-            prizes: {
-              orderBy: { orderIndex: 'asc' },
-              include: {
-                winningNumbers: {
-                  orderBy: { id: 'asc' },
-                },
-              },
-            },
-          },
+          select: DRAW_FULL,
           orderBy: { createdAt: 'desc' },
         });
 
@@ -55,14 +57,25 @@ export async function GET(
           draws,
         });
       },
-      { ttlMs: isToday ? 5_000 : 60_000, swrMs: isToday ? 15_000 : 300_000 }
+      {
+        ttlMs: isToday ? 15_000 : 60_000,
+        swrMs: isToday ? 45_000 : 300_000,
+        // A pooler hiccup should not blank a date page that rendered correctly
+        // moments earlier: serve the last good copy instead of a 500.
+        staleIfErrorMs: isToday
+          ? LIVE_DATA_STALE_IF_ERROR_MS
+          : PUBLISHED_DATA_STALE_IF_ERROR_MS,
+      }
     );
+
+    const cacheControl = isToday
+      ? 'public, s-maxage=15, stale-while-revalidate=45'
+      : 'public, s-maxage=60, stale-while-revalidate=300';
 
     return NextResponse.json(data, {
       headers: {
-        'Cache-Control': isToday
-          ? 'public, s-maxage=5, stale-while-revalidate=15'
-          : 'public, s-maxage=60, stale-while-revalidate=300',
+        'Cache-Control': cacheControl,
+        'Vercel-CDN-Cache-Control': cacheControl,
       },
     });
   } catch (error: any) {

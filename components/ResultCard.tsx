@@ -1,7 +1,7 @@
 import React from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { Award, Calendar, ArrowRight, CheckCircle2, ShieldCheck, MapPin, Radio } from 'lucide-react';
-import { formatINR } from '@/lib/prisma';
+import { formatINR } from '@/lib/format';
 import { format } from 'date-fns';
 
 interface ResultCardProps {

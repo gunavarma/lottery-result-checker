@@ -12,10 +12,11 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
+    "jsxImportSource": "react",
     "incremental": true,
     "plugins": [
       {
-        "name": "next"
+        "name": "@astrojs/ts-plugin"
       }
     ],
     "paths": {
@@ -23,12 +24,19 @@
     }
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "**/*.astro",
+    ".astro/types.d.ts",
+    "env.d.ts"
   ],
-  "exclude": ["node_modules", "supabase"]
+  "exclude": [
+    "node_modules",
+    "supabase",
+    "dist",
+    ".next",
+    ".vercel",
+    "app"
+  ]
 }

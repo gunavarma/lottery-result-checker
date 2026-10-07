@@ -1,5 +1,5 @@
 import React from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { Calendar, Clock, Award, CheckCircle, ChevronRight } from 'lucide-react';
 
 export const WEEKLY_SCHEDULE = [

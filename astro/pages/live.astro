@@ -1,0 +1,33 @@
+---
+/**
+ * Ported from `app/(en)/live/page.tsx`, whose head copy lived in
+ * `app/(en)/live/layout.tsx`. Astro has no per-route layout, so the layout's
+ * `metadata` is folded into the route that needed it.
+ *
+ * `LivePage` was a client component (it polls during the draw window), so it
+ * becomes an island. It was `revalidate = 30` in Next.js, preserved here.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { LivePageIsland } from '@/components/island/live-page';
+import { constructMetadata } from '@/lib/seo';
+import { REVALIDATE, setRevalidateHeaders } from '../lib/cache-headers';
+
+setRevalidateHeaders(Astro, REVALIDATE.LIVE);
+
+const head = constructMetadata({
+  title: 'Live Kerala Lottery Result Synchronization | KeralaDraws',
+  description:
+    'Live Kerala lottery result feed and 3:00 PM countdown. Monitor draw status, official LOTIS gazette releases, and verified 1st prize winning numbers.',
+  path: '/live',
+  keywords: [
+    'Kerala Lottery Live',
+    'Kerala Lottery Result Live',
+    'Live Kerala Lottery Draw',
+    'KeralaDraws',
+  ],
+});
+---
+
+<BaseLayout head={head} locale="en">
+  <LivePageIsland client:load locale="en" />
+</BaseLayout>

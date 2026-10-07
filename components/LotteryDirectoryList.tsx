@@ -3,9 +3,9 @@
 import { useLanguage } from '@/context/LanguageContext';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { Star, ArrowRight, Clock, Award, ShieldCheck } from 'lucide-react';
-import { formatINR } from '@/lib/prisma';
+import { formatINR } from '@/lib/format';
 import { useLotteries } from '@/hooks/queries/useLotteries';
 
 interface LotteryDirectoryListProps {

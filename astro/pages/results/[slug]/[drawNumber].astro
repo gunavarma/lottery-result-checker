@@ -1,0 +1,54 @@
+---
+/**
+ * Ported from `app/(en)/results/[slug]/[drawNumber]/page.tsx`.
+ * Was `export const revalidate = 300` — these permanent result URLs are the main
+ * indexed surface, and their content cannot change once gazetted.
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PermanentResultPage, { generateMetadata, getDrawResultData } from '@/components/pages/PermanentResultPage';
+import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../../lib/cache-headers';
+import { resultViewEvent } from '@/lib/analytics';
+
+const slug = Astro.params.slug as string;
+const drawNumber = Astro.params.drawNumber as string;
+
+const data = await getDrawResultData(slug, drawNumber);
+
+if (!data || !data.draw) {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+// Official permanent URLs are immutable — a day-long CDN window. A provisional
+// draw can still be upgraded to OFFICIAL in place, so it keeps the short window
+// until the gazette confirms it.
+const isOfficial = ((data.draw as any).verificationLevel ?? 'OFFICIAL') === 'OFFICIAL';
+setRevalidateHeaders(Astro, isOfficial ? REVALIDATE.HISTORICAL : REVALIDATE.RESULT_PAGE, {
+  tags: [CACHE_TAG.lottery(slug), CACHE_TAG.RESULTS],
+  ...(isOfficial ? { staleWhileRevalidate: REVALIDATE.HISTORICAL_SWR } : {}),
+});
+
+const head = await generateMetadata({ params: Promise.resolve({ slug, drawNumber }) });
+
+// `result_view` for the draw this document actually rendered. Declared here
+// rather than emitted from React because this route ships no island at all —
+// the layout's single head script reports it, so it cannot be double-counted by
+// hydration and adds no JavaScript to the page.
+const draw = data.draw;
+const analyticsEvents = [
+  resultViewEvent({
+    lotteryName: draw.lottery.name,
+    drawDate: draw.drawDate,
+    drawNumber: draw.drawNumber,
+    verificationStatus: (draw as { verificationLevel?: string | null }).verificationLevel,
+  }),
+];
+---
+
+<BaseLayout head={head} locale="en" analyticsEvents={analyticsEvents}>
+  <PermanentResultPage
+    slug={slug}
+    drawNumber={drawNumber}
+    data={data}
+  />
+</BaseLayout>
