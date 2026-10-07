@@ -12,6 +12,7 @@ import {
 } from '@/components/pages/KeralaLotteryResultDatePage';
 import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
 import { getTodayIstStr } from '@/lib/date';
+import { resultViewEvent } from '@/lib/analytics';
 
 // Astro only matches a dynamic route when the segment is present.
 const dateStr = Astro.params.date as string;
@@ -45,8 +46,21 @@ setRevalidateHeaders(Astro, cacheSeconds, {
 
 // Construct metadata directly from loaded data without re-fetching
 const head = buildMetadataFromData(data, dateStr);
+
+// One `result_view` per date document, for the primary draw it leads with — a
+// date can carry several schemes, and reporting one event per scheme would
+// count a single page view several times.
+const primaryDraw = data.draws[0];
+const analyticsEvents = [
+  resultViewEvent({
+    lotteryName: primaryDraw.lottery.name,
+    drawDate: primaryDraw.drawDate,
+    drawNumber: primaryDraw.drawNumber,
+    verificationStatus: (primaryDraw as { verificationLevel?: string | null }).verificationLevel,
+  }),
+];
 ---
 
-<BaseLayout head={head} locale="en">
+<BaseLayout head={head} locale="en" analyticsEvents={analyticsEvents}>
   <KeralaLotteryResultDatePageIsland client:idle locale="en" dateStr={dateStr} data={data} />
 </BaseLayout>

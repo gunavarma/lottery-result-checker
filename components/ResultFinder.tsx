@@ -5,6 +5,7 @@ import { useRouter } from '@/hooks/astro-navigation';
 import { Search, Calendar, ChevronRight, Filter, Loader2 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { useLotteries } from '@/hooks/queries/useLotteries';
+import { trackHistoricalResultSearch } from '@/lib/analytics';
 
 interface ResultFinderProps {
   lotteries?: Array<{ id: string; name: string; slug: string; code: string }>;
@@ -26,9 +27,20 @@ export function ResultFinder({ lotteries = [] }: ResultFinderProps) {
 
   const navigateToResult = (dateVal: string, lotteryVal: string) => {
     setLoading(true);
-    // Direct canonical route bypasses the legacy 308 redirect hop
+    // Direct canonical route bypasses the legacy 308 redirect hop.
     const targetUrl = `/kerala-lottery-result/${dateVal}` + (lotteryVal !== 'all' ? `?scheme=${encodeURIComponent(lotteryVal)}` : '');
-    window.location.assign(targetUrl);
+
+    // The lookup is reported with the navigation handed over as GA's
+    // `event_callback`, so the hit is accepted before this document is torn
+    // down. Only the chosen date and scheme name are sent — never the query
+    // text, and never the ticket number.
+    trackHistoricalResultSearch(
+      {
+        selectedDate: dateVal,
+        lotteryName: lotteryOptions.find((lot) => lot.slug === lotteryVal)?.name ?? 'all',
+      },
+      () => window.location.assign(targetUrl)
+    );
   };
 
   const handleQuickJump = (dateVal: string) => {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Link from '@/components/Link';
 import {
   Search,
@@ -22,6 +22,7 @@ import { formatINR } from '@/lib/format';
 import { useLanguage } from '@/context/LanguageContext';
 import type { ScannedTicket } from '@/components/lottery/TicketScanner';
 import { useCheckTickets, TicketMatchResult } from '@/hooks/queries/useCheckTickets';
+import { trackTicketCheck, trackTicketCheckerOpen } from '@/lib/analytics';
 
 // Lazy-load the camera/QR scanner to keep html5-qrcode and tesseract.js
 // out of the initial JS bundle. Only loaded when the user opens the scanner.
@@ -72,6 +73,22 @@ export function TicketChecker({
 
   const checkTicketsMutation = useCheckTickets();
 
+  // `ticket_checker_open` marks the first real engagement with the tool —
+  // focusing the number field or opening the scanner — rather than the mere
+  // fact that the route rendered, so a bounce is not counted as an open. The
+  // ref makes it exactly once per document no matter how many fields, buttons
+  // or re-renders are involved.
+  const checkerOpenedRef = useRef(false);
+  const markCheckerOpened = () => {
+    if (checkerOpenedRef.current) return;
+    checkerOpenedRef.current = true;
+    trackTicketCheckerOpen();
+  };
+
+  /** The scheme the user is checking against, as a display name. */
+  const lotteryNameFor = (lotteryId: string) =>
+    lotteries.find((lot) => lot.id === lotteryId)?.name ?? 'all';
+
   useEffect(() => {
     // Server-rendered list wins; there is nothing to repair.
     if (serverLotteries && serverLotteries.length > 0) return;
@@ -116,6 +133,14 @@ export function TicketChecker({
           );
         }
         setSingleResults(winningMatches);
+
+        // Only the scheme name and the win/lose outcome leave the browser. A
+        // lookup that failed to reach the API is deliberately NOT reported: an
+        // unanswered question is not a losing ticket.
+        trackTicketCheck({
+          lotteryName: lotteryNameFor(lotteryId),
+          isWinner: winningMatches.length > 0,
+        });
       } else {
         setSingleResults([]);
       }
@@ -161,6 +186,13 @@ export function TicketChecker({
             });
             setHasSearchedSingle(false);
             setSingleResults(null);
+
+            // One batch scan is one interaction, so it reports one event with
+            // the aggregate outcome — not one per scanned ticket.
+            trackTicketCheck({
+              lotteryName: lotteryNameFor(selectedLottery),
+              isWinner: winning > 0,
+            });
           }
         },
         onError: (err) => {
@@ -181,6 +213,9 @@ export function TicketChecker({
 
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-10 border border-[#E2E7E3] shadow-sm space-y-6">
+      {/* Any focus inside the tool (the scheme select or the number input) is
+          the first genuine “the checker is open” signal. */}
+      <div onFocusCapture={markCheckerOpened} className="space-y-6">
       {/* Header */}
       <div className="border-b border-[#E2E7E3] pb-4 space-y-1">
         <div className="flex items-center justify-between flex-wrap gap-2">
@@ -190,7 +225,10 @@ export function TicketChecker({
 
           {/* Quick Trigger Button for Scanner */}
           <button
-            onClick={() => setScannerOpen(true)}
+            onClick={() => {
+              markCheckerOpened();
+              setScannerOpen(true);
+            }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white text-xs font-extrabold shadow-sm transition-all cursor-pointer font-tabular"
           >
             <Camera className="w-4 h-4 text-[#C8A45D]" />
@@ -267,7 +305,10 @@ export function TicketChecker({
               {/* Camera Scanner Button Beside Search */}
               <button
                 type="button"
-                onClick={() => setScannerOpen(true)}
+                onClick={() => {
+                  markCheckerOpened();
+                  setScannerOpen(true);
+                }}
                 className="px-4 py-3 rounded-xl bg-[#F7F7F4] hover:bg-[#E2E7E3] text-[#0B3B32] border border-[#E2E7E3] font-bold text-xs flex items-center justify-center gap-1.5 shrink-0 transition-colors cursor-pointer"
                 title="Scan multiple tickets via camera"
               >
@@ -289,7 +330,10 @@ export function TicketChecker({
           </p>
           <button
             type="button"
-            onClick={() => setScannerOpen(true)}
+            onClick={() => {
+              markCheckerOpened();
+              setScannerOpen(true);
+            }}
             className="font-bold text-[#0B3B32] hover:underline flex items-center gap-1 cursor-pointer"
           >
             <QrCode className="w-3.5 h-3.5" />
@@ -340,7 +384,10 @@ export function TicketChecker({
                 </div>
               )}
               <button
-                onClick={() => setScannerOpen(true)}
+                onClick={() => {
+                  markCheckerOpened();
+                  setScannerOpen(true);
+                }}
                 className="px-4 py-2.5 rounded-xl bg-[#16845B] hover:bg-[#16845B]/90 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Camera className="w-3.5 h-3.5" />
@@ -566,6 +613,7 @@ export function TicketChecker({
           onTicketsScanned={handleTicketsScanned}
         />
       )}
+      </div>
     </div>
   );
 }

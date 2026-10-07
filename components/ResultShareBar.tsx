@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Share2, MessageCircle, Send, Link as LinkIcon, Check } from 'lucide-react';
+import { trackResultShare } from '@/lib/analytics';
 
 interface ResultShareBarProps {
   title: string;
@@ -25,16 +26,25 @@ export function ResultShareBar({ title, url }: ResultShareBarProps) {
     ? `${window.location.origin}${url}`
     : `${baseOrigin}${url}`;
 
-  const handleCopyLink = () => {
+  // The clipboard write is separated from the click handler that reports it so
+  // that `handleNativeShare`'s no-Web-Share fallback cannot fire `result_share`
+  // twice for a single tap (once as native, once as copy).
+  const copyLink = () => {
     const shareLink = typeof window !== 'undefined' ? `${window.location.origin}${url}` : fullUrl;
     navigator.clipboard.writeText(shareLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleCopyLink = () => {
+    trackResultShare({ method: 'copy_link' });
+    copyLink();
+  };
+
   const handleNativeShare = () => {
-    const shareLink = typeof window !== 'undefined' ? `${window.location.origin}${url}` : fullUrl;
     if (navigator.share) {
+      const shareLink = typeof window !== 'undefined' ? `${window.location.origin}${url}` : fullUrl;
+      trackResultShare({ method: 'native_share' });
       navigator.share({
         title,
         text: `${title} — Official Kerala State Lotteries winning numbers`,
@@ -61,6 +71,7 @@ export function ResultShareBar({ title, url }: ResultShareBarProps) {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackResultShare({ method: 'whatsapp' })}
           className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 transition-colors shadow-2xs"
         >
           <MessageCircle className="w-3.5 h-3.5" />
@@ -71,6 +82,7 @@ export function ResultShareBar({ title, url }: ResultShareBarProps) {
           href={telegramUrl}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackResultShare({ method: 'telegram' })}
           className="px-3 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold flex items-center gap-1.5 transition-colors shadow-2xs"
         >
           <Send className="w-3.5 h-3.5" />
@@ -81,6 +93,7 @@ export function ResultShareBar({ title, url }: ResultShareBarProps) {
           href={facebookUrl}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackResultShare({ method: 'facebook' })}
           className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center gap-1.5 transition-colors shadow-2xs hidden sm:flex"
         >
           <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">

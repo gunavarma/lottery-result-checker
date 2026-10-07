@@ -6,13 +6,29 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import TodayResultPage, { generateMetadata, getTodayResultData } from '@/components/pages/TodayResultPage';
 import { REVALIDATE, setRevalidateHeaders } from '../lib/cache-headers';
+import { resultViewEvent } from '@/lib/analytics';
 
 setRevalidateHeaders(Astro, REVALIDATE.LIVE);
 
 const head = await generateMetadata();
 const { isFromToday, draw } = await getTodayResultData();
+
+// `verification_status` is the whole point of this event on the live page: a
+// PROVISIONAL draw (aggregator numbers, not yet gazetted) and an OFFICIAL one
+// are reported side by side, which is how the two-tier trust model can be
+// measured. Reported by the layout's head script; no island is involved.
+const analyticsEvents = draw
+  ? [
+      resultViewEvent({
+        lotteryName: draw.lottery.name,
+        drawDate: draw.drawDate,
+        drawNumber: draw.drawNumber,
+        verificationStatus: (draw as { verificationLevel?: string | null }).verificationLevel,
+      }),
+    ]
+  : [];
 ---
 
-<BaseLayout head={head} locale="en">
+<BaseLayout head={head} locale="en" analyticsEvents={analyticsEvents}>
   <TodayResultPage isFromToday={isFromToday} draw={draw} />
 </BaseLayout>

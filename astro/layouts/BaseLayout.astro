@@ -20,6 +20,7 @@ import type { JsonLd, SeoHead as SeoHeadData } from '@/lib/seo/types';
 import { getOrganizationSchema, getWebSiteSchema } from '@/lib/seo';
 import { LOCALE_HTML_LANG } from '@/lib/i18n/config';
 import type { Language } from '@/lib/translations';
+import { sanitizeAnalyticsParams, type AnalyticsEvent } from '@/lib/analytics';
 import { Footer } from '@/components/Footer';
 import {
   NavbarIsland,
@@ -34,9 +35,25 @@ interface Props {
   /** Route-specific JSON-LD (breadcrumbs, FAQPage, NewsArticle...). */
   jsonLd?: (JsonLd | null | undefined)[];
   themeColor?: string;
+  /**
+   * GA4 events this route wants reported exactly once, on load.
+   *
+   * Pages that Astro renders without any island (a permanent result page, for
+   * instance) cannot report from React, so they declare the event here and the
+   * document's single GA script emits it. Declaring is not loading: the tag
+   * itself still exists only in this file, which is what keeps `page_view` and
+   * every event to one sender per document.
+   */
+  analyticsEvents?: AnalyticsEvent[];
 }
 
-const { locale = 'en', head, jsonLd = [], themeColor = '#0B3B32' } = Astro.props;
+const {
+  locale = 'en',
+  head,
+  jsonLd = [],
+  themeColor = '#0B3B32',
+  analyticsEvents = [],
+} = Astro.props;
 
 // The Organization + WebSite graph is emitted once per document, from here;
 // individual pages only add their own breadcrumb/FAQ/Article nodes on top.
@@ -47,7 +64,19 @@ const htmlLang = LOCALE_HTML_LANG[locale] ?? 'en';
 // where we are. Astro already knows, so it is handed to the islands rather than
 // rediscovered from `window.location` after hydration.
 const pathname = Astro.url.pathname;
-const gaId = import.meta.env.PUBLIC_GA_ID ?? process.env.NEXT_PUBLIC_GA_ID;
+
+// GA4 is opt-in through the environment, and the measurement ID is never
+// hardcoded: with no variable set the tag is not rendered at all and every
+// `trackEvent()` call degrades to a no-op. `PUBLIC_GA_ID` is still honoured so a
+// project that already configured it keeps working.
+const gaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? import.meta.env.PUBLIC_GA_ID;
+
+// Server-declared events are read back by the head script through a JSON script
+// tag rather than interpolated into JavaScript, so a lottery name can never
+// terminate the script early.
+const gaEvents = analyticsEvents
+  .filter((event): event is AnalyticsEvent => Boolean(event?.name))
+  .map((event) => ({ name: event.name, params: sanitizeAnalyticsParams(event.params) }));
 ---
 
 <!doctype html>
@@ -71,25 +100,69 @@ const gaId = import.meta.env.PUBLIC_GA_ID ?? process.env.NEXT_PUBLIC_GA_ID;
 
     <SeoHead head={head} jsonLd={graph} />
 
-    {/* GA is deferred until after the page is interactive so it doesn't
-        compete with FCP/LCP. requestIdleCallback ensures it fires only
-        when the main thread is free. */}
+    {/* Server-declared events for this route. Inert JSON, no JavaScript. */}
+    {
+      gaId && gaEvents.length > 0 && (
+        <script
+          type="application/json"
+          id="kd-analytics-events"
+          set:html={JSON.stringify(gaEvents).replace(/</g, '\\u003c')}
+        />
+      )
+    }
+
+    {/* The one and only Google tag on the site.
+
+        Two parts, in this order:
+
+        1. The `dataLayer` + `gtag` shim runs synchronously, so an event an
+           island reports while it is hydrating is queued in the order it
+           happened and replayed by gtag.js when it arrives.
+        2. Only the network request for gtag.js is deferred: to idle, or to the
+           first real interaction, whichever comes first. The tag therefore
+           never competes with FCP/LCP, and a user who clicks immediately does
+           not lose the event. */}
     {
       gaId && (
         <script is:inline define:vars={{ gaId }}>
           (function(){
-            function loadGA(){
-              var s=document.createElement('script');
-              s.src='https://www.googletagmanager.com/gtag/js?id='+gaId;
-              s.async=true;
+            var d = window.dataLayer = window.dataLayer || [];
+            function gtag(){ d.push(arguments); }
+            window.gtag = gtag;
+
+            gtag('js', new Date());
+            // The single `page_view` for this document. Nothing else on the
+            // site calls `config` and nothing sends a manual page_view, so
+            // hydration, island updates and client-side re-renders cannot
+            // produce a second one.
+            gtag('config', gaId, { send_page_view: true });
+
+            // Events declared by the page, emitted from this same script so a
+            // route without islands still reports exactly once.
+            try {
+              var node = document.getElementById('kd-analytics-events');
+              var events = node ? JSON.parse(node.textContent || '[]') : [];
+              for (var i = 0; i < events.length; i++) {
+                gtag('event', events[i].name, events[i].params || {});
+              }
+            } catch (e) { /* malformed payload: skip the extras, keep the tag */ }
+
+            var loaded = false;
+            function load(){
+              if (loaded) return;
+              loaded = true;
+              var s = document.createElement('script');
+              s.async = true;
+              s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(gaId);
               document.head.appendChild(s);
-              window.dataLayer=window.dataLayer||[];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js',new Date());
-              gtag('config',gaId,{page_path:window.location.pathname});
             }
-            if('requestIdleCallback' in window){requestIdleCallback(loadGA);}
-            else{setTimeout(loadGA,2000);}
+
+            if('requestIdleCallback' in window){ requestIdleCallback(load, { timeout: 2500 }); }
+            else { setTimeout(load, 1500); }
+
+            ['pointerdown','keydown','touchstart'].forEach(function(type){
+              window.addEventListener(type, load, { once: true, passive: true });
+            });
           })();
         </script>
       )
