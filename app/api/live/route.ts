@@ -211,7 +211,7 @@ async function loadLiveState(now: Date) {
       isPublished: status === 'PUBLISHED',
       isProvisional: status === 'PROVISIONAL',
       verificationLevel: currentLevel,
-      sourceProvider: todayDraw?.sourceProvider ?? null,
+      sourceProvider: (todayDraw as any)?.sourceProvider ?? null,
       provisionalUpdatedAt: todayDraw?.provisionalUpdatedAt ?? null,
       completeness,
       countdownSeconds,
