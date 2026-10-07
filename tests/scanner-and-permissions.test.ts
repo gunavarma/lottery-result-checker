@@ -81,6 +81,8 @@ describe('Ticket check result buckets', () => {
       } as any,
     ]);
 
+    vi.spyOn(prisma.winningNumber, 'findMany').mockResolvedValueOnce([]);
+
     const result = await checkTicketsHandler({ tickets: ['SK 999999'] });
     const entry = result.results[0] as any;
     expect(entry.status).toBe('NO_MATCH');

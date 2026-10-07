@@ -4,6 +4,9 @@ import { isValidDateFormat, parseDateOnlyUtc, formatDateOnly } from '../lib/date
 import robots from '../app/robots';
 import sitemap from '../app/sitemap';
 
+import { vi } from 'vitest';
+import { prisma } from '../lib/prisma';
+
 describe('Advanced Technical SEO & Programmatic Indexing', () => {
   it('generates clean canonical URLs without trailing slashes or duplicate paths', () => {
     expect(getCanonicalUrl('/kerala-lottery-result/2026-08-28')).toBe(
@@ -47,6 +50,16 @@ describe('Advanced Technical SEO & Programmatic Indexing', () => {
   });
 
   it('generates dynamic sitemap with canonical date results and verified lastmod timestamps', async () => {
+    vi.spyOn(prisma.lottery, 'findMany').mockResolvedValueOnce([
+      { slug: 'karunya', updatedAt: new Date('2026-08-29T00:00:00.000Z') } as any,
+    ]);
+    const mockDraws = Array.from({ length: 60 }, (_, i) => ({
+      drawDate: new Date(Date.UTC(2026, 7, 29 - i)),
+      updatedAt: new Date('2026-08-29T00:00:00.000Z'),
+      verifiedAt: new Date('2026-08-29T00:00:00.000Z'),
+    }));
+    vi.spyOn(prisma.draw, 'findMany').mockResolvedValue(mockDraws as any);
+
     const sitemapEntries = await sitemap();
     expect(sitemapEntries.length).toBeGreaterThan(50);
 
