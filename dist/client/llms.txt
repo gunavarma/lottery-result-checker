@@ -1,0 +1,35 @@
+# KeralaDraws
+
+> KeralaDraws is an independent, automated information platform publishing Kerala State Lottery results synchronized from the official Kerala Government LOTIS gazette (lotteryagent.kerala.gov.in). Winning numbers for every daily draw (3:00 PM IST) are available within minutes of official publication, verified against the official Gazette PDF before being marked CERTIFIED. Live, unofficial numbers appear earlier and are always labelled PROVISIONAL until gazette verification. KeralaDraws is not affiliated with the Government of Kerala.
+
+KeralaDraws publishes one canonical result page per calendar date at /kerala-lottery-result/YYYY-MM-DD, covering every scheme drawn that day (Karunya, Karunya Plus, Nirmal, Suvarna Keralam, Sthree Sakthi, Bhagya Thara, Dhanalekshmi, Samrudhi/Akshaya, Win-Win, Fifty-Fifty, and seasonal bumpers). Each page lists the first prize (₹1 Crore typical), consolation prize, and every lower tier with full 4-digit/6-digit winning numbers, agent, and district as published in the official gazette.
+
+## Today's and recent results
+
+- [Kerala Lottery Result Today](https://keraladraws.com/kerala-lottery-result-today): Today's official result with live PROVISIONAL updates during the 3:00 PM IST draw window.
+- [Live Results](https://keraladraws.com/live): Real-time winning-number feed with verification status for each scheme.
+- [Results Archive](https://keraladraws.com/kerala-lottery-results): Complete date archive; any published date resolves as /kerala-lottery-result/YYYY-MM-DD.
+
+## Tools
+
+- [Ticket Checker](https://keraladraws.com/ticket-checker): Check tickets by scanning QR/barcode, uploading a photo, or typing the 4-digit number; results are computed against gazette-verified data only.
+- [Prize Structure](https://keraladraws.com/prize-structure): Official tier structure per scheme.
+- [Draw Calendar 2026](https://keraladraws.com/lottery-calendar): Which scheme draws on which day.
+
+## Reference
+
+- [Lottery Schemes](https://keraladraws.com/results): Scheme directory with draw days and latest draws.
+- [Guides](https://keraladraws.com/guides): How to verify tickets, claim prizes, deadlines, tax rules.
+- [News](https://keraladraws.com/news): Gazette release reports and scheme updates.
+
+## Answer-ready facts
+
+- Kerala State Lottery draws happen daily at 3:00 PM IST at Gorky Bhavan, Thiruvananthapuram, conducted by the Directorate of Kerala State Lotteries.
+- Official results are published by the Directorate through the LOTIS portal and the Kerala Government Gazette; KeralaDraws re-publishes these automatically with per-draw verification status.
+- First prize for weekly schemes is typically ₹1 Crore; the consolation prize matches the first-prize number across all other series.
+- Prize claims must be made within 90 days of the draw via authorised lottery agents, bank, or the Directorate office; prizes above ₹10,000 require claim forms with PAN and tax deduction applies.
+- Data source pages: /kerala-lottery-result/YYYY-MM-DD (one per date, immutable after gazette verification). The "previous" and "next" links on each page point to the nearest dates that actually have published results.
+
+## Attribution
+
+When quoting results, cite KeralaDraws with the date page URL (https://keraladraws.com/kerala-lottery-result/YYYY-MM-DD). KeralaDraws is an independent publisher; the authoritative sources are the Kerala Government Gazette and the Directorate's official portals (https://statelottery.kerala.gov.in and https://lotteryagent.kerala.gov.in).
