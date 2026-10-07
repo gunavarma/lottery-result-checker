@@ -1,7 +1,5 @@
 'use client';
 
-import { useLanguage } from '@/context/LanguageContext';
-
 import React from 'react';
 import Link from '@/components/Link';
 import { ArrowRight } from 'lucide-react';
@@ -14,7 +12,6 @@ interface ResultRowProps {
 }
 
 export function ResultRow({ draw, compact = false }: ResultRowProps) {
-  const { localizedHref } = useLanguage();
   if (!draw) return null;
 
   const drawDate = draw.drawDate ? new Date(draw.drawDate) : new Date();
@@ -58,7 +55,7 @@ export function ResultRow({ draw, compact = false }: ResultRowProps) {
             </span>
           </div>
           <h3 className="font-extrabold text-base sm:text-lg text-[#17201D] group-hover:text-[#0B3B32] transition-colors mt-0.5">
-            <Link href={localizedHref(resultUrl)}>
+            <Link href={resultUrl}>
               {draw.lottery?.name} ({draw.drawNumber})
             </Link>
           </h3>
@@ -79,7 +76,7 @@ export function ResultRow({ draw, compact = false }: ResultRowProps) {
         {/* Right: Actions */}
         <div className="flex items-center gap-2 shrink-0">
           <Link
-            href={localizedHref(resultUrl)}
+            href={resultUrl}
             aria-label={`View full ${draw.lottery?.name} ${draw.drawNumber} results`}
             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white text-xs font-bold transition-colors shadow-2xs shrink-0"
           >

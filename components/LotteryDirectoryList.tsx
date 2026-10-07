@@ -1,7 +1,5 @@
 'use client';
 
-import { useLanguage } from '@/context/LanguageContext';
-
 import React, { useState, useEffect } from 'react';
 import Link from '@/components/Link';
 import { Star, ArrowRight, Clock, Award, ShieldCheck } from 'lucide-react';
@@ -13,7 +11,6 @@ interface LotteryDirectoryListProps {
 }
 
 export function LotteryDirectoryList({ lotteries }: LotteryDirectoryListProps) {
-  const { localizedHref } = useLanguage();
   const [favorites, setFavorites] = useState<string[]>([]);
 
   // Self-heal an empty server render the same way the recent-results list does:
@@ -89,7 +86,7 @@ export function LotteryDirectoryList({ lotteries }: LotteryDirectoryListProps) {
                     </span>
                   </div>
                   <h3 className="font-extrabold text-base sm:text-lg text-[#17201D] group-hover:text-[#0B3B32] transition-colors mt-0.5">
-                    <Link href={localizedHref(`/lotteries/${lottery.slug}`)}>
+                    <Link href={`/lotteries/${lottery.slug}`}>
                       {lottery.name}
                     </Link>
                   </h3>
@@ -108,7 +105,7 @@ export function LotteryDirectoryList({ lotteries }: LotteryDirectoryListProps) {
                 </div>
 
                 <Link
-                  href={localizedHref(`/lotteries/${lottery.slug}`)}
+                  href={`/lotteries/${lottery.slug}`}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#F7F7F4] group-hover:bg-[#0B3B32] text-[#17201D] group-hover:text-white text-xs font-bold transition-all border border-[#E2E7E3] group-hover:border-[#0B3B32]"
                 >
                   <span>Results</span>

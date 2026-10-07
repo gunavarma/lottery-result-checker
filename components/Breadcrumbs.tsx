@@ -1,10 +1,7 @@
-'use client';
-
 import React from 'react';
 import Link from '@/components/Link';
 import { ChevronRight, Home } from 'lucide-react';
 import { SITE_URL } from '@/lib/site-url';
-import { useLanguage } from '@/context/LanguageContext';
 
 interface BreadcrumbItem {
   label: string;
@@ -16,10 +13,6 @@ interface BreadcrumbsProps {
 }
 
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
-  // The trail is built from canonical (unprefixed) page paths, so the active
-  // locale has to be re-applied here — otherwise every crumb on /ml, /ta and
-  // /hi pages silently dropped the visitor back into the English tree.
-  const { localizedHref, t } = useLanguage();
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -27,14 +20,14 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
       {
         '@type': 'ListItem',
         position: 1,
-        name: t('nav.home', 'Home'),
-        item: `${SITE_URL}${localizedHref('/')}`,
+        name: 'Home',
+        item: SITE_URL,
       },
       ...items.map((item, idx) => ({
         '@type': 'ListItem',
         position: idx + 2,
         name: item.label,
-        ...(item.href ? { item: `${SITE_URL}${localizedHref(item.href)}` } : {}),
+        ...(item.href ? { item: `${SITE_URL}${item.href}` } : {}),
       })),
     ],
   };
@@ -49,11 +42,11 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
         <ol className="flex flex-wrap items-center gap-1.5">
           <li className="flex items-center">
             <Link
-              href={localizedHref('/')}
+              href="/"
               className="flex items-center gap-1 hover:text-emerald-700 font-medium transition-colors"
             >
               <Home className="w-3.5 h-3.5" />
-              <span>{t('nav.home', 'Home')}</span>
+              <span>Home</span>
             </Link>
           </li>
           {items.map((item, idx) => {
@@ -63,7 +56,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
                 <ChevronRight className="w-3 h-3 text-slate-400" />
                 {item.href && !isLast ? (
                   <Link
-                    href={localizedHref(item.href)}
+                    href={item.href}
                     className="hover:text-emerald-700 font-medium transition-colors"
                   >
                     {item.label}

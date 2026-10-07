@@ -14,18 +14,10 @@ import { ArrowRight } from 'lucide-react';
 import { getHomepageData } from '@/lib/home-data';
 import { StructuredData } from '@/components/StructuredData';
 import { getWebSiteSchema, getOrganizationSchema } from '@/lib/seo';
-import { getTranslation, Language } from '@/lib/translations';
-import { localePath } from '@/lib/i18n/config';
 
 // Shared homepage content used by both the (en) and /[locale] trees so every
 // locale renders the same sections from the same data pipeline.
-//
-// Server component: the locale arrives as a prop (the route is the source of
-// truth) and is resolved without a hook, so no cookies()/headers() call is made
-// and the page keeps its ISR caching.
-export async function HomeContent({ locale = 'en' }: { locale?: Language }) {
-  const t = (key: string, fallback?: string) => getTranslation(locale, key, fallback);
-  const href = (path: string) => localePath(path, locale);
+export async function HomeContent() {
   const data = await getHomepageData();
   const allNews = getAllNews();
   const featuredArticle = getFeaturedNews();
@@ -50,17 +42,17 @@ export async function HomeContent({ locale = 'en' }: { locale?: Language }) {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2E7E3] pb-3">
           <div>
             <span className="text-[11px] font-bold text-[#0B5D45] uppercase tracking-wider block font-tabular">
-              {t('home.stream_eyebrow', 'Chronological Stream')}
+              Chronological Stream
             </span>
             <h2 className="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
-              {t('home.recent_results', 'Recent Official Results')}
+              Recent Official Results
             </h2>
           </div>
           <Link
-            href={href('/results')}
+            href="/results"
             className="inline-flex items-center gap-1 text-xs font-bold text-[#0B5D45] hover:text-[#084835] transition-colors shrink-0"
           >
-            <span>{t('home.view_all_results', 'View All Results')}</span>
+            <span>View All Results</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -83,17 +75,17 @@ export async function HomeContent({ locale = 'en' }: { locale?: Language }) {
         <div className="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
           <div>
             <span className="text-[11px] font-bold text-[#0B5D45] uppercase tracking-wider block font-tabular">
-              {t('home.schemes_eyebrow', 'Weekly & Bumper Schemes')}
+              Weekly & Bumper Schemes
             </span>
             <h2 className="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
-              {t('home.active_schemes', 'Active Kerala Lottery Schemes')}
+              Active Kerala Lottery Schemes
             </h2>
           </div>
           <Link
-            href={href('/lotteries')}
+            href="/lotteries"
             className="text-xs font-bold text-[#0B5D45] hover:text-[#084835] inline-flex items-center gap-1 transition-colors"
           >
-            <span>{t('home.all_schemes', 'All Schemes')}</span>
+            <span>All Schemes</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -106,17 +98,17 @@ export async function HomeContent({ locale = 'en' }: { locale?: Language }) {
         <div className="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
           <div>
             <span className="text-[11px] font-bold text-[#0B5D45] uppercase tracking-wider block font-tabular">
-              {t('home.news_eyebrow', 'Gazette Releases')}
+              Gazette Releases
             </span>
             <h2 className="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
-              {t('home.latest_news', 'Latest Lottery News & Reports')}
+              Latest Lottery News & Reports
             </h2>
           </div>
           <Link
-            href={href('/news')}
+            href="/news"
             className="text-xs font-bold text-[#0B5D45] hover:text-[#084835] inline-flex items-center gap-1 transition-colors"
           >
-            <span>{t('home.view_all_news', 'View All News')}</span>
+            <span>View All News</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -139,7 +131,7 @@ export async function HomeContent({ locale = 'en' }: { locale?: Language }) {
 
       {/* 9. Trust & Verification 4-Step Pipeline */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <TrustSection locale={locale} />
+        <TrustSection />
       </section>
     </div>
   );

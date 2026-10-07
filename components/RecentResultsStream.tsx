@@ -1,7 +1,5 @@
 'use client';
 
-import { useLanguage } from '@/context/LanguageContext';
-
 import React from 'react';
 import Link from '@/components/Link';
 import { format } from 'date-fns';
@@ -14,7 +12,6 @@ interface RecentResultsStreamProps {
 }
 
 export function RecentResultsStream({ draws }: RecentResultsStreamProps) {
-  const { t, localizedHref } = useLanguage();
   const serverDraws = Array.isArray(draws) ? draws : [];
 
   // The server render can legitimately arrive without draws: its first
@@ -38,7 +35,7 @@ export function RecentResultsStream({ draws }: RecentResultsStreamProps) {
 
     return (
       <div className="bg-white rounded-2xl p-8 border border-[#E2E7E3] text-center text-[#5F6B66] text-xs">
-        {t('home.sync_note', 'Results are synchronizing with the official LOTIS gazette database.')}
+        Results are synchronizing with the official LOTIS gazette database.
       </div>
     );
   }
@@ -91,7 +88,7 @@ export function RecentResultsStream({ draws }: RecentResultsStreamProps) {
                   </div>
                   <h3 className="font-extrabold text-base sm:text-lg text-[#17201D] group-hover:text-[#0B5D45] transition-colors mt-0.5">
                     <Link
-                      href={localizedHref(`/results/${draw.lottery?.slug}/${draw.drawNumber.toLowerCase()}`)}
+                      href={`/results/${draw.lottery?.slug}/${draw.drawNumber.toLowerCase()}`}
                       aria-label={`View ${draw.lottery?.name} ${draw.drawNumber} Result`}
                     >
                       {draw.lottery?.name} ({draw.drawNumber})
@@ -113,7 +110,7 @@ export function RecentResultsStream({ draws }: RecentResultsStreamProps) {
 
                 {/* Right: View Action */}
                 <Link
-                  href={localizedHref(`/results/${draw.lottery?.slug}/${draw.drawNumber.toLowerCase()}`)}
+                  href={`/results/${draw.lottery?.slug}/${draw.drawNumber.toLowerCase()}`}
                   aria-label={`View complete prize table for ${draw.lottery?.name} ${draw.drawNumber}`}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#F4F5F2] group-hover:bg-[#0B5D45] text-[#17201D] group-hover:text-white text-xs font-bold transition-all border border-[#E2E7E3] group-hover:border-[#0B5D45] shrink-0"
                 >

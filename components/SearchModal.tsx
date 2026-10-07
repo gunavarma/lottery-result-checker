@@ -1,7 +1,5 @@
 'use client';
 
-import { useLanguage } from '@/context/LanguageContext';
-
 import React, { useState, useEffect, useRef } from 'react';
 import Link from '@/components/Link';
 import { useRouter } from '@/hooks/astro-navigation';
@@ -26,7 +24,6 @@ interface SearchModalProps {
 }
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
-  const { localizedHref } = useLanguage();
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -228,7 +225,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     {results.lotteries.map((lottery) => (
                       <Link
                         key={lottery.id}
-                        href={localizedHref(`/lottery/${lottery.slug}`)}
+                        href={`/lottery/${lottery.slug}`}
                         onClick={onClose}
                         className="flex items-center justify-between p-3 rounded-xl hover:bg-[#F7F7F4] border border-transparent hover:border-[#E2E7E3] transition-colors group"
                       >
@@ -275,7 +272,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             </div>
                           </div>
                           <Link
-                            href={localizedHref(`/result/${draw?.drawDate?.split('T')[0]}/${draw?.lottery?.slug}`)}
+                            href={`/result/${draw?.drawDate?.split('T')[0]}/${draw?.lottery?.slug}`}
                             onClick={onClose}
                             className="text-xs font-bold text-[#0B3B32] hover:underline"
                           >
@@ -298,7 +295,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     {results.draws.map((draw) => (
                       <Link
                         key={draw.id}
-                        href={localizedHref(`/result/${draw.drawDate?.split('T')[0]}/${draw.lottery?.slug}`)}
+                        href={`/result/${draw.drawDate?.split('T')[0]}/${draw.lottery?.slug}`}
                         onClick={onClose}
                         className="flex items-center justify-between p-3 rounded-xl hover:bg-[#F7F7F4] border border-transparent hover:border-[#E2E7E3] transition-colors group"
                       >
@@ -327,7 +324,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     {results.news.map((n) => (
                       <Link
                         key={n.id}
-                        href={localizedHref(`/news/${n.slug}`)}
+                        href={`/news/${n.slug}`}
                         onClick={onClose}
                         className="flex items-center justify-between p-3 rounded-xl hover:bg-[#F7F7F4] border border-transparent hover:border-[#E2E7E3] transition-colors group"
                       >
@@ -363,7 +360,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         <div className="border-t border-[#E2E7E3] p-3 sm:px-6 bg-[#F7F7F4] flex items-center justify-between text-xs text-[#68736E]">
           <span>Press <strong>Enter</strong> to open detailed search results</span>
           <Link
-            href={localizedHref(`/search?q=${encodeURIComponent(query)}`)}
+            href={`/search?q=${encodeURIComponent(query)}`}
             onClick={onClose}
             className="text-[#0B3B32] font-bold hover:underline"
           >
