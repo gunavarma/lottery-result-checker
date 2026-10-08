@@ -1,0 +1,23 @@
+---
+/**
+ * Admin panel for manually entering lottery results.
+ * This is a private operator tool: noIndex, no CDN caching, and no store.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { AdminPageIsland } from '@/components/island/admin-page';
+import { constructMetadata } from '@/lib/seo';
+import { setNoStoreHeaders } from '../lib/cache-headers';
+
+setNoStoreHeaders(Astro);
+
+const head = constructMetadata({
+  title: 'Admin Panel — Manual Result Entry | KeralaDraws',
+  description:
+    'Manually publish Kerala lottery results when automated ingestion fails. Enter draw numbers, prize tiers, and winning numbers.',
+  path: '/admin',
+  noIndex: true,
+});
+---
+<BaseLayout head={head} locale="en">
+  <AdminPageIsland client:load locale="en" />
+</BaseLayout>
