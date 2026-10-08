@@ -1,0 +1,89 @@
+---
+/**
+ * Locale mirror of `/kerala-lottery-result/[date]` (`/ml`, `/ta`, `/hi`).
+ *
+ * The body is the English route verbatim — same data fetch, same islands, same
+ * cache and analytics behaviour — with two deliberate differences: `en` and
+ * anything that is not a supported locale is refused with a real 404, and the
+ * head is re-derived through `mirrorMetadata()` so the canonical URL, the
+ * hreflang alternates and `og:locale` describe the localized page rather than
+ * the English one.
+ */
+/**
+ * Was `export const revalidate = 300`; a gazetted draw is immutable, so it takes
+ * the result-page window rather than the live one.
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { KeralaLotteryResultDatePageIsland } from '@/components/island/kerala-lottery-result-date-page';
+import {
+  buildMetadataFromData,
+  getHistoricalDrawData,
+} from '@/components/pages/KeralaLotteryResultDatePage';
+import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../../lib/cache-headers';
+import { getTodayIstStr } from '@/lib/date';
+import { resultViewEvent } from '@/lib/analytics';
+import { isLocale } from '@/lib/i18n/config';
+import { mirrorMetadata } from '@/lib/i18n/mirror';
+import type { Language } from '@/lib/translations';
+
+// Astro only matches a dynamic route when the segment is present.
+const dateStr = Astro.params.date as string;
+const data = await getHistoricalDrawData(dateStr);
+
+// Strict anti-soft-404: a date with no gazette-verified draw must not return 200.
+if (!data || !data.draws || data.draws.length === 0) {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+// A gazetted past date is immutable, so it gets the long window; today's page
+// still changes as the draw publishes, so it keeps the live one. A date whose
+// draws are not all OFFICIAL yet stays on the short window — a PROVISIONAL draw
+// can still be upgraded in place, and caching that for a day would serve a
+// "provisional" badge long after the gazette confirmed it.
+const isToday = getTodayIstStr() === dateStr;
+const allDrawsOfficial = data.draws.every(
+  (d: any) => (d.verificationLevel ?? 'OFFICIAL') === 'OFFICIAL'
+);
+const cacheSeconds = isToday
+  ? REVALIDATE.LIVE
+  : allDrawsOfficial
+    ? REVALIDATE.HISTORICAL
+    : REVALIDATE.RESULT_PAGE;
+
+setRevalidateHeaders(Astro, cacheSeconds, {
+  tags: [CACHE_TAG.date(dateStr), CACHE_TAG.RESULTS],
+  staleWhileRevalidate: Math.min(cacheSeconds * 10, REVALIDATE.HISTORICAL_SWR),
+});
+
+// Construct metadata directly from loaded data without re-fetching
+const enHead = buildMetadataFromData(data, dateStr);
+
+// One `result_view` per date document, for the primary draw it leads with — a
+// date can carry several schemes, and reporting one event per scheme would
+// count a single page view several times.
+const primaryDraw = data.draws[0];
+const analyticsEvents = [
+  resultViewEvent({
+    lotteryName: primaryDraw.lottery.name,
+    drawDate: primaryDraw.drawDate,
+    drawNumber: primaryDraw.drawNumber,
+    verificationStatus: (primaryDraw as { verificationLevel?: string | null }).verificationLevel,
+  }),
+];
+
+// Locale wiring. `[locale]` matches any single segment, so an unsupported or
+// default-locale prefix has to be refused here rather than by the router.
+const locale = Astro.params.locale as Language;
+if (!isLocale(locale) || locale === 'en') {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+const head = mirrorMetadata(locale, `/kerala-lottery-result/${dateStr}`, enHead);
+
+---
+
+<BaseLayout head={head} locale={locale} analyticsEvents={analyticsEvents}>
+  <KeralaLotteryResultDatePageIsland client:idle locale={locale} dateStr={dateStr} data={data} />
+</BaseLayout>

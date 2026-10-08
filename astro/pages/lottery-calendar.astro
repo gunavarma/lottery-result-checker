@@ -1,6 +1,6 @@
 ---
 /**
- * Ported from `app/(en)/lottery-calendar/page.tsx`. Was `force-dynamic`, so it
+ * Was `force-dynamic`, so it
  * keeps `no-store` semantics.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -14,5 +14,5 @@ const publishedDraws = await getCalendarDraws();
 ---
 
 <BaseLayout head={metadata} locale="en">
-  <LotteryCalendarPageIsland client:load locale="en" publishedDraws={publishedDraws} />
+  <LotteryCalendarPageIsland client:idle={{ timeout: 1000 }} locale="en" publishedDraws={publishedDraws} />
 </BaseLayout>

@@ -1,0 +1,126 @@
+import type { APIRoute } from 'astro';
+import { prisma, serializeData } from '@/lib/prisma';
+import { parse, isValid } from 'date-fns';
+
+export const GET: APIRoute = async ({ request }) => {
+  try {
+    const query = new URL(request.url).searchParams.get('q')?.trim() || '';
+
+    if (!query || query.length < 2) {
+      return Response.json({
+        success: true,
+        query,
+        results: {
+          draws: [],
+          winningTickets: [],
+          lotteries: [],
+        },
+      });
+    }
+
+    const cleanQuery = query.replace(/\s+/g, ' ');
+
+    // 1. Search by Lottery Name / Slug / Code (case-insensitive)
+    const matchingLotteries = await prisma.lottery.findMany({
+      where: {
+        OR: [
+          { name: { contains: cleanQuery, mode: 'insensitive' } },
+          { slug: { contains: cleanQuery.toLowerCase(), mode: 'insensitive' } },
+          { code: { contains: cleanQuery.toUpperCase(), mode: 'insensitive' } },
+        ],
+      },
+      take: 5,
+    });
+
+    // 2. Search by Draw Number (e.g. "KN-638", "SS-534") or Date
+    let dateFilter: any = null;
+    let parsedDate = parse(cleanQuery, 'yyyy-MM-dd', new Date());
+    if (!isValid(parsedDate)) {
+      parsedDate = parse(cleanQuery, 'dd-MM-yyyy', new Date());
+    }
+    if (!isValid(parsedDate)) {
+      parsedDate = parse(cleanQuery, 'dd/MM/yyyy', new Date());
+    }
+
+    if (isValid(parsedDate)) {
+      const nextDay = new Date(parsedDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      dateFilter = {
+        gte: parsedDate,
+        lt: nextDay,
+      };
+    }
+
+    const drawOrConditions: any[] = [
+      { drawNumber: { contains: cleanQuery.toUpperCase(), mode: 'insensitive' } },
+      { lottery: { name: { contains: cleanQuery, mode: 'insensitive' } } },
+    ];
+    if (dateFilter) drawOrConditions.push({ drawDate: dateFilter });
+
+    const matchingDraws = await prisma.draw.findMany({
+      where: {
+        status: 'PUBLISHED',
+        OR: drawOrConditions,
+      },
+      take: 8,
+      orderBy: { drawDate: 'desc' },
+      include: {
+        lottery: true,
+        prizes: {
+          where: { orderIndex: 0 },
+          include: { winningNumbers: { take: 1 } },
+        },
+      },
+    });
+
+    // 3. Search Winning Numbers (e.g. "320327", "PS 320327", "0266")
+    const numericOnly = cleanQuery.replace(/[^0-9]/g, '');
+    let matchingWinningNumbers: any[] = [];
+
+    if (numericOnly.length >= 4) {
+      matchingWinningNumbers = await prisma.winningNumber.findMany({
+        where: {
+          OR: [
+            { number: numericOnly },
+            { displayNumber: { contains: cleanQuery.toUpperCase(), mode: 'insensitive' } },
+          ],
+        },
+        take: 10,
+        include: {
+          prize: {
+            include: {
+              draw: {
+                include: {
+                  lottery: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+
+    return Response.json(
+      serializeData({
+        success: true,
+        query: cleanQuery,
+        results: {
+          draws: matchingDraws,
+          lotteries: matchingLotteries,
+          winningTickets: matchingWinningNumbers,
+        },
+      }),
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+        },
+      }
+    );
+  } catch (error: any) {
+    console.error('API /search error:', error);
+    return Response.json(
+      { success: false, error: error.message || 'Failed to execute search' },
+      { status: 500 }
+    );
+  }
+};

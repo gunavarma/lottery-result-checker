@@ -1,0 +1,54 @@
+---
+/**
+ * Locale mirror of `/kerala-lottery-results/[year]/[month]` (`/ml`, `/ta`, `/hi`).
+ *
+ * The body is the English route verbatim — same data fetch, same islands, same
+ * cache and analytics behaviour — with two deliberate differences: `en` and
+ * anything that is not a supported locale is refused with a real 404, and the
+ * head is re-derived through `mirrorMetadata()` so the canonical URL, the
+ * hreflang alternates and `og:locale` describe the localized page rather than
+ * the English one.
+ */
+/**
+ * The month archive keeps its strict anti-soft-404 behaviour: a month with no
+ * gazette-verified draws returns a real 404 rather than an empty 200.
+ */
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import MonthArchivePage, {
+  generateMetadata,
+  getMonthArchiveData,
+} from '@/components/pages/KeralaLotteryResultsMonthPage';
+import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../../../lib/cache-headers';
+import { isLocale } from '@/lib/i18n/config';
+import { mirrorMetadata } from '@/lib/i18n/mirror';
+import type { Language } from '@/lib/translations';
+
+// Astro only matches a dynamic route when both segments are present.
+const year = Astro.params.year as string;
+const month = Astro.params.month as string;
+const data = await getMonthArchiveData(year, month);
+
+if (!data) {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+setRevalidateHeaders(Astro, REVALIDATE.CONTENT, { tags: [CACHE_TAG.RESULTS] });
+
+const enHead = await generateMetadata({ params: Promise.resolve({ year, month }) });
+
+// Locale wiring. `[locale]` matches any single segment, so an unsupported or
+// default-locale prefix has to be refused here rather than by the router.
+const locale = Astro.params.locale as Language;
+if (!isLocale(locale) || locale === 'en') {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+const head = mirrorMetadata(locale, `/kerala-lottery-results/${year}/${month}`, enHead);
+
+---
+
+<BaseLayout head={head} locale={locale}>
+  <MonthArchivePage yearStr={year} monthStr={month} data={data} />
+</BaseLayout>

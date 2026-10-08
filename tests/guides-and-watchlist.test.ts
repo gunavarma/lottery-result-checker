@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { getAllGuides, getGuideBySlug, getGuidesByCategory } from '@/lib/guides';
-import { GET as getWatchlist } from '../app/api/tickets/watchlist/route';
+import { GET as getWatchlist } from '../astro/pages/api/tickets/watchlist';
 import { prisma } from '../lib/prisma';
+import { callRoute } from './helpers/astro-route';
 
 describe('Guides Knowledge Base & Content Quality', () => {
   it('should load all guides without error', () => {
@@ -63,7 +64,7 @@ describe('Watchlist latest-draw evaluation', () => {
   it('selects only the fields the matcher reads, never the full prize tree', async () => {
     vi.spyOn(prisma.ticketWatchlist, 'findMany').mockResolvedValueOnce([] as any);
 
-    await getWatchlist(new Request('http://localhost/api/tickets/watchlist?userId=u1'));
+    await callRoute(getWatchlist, new Request('http://localhost/api/tickets/watchlist?userId=u1'));
 
     const args = (prisma.ticketWatchlist.findMany as any).mock.calls[0][0];
     expect(args.include).toBeUndefined();
@@ -101,7 +102,7 @@ describe('Watchlist latest-draw evaluation', () => {
       },
     ] as any);
 
-    const res = await getWatchlist(new Request('http://localhost/api/tickets/watchlist?userId=u1'));
+    const res = await callRoute(getWatchlist, new Request('http://localhost/api/tickets/watchlist?userId=u1'));
     const json = await res.json();
 
     expect(json.success).toBe(true);

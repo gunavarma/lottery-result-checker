@@ -4,21 +4,45 @@
 /**
  * Public (browser-visible) environment variables.
  *
- * Astro only inlines `PUBLIC_`-prefixed variables into client code, and only
- * these two are read by the document layout. Declaring them here means a typo
- * in the GA variable name is a type error during `astro check` rather than a
- * silently untracked site:
+ * Astro inlines public variables at build time, so a typo in one of these names
+ * is a silent misconfiguration at runtime. Declaring them here turns that into a
+ * type error during `astro check`.
  *
- *   - `PUBLIC_GA_MEASUREMENT_ID` — the GA4 web-stream measurement ID (`G-…`).
- *     Preferred name since the Next.js → Astro migration.
- *   - `PUBLIC_GA_ID` — the older name, still honoured so an existing
- *     deployment's configuration keeps working.
+ * Both prefixes are declared: `PUBLIC_` is Astro's own, and `NEXT_PUBLIC_` is
+ * still read so an existing deployment keeps working — see `vite.envPrefix` in
+ * `astro.config.ts`. None of these are secrets; every one of them ends up in
+ * the page's HTML or JavaScript.
  *
- * Neither is a secret; the measurement ID is visible in every page's HTML.
+ * `lib/public-env.ts` is the single place that reads them.
  */
 interface ImportMetaEnv {
+  // --- Google Analytics 4 -------------------------------------------------
+  /** GA4 web-stream measurement ID (`G-…`). Preferred name. */
   readonly PUBLIC_GA_MEASUREMENT_ID?: string;
+  /** Older name for the same value, still honoured. */
   readonly PUBLIC_GA_ID?: string;
+
+  // --- Firebase Cloud Messaging (web push) --------------------------------
+  readonly PUBLIC_FIREBASE_API_KEY?: string;
+  readonly PUBLIC_FIREBASE_AUTH_DOMAIN?: string;
+  readonly PUBLIC_FIREBASE_PROJECT_ID?: string;
+  readonly PUBLIC_FIREBASE_STORAGE_BUCKET?: string;
+  readonly PUBLIC_FIREBASE_MESSAGING_SENDER_ID?: string;
+  readonly PUBLIC_FIREBASE_APP_ID?: string;
+  readonly PUBLIC_FIREBASE_VAPID_KEY?: string;
+
+  // --- Web Push (VAPID) ---------------------------------------------------
+  readonly PUBLIC_VAPID_PUBLIC_KEY?: string;
+
+  // --- Legacy Next.js names, read for backwards compatibility -------------
+  readonly NEXT_PUBLIC_FIREBASE_API_KEY?: string;
+  readonly NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN?: string;
+  readonly NEXT_PUBLIC_FIREBASE_PROJECT_ID?: string;
+  readonly NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET?: string;
+  readonly NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID?: string;
+  readonly NEXT_PUBLIC_FIREBASE_APP_ID?: string;
+  readonly NEXT_PUBLIC_FIREBASE_VAPID_KEY?: string;
+  readonly NEXT_PUBLIC_VAPID_PUBLIC_KEY?: string;
 }
 
 interface ImportMeta {

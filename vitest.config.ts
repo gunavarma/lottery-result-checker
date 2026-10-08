@@ -13,6 +13,6 @@ export default defineConfig({
     // `tests/runners/**` are operator runners (full archive import, repair pass,
     // live probes). They hit the network for hours and must be invoked
     // explicitly via `vitest.runners.config.ts`, never as part of `npm test`.
-    exclude: ['node_modules/**', 'dist/**', '.next/**', 'tests/runners/**'],
+    exclude: ['node_modules/**', 'dist/**', '.astro/**', 'tests/runners/**'],
   },
 });

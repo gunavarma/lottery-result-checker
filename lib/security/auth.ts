@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import { NextResponse } from 'next/server';
 
 /**
  * Centralized authentication for privileged server endpoints (cron + admin).
@@ -133,14 +132,14 @@ export function evaluateAuth(request: Request, scope: AuthScope): AuthResult {
 }
 
 /**
- * Convenience wrapper: returns a 401/503 NextResponse when the request is not
+ * Convenience wrapper: returns a 401/503 `Response` when the request is not
  * authorized, or `null` when the caller may proceed.
  */
-export function denyUnauthorized(request: Request, scope: AuthScope): NextResponse | null {
+export function denyUnauthorized(request: Request, scope: AuthScope): Response | null {
   const result = evaluateAuth(request, scope);
   if (result.authorized) return null;
 
-  return NextResponse.json(
+  return Response.json(
     { success: false, error: result.reason || 'Unauthorized' },
     { status: result.status }
   );
@@ -150,7 +149,7 @@ export function denyUnauthorized(request: Request, scope: AuthScope): NextRespon
  * Authorizes when the request satisfies ANY of the given scopes (e.g. an
  * endpoint callable by both the cron pipeline and a human operator).
  */
-export function denyUnauthorizedAny(request: Request, scopes: AuthScope[]): NextResponse | null {
+export function denyUnauthorizedAny(request: Request, scopes: AuthScope[]): Response | null {
   let status = 401;
   let reason = 'Unauthorized';
 
@@ -163,7 +162,7 @@ export function denyUnauthorizedAny(request: Request, scopes: AuthScope[]): Next
     }
   }
 
-  return NextResponse.json({ success: false, error: reason }, { status });
+  return Response.json({ success: false, error: reason }, { status });
 }
 
 /**
@@ -268,12 +267,12 @@ export async function evaluatePrivilegedAuth(
 export async function requirePrivileged(
   request: Request,
   scopes: AuthScope | AuthScope[]
-): Promise<NextResponse | null> {
+): Promise<Response | null> {
   const list = Array.isArray(scopes) ? scopes : [scopes];
   const result = await evaluatePrivilegedAuth(request, list);
   if (result.authorized) return null;
 
-  return NextResponse.json(
+  return Response.json(
     { success: false, error: result.reason || 'Unauthorized' },
     { status: result.status }
   );

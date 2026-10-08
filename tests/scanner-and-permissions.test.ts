@@ -1,16 +1,30 @@
 import { describe, it, expect, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import { checkTicketsHandler } from '../app/api/tickets/check/route';
+import { checkTicketsHandler } from '../astro/pages/api/tickets/check';
 import { prisma } from '../lib/prisma';
 
 const projectRoot = process.cwd();
 const read = (rel: string) => fs.readFileSync(path.join(projectRoot, rel), 'utf8');
 
+/**
+ * Reads a response header the deployment sets, from `vercel.json`.
+ *
+ * The shipped permissions policy is the one the deployed site actually sends,
+ * so the guard has to read the deployment config rather than a framework config
+ * file — that file no longer exists now the site is Astro-only.
+ */
+function deployedHeader(name: string): string {
+  const config = JSON.parse(read('vercel.json')) as {
+    headers: { source: string; headers: { key: string; value: string }[] }[];
+  };
+  const all = config.headers.find((entry) => entry.source === '/:path*');
+  return all?.headers.find((header) => header.key === name)?.value ?? '';
+}
+
 describe('Camera Permissions-Policy', () => {
   it('allows the site itself to use the camera', () => {
-    const config = read('next.config.ts');
-    const policy = config.match(/value:\s*'([^']*camera=[^']*)'/)?.[1] ?? '';
+    const policy = deployedHeader('Permissions-Policy');
 
     expect(policy).toContain('camera=(self)');
     // An empty allowlist, `camera=()`, disables the camera for our own origin
@@ -19,9 +33,9 @@ describe('Camera Permissions-Policy', () => {
   });
 
   it('still denies microphone and geolocation', () => {
-    const config = read('next.config.ts');
-    expect(config).toContain('microphone=()');
-    expect(config).toContain('geolocation=()');
+    const policy = deployedHeader('Permissions-Policy');
+    expect(policy).toContain('microphone=()');
+    expect(policy).toContain('geolocation=()');
   });
 });
 

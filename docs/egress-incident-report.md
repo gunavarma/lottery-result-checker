@@ -17,7 +17,7 @@ Five compounding causes, each measured against the production database:
    model, so every `Draw` read carried `rawText` — the source Gazette/LOTIS document text, up to
    20 000 chars, **13.67 MB across 1 848 draws (~7.4 KB average)**. Verified by grepping every
    consumer for `.rawText`, `.sourceHash`, `.sourceItemId`, `.sourceProvider`, `.lastCheckedAt`:
-   **zero reads**. It accounted for 84.5 KB of a single-draw read, and under Next.js it was shipped
+   **zero reads**. It accounted for 84.5 KB of a single-draw read, and the old SSR layer shipped
    to the browser inside the RSC payload.
 2. **Historical pages were uncached on every hit.** Production measured
    `/kerala-lottery-result/2026-09-28` as `private, no-cache, no-store` with a Vercel cache **MISS
@@ -39,10 +39,10 @@ Five compounding causes, each measured against the production database:
 | --- | --- |
 | `rawText` on every draw read | every `include:` on `prisma.draw` (192 files' worth of call sites) — fixed centrally in `lib/prisma.ts` |
 | Uncached historical pages | `astro/lib/cache-headers.ts`, `astro/pages/kerala-lottery-result/[date].astro`, `astro/pages/results/[slug]/[drawNumber].astro`, `astro/pages/kerala-lottery-results/**`, `astro/pages/previous-results.astro`, `astro/pages/prize-structure.astro`, `astro/pages/lottery-calendar.astro` |
-| Ticket checker | `app/api/tickets/check/route.ts` |
-| Polled endpoints | `app/api/live/route.ts`, `app/api/results/today/route.ts`, `lib/results/today-snapshot.ts` |
+| Ticket checker | `astro/pages/api/tickets/check.ts` |
+| Polled endpoints | `astro/pages/api/live.ts`, `astro/pages/api/results/today.ts`, `lib/results/today-snapshot.ts` |
 | Oversized payloads | `lib/results/projections.ts` (new), `components/pages/{LotterySchemePage,ResultsHub,KeralaLotteryResultsIndexPage}.tsx`, `lib/home-data.ts`, `components/HeroTodayCard.tsx` |
-| Secondary API payloads (final pass) | `app/api/results/latest/route.ts`, `app/api/tickets/watchlist/route.ts`, `app/api/results/date/[date]/route.ts`, `app/api/results/[id]/route.ts`, `app/api/lotteries/[slug]/route.ts` |
+| Secondary API payloads (final pass) | `astro/pages/api/results/latest.ts`, `astro/pages/api/tickets/watchlist.ts`, `astro/pages/api/results/date/[date].ts`, `astro/pages/api/results/[id].ts`, `astro/pages/api/lotteries/[slug].ts` |
 
 ## 3. Before vs after database query count
 
@@ -170,7 +170,7 @@ commits):
 
 ## 10. Ticket check optimization
 
-`app/api/tickets/check/route.ts` was rewritten from "download everything, loop in JS" to an indexed
+`astro/pages/api/tickets/check.ts` was rewritten from "download everything, loop in JS" to an indexed
 candidate lookup: resolve the draw identities (no prize tree), normalize each ticket once, collect
 only the numbers that can possibly match (the 6-digit number and its 4-digit ending), issue **one**
 `winningNumber.findMany` scoped by `number IN (...)` and `prize.drawId IN (...)`, then apply the
@@ -264,7 +264,7 @@ against minified bundles).
    versioned slim API), not query tuning.
 4. The archive index still issues 4 queries per uncached render (the 1 848-row scan is now a 60-row
    aggregate).
-5. **`assessCompleteness()` in `app/api/live/route.ts` reads `prize.tierNumber`, which does not exist
+5. **`assessCompleteness()` in `astro/pages/api/live.ts` reads `prize.tierNumber`, which does not exist
    on the `Prize` model** — `isComplete` is therefore always false, so provisional draws keep the
    fastest client poll (10 s) for longer than intended. Pre-existing, and a real polling-load lever;
    it needs a decision about the intended tier source (`orderIndex`/`category`) before changing.

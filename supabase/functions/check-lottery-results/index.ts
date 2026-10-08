@@ -124,7 +124,7 @@ function parseLotisTableHtml(html: string): ScrapedItem[] {
 function parseResultText(text: string, defaultName: string, defaultNumber: string, defaultDate: string): ParsedDraw | null {
   if (!text || text.length < 50) return null;
 
-  const dateMatch = text.match(/(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);
+  const dateMatch = text.match(/(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
   let isoDate = new Date().toISOString().split('T')[0];
   let formattedDate = defaultDate;
 

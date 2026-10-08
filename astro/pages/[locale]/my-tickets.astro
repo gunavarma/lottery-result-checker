@@ -1,0 +1,48 @@
+---
+/**
+ * Locale mirror of `/my-tickets` (`/ml`, `/ta`, `/hi`).
+ *
+ * The body is the English route verbatim — same data fetch, same islands, same
+ * cache and analytics behaviour — with two deliberate differences: `en` and
+ * anything that is not a supported locale is refused with a real 404, and the
+ * head is re-derived through `mirrorMetadata()` so the canonical URL, the
+ * hreflang alternates and `og:locale` describe the localized page rather than
+ * the English one.
+ */
+/**
+ * Personal watchlist page, so it stays `noIndex` and must never be cached by the
+ * CDN — hence `setNoStoreHeaders` rather than a revalidate window.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { MyTicketsPageIsland } from '@/components/island/my-tickets-page';
+import { constructMetadata } from '@/lib/seo';
+import { setNoStoreHeaders } from '../../lib/cache-headers';
+import { isLocale } from '@/lib/i18n/config';
+import { mirrorMetadata } from '@/lib/i18n/mirror';
+import type { Language } from '@/lib/translations';
+
+setNoStoreHeaders(Astro);
+
+const enHead = constructMetadata({
+  title: 'My Saved Lottery Tickets | KeralaDraws Watchlist',
+  description:
+    'Monitor your saved Kerala lottery tickets in real time. Automatic winning number evaluation against official 3:00 PM LOTIS certified draw gazettes.',
+  path: '/my-tickets',
+  noIndex: true, // User personal state page
+});
+
+// Locale wiring. `[locale]` matches any single segment, so an unsupported or
+// default-locale prefix has to be refused here rather than by the router.
+const locale = Astro.params.locale as Language;
+if (!isLocale(locale) || locale === 'en') {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+const head = mirrorMetadata(locale, '/my-tickets', enHead);
+
+---
+
+<BaseLayout head={head} locale={locale}>
+  <MyTicketsPageIsland client:load locale={locale} />
+</BaseLayout>

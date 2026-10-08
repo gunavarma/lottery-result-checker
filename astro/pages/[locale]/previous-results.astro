@@ -1,0 +1,48 @@
+---
+/**
+ * Locale mirror of `/previous-results` (`/ml`, `/ta`, `/hi`).
+ *
+ * The body is the English route verbatim — same data fetch, same islands, same
+ * cache and analytics behaviour — with two deliberate differences: `en` and
+ * anything that is not a supported locale is refused with a real 404, and the
+ * head is re-derived through `mirrorMetadata()` so the canonical URL, the
+ * hreflang alternates and `og:locale` describe the localized page rather than
+ * the English one.
+ */
+/**
+ * Interactive archive browser,
+ * so it is an island and is never CDN-cached (its contents depend on the
+ * visitor's date selection).
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { PreviousResultsPageIsland } from '@/components/island/previous-results-page';
+import { constructMetadata } from '@/lib/seo';
+import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
+import { isLocale } from '@/lib/i18n/config';
+import { mirrorMetadata } from '@/lib/i18n/mirror';
+import type { Language } from '@/lib/translations';
+
+setRevalidateHeaders(Astro, REVALIDATE.CONTENT, { tags: [CACHE_TAG.RESULTS] });
+
+const enHead = constructMetadata({
+  title: 'Previous Kerala Lottery Results | KeralaDraws',
+  description:
+    'Browse previous Kerala lottery results by scheme and date, with verified winning numbers and complete prize tables.',
+  path: '/previous-results',
+});
+
+// Locale wiring. `[locale]` matches any single segment, so an unsupported or
+// default-locale prefix has to be refused here rather than by the router.
+const locale = Astro.params.locale as Language;
+if (!isLocale(locale) || locale === 'en') {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+const head = mirrorMetadata(locale, '/previous-results', enHead);
+
+---
+
+<BaseLayout head={head} locale={locale}>
+  <PreviousResultsPageIsland client:load locale={locale} />
+</BaseLayout>

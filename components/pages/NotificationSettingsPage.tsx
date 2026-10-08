@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import { Bell, CheckCircle2, AlertCircle, ShieldCheck, Check, Trash2, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from "@/components/Link";

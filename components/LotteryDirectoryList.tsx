@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import Link from '@/components/Link';
 import { Star, ArrowRight, Clock, Award, ShieldCheck } from 'lucide-react';

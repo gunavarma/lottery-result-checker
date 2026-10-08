@@ -1,6 +1,6 @@
 # KeralaDraws — Local Run Guide
 
-Next.js 16 (App Router) + Prisma + Supabase Postgres. Node via Homebrew.
+Astro 7 (`output: "server"`) + React islands + Prisma + Supabase Postgres. Node via Homebrew.
 
 ## Reproduce uncommitted artifacts
 
@@ -8,35 +8,38 @@ Next.js 16 (App Router) + Prisma + Supabase Postgres. Node via Homebrew.
    ```
    cp /Users/guna/Documents/lottery-result-checker/.env ./.env
    ```
-   `.env` is gitignored and holds `DATABASE_URL`, `CRON_SECRET`, `ADMIN_SECRET`, Firebase + VAPID keys, `NEXT_PUBLIC_SITE_URL`. Never commit or print these values.
+   `.env` is gitignored and holds `DATABASE_URL`, `CRON_SECRET`, `ADMIN_SECRET`, Firebase + VAPID keys, `PUBLIC_SITE_URL`. Never commit or print these values.
 2. Install deps with npm (project uses `package-lock.json`): `npm install`
 3. Generate the Prisma client: `npx prisma generate`
-4. Build artifacts (production server needs `.next`): `npm run build`
+4. Build artifacts (the production server needs `dist/`): `npm run build`
    - To reproduce a **Vercel production build locally** (correct canonicals, no in-process scheduler), set the platform variables the resolver reads:
      ```
      VERCEL=1 VERCEL_PROJECT_PRODUCTION_URL=www.keraladraws.com npm run build
      ```
-     Without `VERCEL=1` the build is treated as local and `.env`'s `NEXT_PUBLIC_SITE_URL=http://localhost:3000` is honoured, which is correct for local development but not a production simulation.
+     The origin is resolved *at build time* and frozen into both bundles (`__SITE_ORIGIN__` in `astro.config.ts`) — the browser has no `process.env`, so a runtime lookup there resolved to the localhost fallback instead of the real origin. Without `VERCEL=1` and without `PUBLIC_SITE_URL`, a local build legitimately bakes in `http://localhost:3000`.
 
 ## Run the server
 
 Production preview (what the Preview tab uses):
 
 ```
-nohup env VERCEL=1 ./node_modules/.bin/next start -p 3401 > .freebuff/preview.log 2>&1 < /dev/null &
+nohup env VERCEL=1 PORT=3401 node server.mjs > .freebuff/preview.log 2>&1 < /dev/null &
 ```
 
-- `VERCEL=1` disables the dev-only in-process result scheduler in `instrumentation.ts` (otherwise `npm start`/`next start` syncs against the PRODUCTION database every 15 minutes — keep this flag unless you intend that).
-- Port 3401 because 3000/3001 are occupied by other servers on this machine. Any free port works: change `-p`.
+- `VERCEL=1` disables the in-process result scheduler in `lib/scheduler.ts` (otherwise the standalone server syncs against the PRODUCTION database every 15 minutes — keep this flag unless you intend that). Production scheduling itself runs on Vercel Cron + Supabase `pg_cron`, not on this worker.
+- Port 3401 because 3000/3001 are occupied by other servers on this machine. Any free port works: change `PORT`.
+- `server.mjs` is the production entry: it adds gzip/brotli and long-lived cache headers for `/_astro/*` on top of the generated `dist/server/entry.mjs`. `npm run preview:node` runs the raw adapter entry instead.
 - The command tool's background processes may be reaped; if the server dies between tool calls, relaunch via `start_new_session` fork (python `subprocess.Popen`) or `launchctl submit` with a PATH-fixed wrapper (`.freebuff/preview-start.sh`).
+- **A rebuild requires a restart.** Chunk filenames are content-hashed, so a server still holding the old `dist/` serves HTML that references files that no longer exist (`ERR_MODULE_NOT_FOUND`).
 
-Dev alternative: `npx next dev -p 3399` (refuses if another dev server for this project is already running — check with `lsof -nP -iTCP:3001 -sTCP:LISTEN`).
+Dev alternative: `npm run dev` (`astro dev`, port 3000 from `astro.config.ts`).
 
 ## Verify after starting
 
 - `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3401/` → 200
-- Locale trees: `/ml`, `/ta`, `/hi` → 200 with native `html lang`
-- Checks: `npm test` (vitest, 146 tests), `npx tsc --noEmit`, `npm run build`
+- Locale trees: `/ml`, `/ta`, `/hi` → 200 with native `html lang`; `/en/...` and any unknown locale prefix → 404
+- API endpoints (the whole surface is native Astro routes under `astro/pages/api/`): `/api/live` → 200 without a database, `/api/results/today` → 200 with one
+- Checks: `npm run check` (astro check), `npm run lint`, `npm test` (vitest), `npm run build`
 
 ## Automation (production cron)
 
@@ -59,7 +62,7 @@ Two pg_cron jobs live in the production database (`SELECT jobname, schedule, act
   ```
   node --env-file=.env scripts/configure-automation-cron.mjs
   ```
-- **Two credential sources.** The environment secret is primary. `automation_credentials` (scope `cron`) stores only a **SHA-256 hash** of the same secret, and `lib/security/auth.ts` accepts either. This exists because production's Vercel `CRON_SECRET` was the previously exposed value, which the auth layer correctly refuses with 503 — and rotating a Vercel env var needs dashboard access plus a redeploy, which is how the pipeline stayed dead while looking healthy. With the stored credential, the scheduled jobs authenticate and the secret can be rotated by re-running the script, with no redeploy. Rotating is still recommended in Vercel too (`NEXT_PUBLIC_SITE_URL` aside, nothing else needs a dashboard change).
+- **Two credential sources.** The environment secret is primary. `automation_credentials` (scope `cron`) stores only a **SHA-256 hash** of the same secret, and `lib/security/auth.ts` accepts either. This exists because production's Vercel `CRON_SECRET` was the previously exposed value, which the auth layer correctly refuses with 503 — and rotating a Vercel env var needs dashboard access plus a redeploy, which is how the pipeline stayed dead while looking healthy. With the stored credential, the scheduled jobs authenticate and the secret can be rotated by re-running the script, with no redeploy. Rotating is still recommended in Vercel too (`PUBLIC_SITE_URL` aside, nothing else needs a dashboard change).
 - Verified behaviour (`CRON_SECRET` forced to the compromised literal, credential read from the database): valid credential → **200**, no credential → **503**, wrong credential → **503**. Fail-closed is preserved; nothing is authorized without a matching secret.
 - `ALTER DATABASE postgres SET app.settings.*` does NOT work on this project (SQLSTATE 42501, postgres is not superuser) — that is why the older migrations never scheduled anything.
 - pg_cron reports "succeeded" for merely *queueing* a `pg_net` request. Check `net._http_response` or the endpoint's own JSON to confirm the app actually authenticated (it returns 503 when its configured secret is missing/compromised).
@@ -179,13 +182,13 @@ App-side defence, so the backend being misconfigured can no longer blank a page:
 | `connect_timeout=10` appended, so the 5 s cold-connect default is no longer the failure point | `lib/db-url.ts` | cold starts failing at exactly 5.44 s |
 | `withDbRetry` (3 attempts, 150/400 ms, transient errors only) around the public read paths | `lib/db-retry.ts` | a refusal that would have succeeded 200 ms later |
 | `staleIfErrorMs` on the cache | `lib/cache.ts`; `PUBLISHED_DATA_STALE_IF_ERROR_MS` 30 min, `LIVE_DATA_STALE_IF_ERROR_MS` 15 min | an error page when a good answer was in memory |
-| `/api/live` degrades to a clock-derived state instead of throwing | `app/api/live/route.ts` | the live page breaking while the DB is unreachable |
+| `/api/live` degrades to a clock-derived state instead of throwing | `astro/pages/api/live.ts` | the live page breaking while the DB is unreachable |
 
 `getHomepageData()` no longer caches a degraded payload, and the homepage's client components still
 treat a `success: false` payload as untrusted and refetch (`/api/results/today`,
 `/api/results/latest`, `/api/lotteries`).
 
-Verified locally on a production-simulated server (`VERCEL=1 next start`): with a working database
+Verified locally on a production-simulated server (`VERCEL=1 node server.mjs`): with a working database
 all five public read routes return 200 while `connection_limit=1` is in force, and with an
 unreachable database `/api/live` returns **200** with a truthful clock-derived state
 (`countdownSeconds: 4174` at 13:50 IST) instead of a 500, while `/api/results/latest` fails
@@ -199,7 +202,7 @@ by unit tests in `tests/performance-and-cache.test.ts`.
    not because of old code. Deploying ships the client self-heal, the `homepage_data_v4` cache key
    and the raised connect timeout; the `DATABASE_URL` correction above is still required for the
    backend to be reliably reachable.
-2. Recommended, not required: set `CRON_SECRET` in Vercel to the local `.env` value, and `NEXT_PUBLIC_SITE_URL=https://www.keraladraws.com`. Neither is needed for correctness any more — the stored credential authorizes the database jobs, and the site origin resolver ignores a loopback value on a deployed host and prefers Vercel's own production domain.
+2. Recommended, not required: set `CRON_SECRET` in Vercel to the local `.env` value, and `PUBLIC_SITE_URL=https://www.keraladraws.com`. Neither is needed for correctness any more — the stored credential authorizes the database jobs, and the site origin resolver ignores a loopback value on a deployed host and prefers Vercel's own production domain.
 
 Verify after deploying with `node --env-file=.env scripts/automation-status.mjs`: the cron HTTP responses must show **200**, not 503.
 

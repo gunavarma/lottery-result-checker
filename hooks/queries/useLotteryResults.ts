@@ -1,5 +1,3 @@
-'use client';
-
 import { useQuery } from '@tanstack/react-query';
 import { fetchTodayResult, TodayResultResponse } from '@/lib/api/lottery-results';
 import { resultKeys } from '@/lib/queries/keys';

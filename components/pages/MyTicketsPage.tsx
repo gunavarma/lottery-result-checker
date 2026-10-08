@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from "@/components/Link";
 import { Breadcrumbs } from '@/components/Breadcrumbs';

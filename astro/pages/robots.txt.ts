@@ -1,21 +1,8 @@
 import type { APIRoute } from 'astro';
-// Same reasoning as `sitemap.xml.ts`: the rules live in one place
-// (`app/robots.ts`) so the Astro branch cannot silently ship a different
-// crawler policy from the one production has been serving.
-import buildRobots from '../../app/robots';
+// The rules themselves live in `lib/robots.ts`, which owns no framework types,
+// so the crawler policy has exactly one definition for the whole site.
+import { buildRobotsConfig, type RobotsConfig } from '@/lib/robots';
 import { buildCacheHeaders, CACHE_TAG, REVALIDATE } from '../lib/cache-headers';
-
-interface RobotsRule {
-  userAgent?: string | string[];
-  allow?: string | string[];
-  disallow?: string | string[];
-}
-
-interface RobotsConfig {
-  rules: RobotsRule | RobotsRule[];
-  sitemap?: string | string[];
-  host?: string;
-}
 
 function toArray(value?: string | string[]): string[] {
   if (!value) return [];
@@ -42,7 +29,7 @@ function renderRobots(config: RobotsConfig): string {
 }
 
 export const GET: APIRoute = () => {
-  return new Response(renderRobots(buildRobots() as RobotsConfig), {
+  return new Response(renderRobots(buildRobotsConfig()), {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
       ...buildCacheHeaders(REVALIDATE.CONTENT, { tags: [CACHE_TAG.RESULTS] }),

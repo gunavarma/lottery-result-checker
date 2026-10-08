@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import { Share2, MessageCircle, Send, Link as LinkIcon, Check } from 'lucide-react';
 import { trackResultShare } from '@/lib/analytics';

@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Astro island wrapper for Homepage quick-jump finder.
  *

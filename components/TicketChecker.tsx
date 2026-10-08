@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useRef, useState, useEffect } from 'react';
 import Link from '@/components/Link';
 import {
@@ -17,7 +15,7 @@ import {
   Ticket,
   XCircle,
 } from 'lucide-react';
-import dynamic from '@/components/dynamic';
+import { lazy } from '@/components/lazy';
 import { formatINR } from '@/lib/format';
 import { useLanguage } from '@/context/LanguageContext';
 import type { ScannedTicket } from '@/components/lottery/TicketScanner';
@@ -26,9 +24,8 @@ import { trackTicketCheck, trackTicketCheckerOpen } from '@/lib/analytics';
 
 // Lazy-load the camera/QR scanner to keep html5-qrcode and tesseract.js
 // out of the initial JS bundle. Only loaded when the user opens the scanner.
-const TicketScanner = dynamic(
-  () => import('@/components/lottery/TicketScanner').then((mod) => mod.TicketScanner),
-  { ssr: false }
+const TicketScanner = lazy(() =>
+  import('@/components/lottery/TicketScanner').then((mod) => mod.TicketScanner)
 );
 
 interface TicketCheckerProps {
@@ -601,7 +598,7 @@ export function TicketChecker({
 
       {/* Multi-Ticket Scanner Modal
 
-          Mounted only once the user opens it. `dynamic()` resolves its loader
+          Mounted only once the user opens it. `lazy()` resolves its loader
           from a mount effect, so an always-rendered `<TicketScanner>` fetched
           the 384 KB html5-qrcode chunk — and its tesseract.js OCR worker — for
           every visitor, including the ones who never scan anything. Rendering

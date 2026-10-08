@@ -1,11 +1,10 @@
 ---
 /**
- * Ported from `app/(en)/live/page.tsx`, whose head copy lived in
- * `app/(en)/live/layout.tsx`. Astro has no per-route layout, so the layout's
- * `metadata` is folded into the route that needed it.
+ * `LivePage` polls during the draw window, so it is an island; its markup is
+ * server-rendered either way, which keeps the first paint free of JavaScript.
  *
- * `LivePage` was a client component (it polls during the draw window), so it
- * becomes an island. It was `revalidate = 30` in Next.js, preserved here.
+ * The head copy that used to live in the route's own layout is declared here:
+ * Astro has no per-route layout, so a route that needs extra metadata owns it.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { LivePageIsland } from '@/components/island/live-page';
@@ -29,5 +28,5 @@ const head = constructMetadata({
 ---
 
 <BaseLayout head={head} locale="en">
-  <LivePageIsland client:load locale="en" />
+  <LivePageIsland client:idle={{ timeout: 1000 }} locale="en" />
 </BaseLayout>

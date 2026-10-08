@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import Link from '@/components/Link';
 import { Award, Bell, X, ArrowRight } from 'lucide-react';

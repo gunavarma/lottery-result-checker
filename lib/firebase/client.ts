@@ -1,21 +1,33 @@
 import type { FirebaseApp } from 'firebase/app';
 import type { Messaging } from 'firebase/messaging';
+import {
+  FIREBASE_API_KEY,
+  FIREBASE_APP_ID,
+  FIREBASE_AUTH_DOMAIN,
+  FIREBASE_MESSAGING_SENDER_ID,
+  FIREBASE_PROJECT_ID,
+  FIREBASE_STORAGE_BUCKET,
+  VAPID_PUBLIC_KEY,
+} from '@/lib/public-env';
 
+// Values come from `import.meta.env` through `lib/public-env.ts`: the browser
+// has no `process.env`, so reading it here (as the Next.js build allowed) left
+// every visitor on the placeholder credentials below.
 export const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'AIzaSyDemoDummyApiKeyForFirebase12345',
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'kerala-lottery-results.firebaseapp.com',
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'kerala-lottery-results',
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'kerala-lottery-results.appspot.com',
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '123456789012',
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '1:123456789012:web:abcdef1234567890',
+  apiKey: FIREBASE_API_KEY || 'AIzaSyDemoDummyApiKeyForFirebase12345',
+  authDomain: FIREBASE_AUTH_DOMAIN || 'kerala-lottery-results.firebaseapp.com',
+  projectId: FIREBASE_PROJECT_ID || 'kerala-lottery-results',
+  storageBucket: FIREBASE_STORAGE_BUCKET || 'kerala-lottery-results.appspot.com',
+  messagingSenderId: FIREBASE_MESSAGING_SENDER_ID || '123456789012',
+  appId: FIREBASE_APP_ID || '1:123456789012:web:abcdef1234567890',
 };
 
 export function isFirebaseConfigured(): boolean {
   return Boolean(
-    process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
-    !process.env.NEXT_PUBLIC_FIREBASE_API_KEY.includes('Dummy') &&
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
-    !process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID.includes('dummy')
+    FIREBASE_API_KEY &&
+    !FIREBASE_API_KEY.includes('Dummy') &&
+    FIREBASE_PROJECT_ID &&
+    !FIREBASE_PROJECT_ID.includes('dummy')
   );
 }
 
@@ -95,8 +107,7 @@ export async function requestFcmToken(customVapidKey?: string): Promise<string |
 
   const vapidKey =
     customVapidKey ||
-    process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY ||
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
+    VAPID_PUBLIC_KEY ||
     'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBKr3qBUYIhbQFLXYp5Nksh8U';
 
   try {
@@ -108,8 +119,11 @@ export async function requestFcmToken(customVapidKey?: string): Promise<string |
     return token;
   } catch (tokenErr: any) {
     console.error('Error retrieving FCM token:', tokenErr);
-    // If running in development without live FCM keys, return mock token for testing
-    if (process.env.NODE_ENV !== 'production' && !process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+    // If running in development without live FCM keys, return mock token for testing.
+    // `FIREBASE_API_KEY` is the inlined public value; reading `process.env` here
+    // is always undefined in the browser, so this branch would have fired even
+    // with real credentials configured.
+    if (import.meta.env.DEV && !FIREBASE_API_KEY) {
       return `fcm_dev_mock_token_${Date.now()}`;
     }
     throw tokenErr;

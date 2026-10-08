@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isValidDateFormat, parseDateOnlyUtc, formatDateOnly, getIstDateRange } from '../lib/date';
 import { parseLotisPdfText } from '../lib/parser/lotis-parser';
-import { normalizeTicketInput } from '../app/api/tickets/check/route';
+import { normalizeTicketInput } from '../astro/pages/api/tickets/check';
 
 describe('Historical Dates & Automated Result Synchronization', () => {
   it('validates strictly formatted YYYY-MM-DD strings', () => {

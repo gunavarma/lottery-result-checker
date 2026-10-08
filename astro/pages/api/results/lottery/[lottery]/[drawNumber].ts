@@ -1,0 +1,83 @@
+import type { APIRoute } from 'astro';
+import { prisma, serializeData } from '@/lib/prisma';
+import { getOrSetCache } from '@/lib/cache';
+
+export const GET: APIRoute = async ({ request, params }) => {
+  try {
+    const { lottery: lotteryIdentifier, drawNumber } = params as { lottery: string; drawNumber: string };
+    const cleanDrawNumber = drawNumber.toUpperCase().trim();
+
+    const cacheKey = `api_results_lottery_${lotteryIdentifier}_${cleanDrawNumber}`;
+
+    const data = await getOrSetCache(
+      cacheKey,
+      async () => {
+        const lottery = await prisma.lottery.findFirst({
+          where: {
+            OR: [
+              { slug: lotteryIdentifier.toLowerCase() },
+              { code: lotteryIdentifier.toUpperCase() },
+              { id: lotteryIdentifier },
+            ],
+          },
+        });
+
+        const drawWhere: any = {
+          drawNumber: cleanDrawNumber,
+          status: 'PUBLISHED',
+        };
+
+        if (lottery) {
+          drawWhere.lotteryId = lottery.id;
+        }
+
+        const draw = await prisma.draw.findFirst({
+          where: drawWhere,
+          include: {
+            lottery: true,
+            prizes: {
+              orderBy: { orderIndex: 'asc' },
+              include: {
+                winningNumbers: {
+                  orderBy: { id: 'asc' },
+                },
+              },
+            },
+          },
+        });
+
+        if (!draw) return null;
+
+        return serializeData({
+          success: true,
+          draw,
+        });
+      },
+      // Official documents occasionally receive corrections. A short cache
+      // keeps reads fast without leaving an old result visible for a day.
+      { ttlMs: 60_000, swrMs: 300_000 }
+    );
+
+    if (!data) {
+      return Response.json(
+        {
+          success: false,
+          error: `Draw '${drawNumber}' for lottery '${lotteryIdentifier}' was not found.`,
+        },
+        { status: 404 }
+      );
+    }
+
+    return Response.json(data, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      },
+    });
+  } catch (error: any) {
+    console.error('API /results/lottery/[lottery]/[drawNumber] error:', error);
+    return Response.json(
+      { success: false, error: error.message || 'Failed to fetch draw result' },
+      { status: 500 }
+    );
+  }
+};

@@ -1,10 +1,8 @@
-'use client';
-
 import React, { useState } from 'react';
 import Link from '@/components/Link';
 import Image from '@/components/Image';
-import { usePathname } from '@/hooks/astro-navigation';
-import dynamic from '@/components/dynamic';
+import { usePathname } from '@/hooks/use-pathname';
+import { lazy } from '@/components/lazy';
 import {
   Menu,
   X,
@@ -24,13 +22,9 @@ import { useLanguage } from '@/context/LanguageContext';
 
 // Lazy-load heavy modals so their JS (including Firebase SDK) is deferred
 // until the user actually opens them, reducing initial bundle by ~72 KiB.
-const SearchModal = dynamic(
-  () => import('./SearchModal').then((mod) => mod.SearchModal),
-  { ssr: false }
-);
-const NotificationModal = dynamic(
-  () => import('./NotificationModal').then((mod) => mod.NotificationModal),
-  { ssr: false }
+const SearchModal = lazy(() => import('./SearchModal').then((mod) => mod.SearchModal));
+const NotificationModal = lazy(() =>
+  import('./NotificationModal').then((mod) => mod.NotificationModal)
 );
 
 export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
@@ -278,7 +272,7 @@ export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
 
       {/* Global Search Modal
 
-          Rendered only while open. `dynamic()` resolves its loader from a mount
+          Rendered only while open. `lazy()` resolves its loader from a mount
           effect, so an always-rendered element did not defer anything: both
           modals mounted on every page, and the notification modal's mount
           effect fetched `/api/lotteries` (and Firebase came along with the

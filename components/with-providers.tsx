@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import type { Language } from '@/lib/translations';
 import { LanguageProvider } from '@/context/LanguageContext';

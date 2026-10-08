@@ -1,0 +1,56 @@
+---
+/**
+ * Locale mirror of `/live` (`/ml`, `/ta`, `/hi`).
+ *
+ * The body is the English route verbatim — same data fetch, same islands, same
+ * cache and analytics behaviour — with two deliberate differences: `en` and
+ * anything that is not a supported locale is refused with a real 404, and the
+ * head is re-derived through `mirrorMetadata()` so the canonical URL, the
+ * hreflang alternates and `og:locale` describe the localized page rather than
+ * the English one.
+ */
+/**
+ * `LivePage` polls during the draw window, so it is an island; its markup is
+ * server-rendered either way, which keeps the first paint free of JavaScript.
+ *
+ * The head copy that used to live in the route's own layout is declared here:
+ * Astro has no per-route layout, so a route that needs extra metadata owns it.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { LivePageIsland } from '@/components/island/live-page';
+import { constructMetadata } from '@/lib/seo';
+import { REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
+import { isLocale } from '@/lib/i18n/config';
+import { mirrorMetadata } from '@/lib/i18n/mirror';
+import type { Language } from '@/lib/translations';
+
+setRevalidateHeaders(Astro, REVALIDATE.LIVE);
+
+const enHead = constructMetadata({
+  title: 'Live Kerala Lottery Result Synchronization | KeralaDraws',
+  description:
+    'Live Kerala lottery result feed and 3:00 PM countdown. Monitor draw status, official LOTIS gazette releases, and verified 1st prize winning numbers.',
+  path: '/live',
+  keywords: [
+    'Kerala Lottery Live',
+    'Kerala Lottery Result Live',
+    'Live Kerala Lottery Draw',
+    'KeralaDraws',
+  ],
+});
+
+// Locale wiring. `[locale]` matches any single segment, so an unsupported or
+// default-locale prefix has to be refused here rather than by the router.
+const locale = Astro.params.locale as Language;
+if (!isLocale(locale) || locale === 'en') {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+const head = mirrorMetadata(locale, '/live', enHead);
+
+---
+
+<BaseLayout head={head} locale={locale}>
+  <LivePageIsland client:idle={{ timeout: 1000 }} locale={locale} />
+</BaseLayout>

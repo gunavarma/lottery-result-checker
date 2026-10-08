@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Astro island wrapper for Permanent draw result page.
  *

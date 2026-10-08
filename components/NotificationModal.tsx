@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import { X, Bell, CheckCircle2, AlertCircle, ShieldCheck, Check, Star, Lock } from 'lucide-react';
 import { requestFcmToken } from '@/lib/firebase/client';

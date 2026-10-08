@@ -1,6 +1,7 @@
 import { defineMiddleware } from 'astro:middleware';
 import { promisify } from 'node:util';
 import { gzip as gzipCb, brotliCompress as brotliCb, constants } from 'node:zlib';
+import { startBackgroundScheduler } from '@/lib/scheduler';
 
 const gzip = promisify(gzipCb);
 const brotli = promisify(brotliCb);
@@ -21,6 +22,12 @@ const COMPRESSIBLE = /^(text\/|application\/(json|javascript|xml|xhtml|x-javascr
 const MIN_SIZE = 1024; // bytes — below this, compression overhead exceeds savings
 
 export const onRequest = defineMiddleware(async (_ctx, next) => {
+  // Idempotent (guarded by a global flag) and a no-op on serverless hosts, so
+  // the only cost per request is one property read. See `lib/scheduler.ts` for
+  // why this hook and not a boot hook: middleware is the one place that runs in
+  // every adapter, including the standalone Node server.
+  startBackgroundScheduler();
+
   const response = await next();
 
   // Don't compress if the response already has a Content-Encoding header

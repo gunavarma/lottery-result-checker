@@ -1,0 +1,57 @@
+---
+/**
+ * Locale mirror of `/kerala-lottery-results/` (`/ml`, `/ta`, `/hi`).
+ *
+ * The body is the English route verbatim — same data fetch, same islands, same
+ * cache and analytics behaviour — with two deliberate differences: `en` and
+ * anything that is not a supported locale is refused with a real 404, and the
+ * head is re-derived through `mirrorMetadata()` so the canonical URL, the
+ * hreflang alternates and `og:locale` describe the localized page rather than
+ * the English one.
+ */
+/**
+ *
+ * Query parameters replace Next's `searchParams` promise, and `force-dynamic`
+ * becomes `no-store`: this page's content is entirely a function of `?lottery=`
+ * and `?page=`, so a shared CDN copy keyed only by path would serve one
+ * visitor's filter to the next.
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import KeralaLotteryResultsArchivePage, {
+  generateMetadata,
+  getArchiveData,
+} from '@/components/pages/KeralaLotteryResultsIndexPage';
+import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../../lib/cache-headers';
+import { isLocale } from '@/lib/i18n/config';
+import { mirrorMetadata } from '@/lib/i18n/mirror';
+import type { Language } from '@/lib/translations';
+
+// A crawlable archive page, not private state. `no-store` here meant every
+// crawler hit re-rendered the whole index from Postgres.
+setRevalidateHeaders(Astro, REVALIDATE.RESULT_PAGE, { tags: [CACHE_TAG.RESULTS] });
+
+const lotterySlug = Astro.url.searchParams.get('lottery') || undefined;
+const currentPage = Math.max(1, parseInt(Astro.url.searchParams.get('page') || '1', 10) || 1);
+
+const data = await getArchiveData(lotterySlug, currentPage);
+const enHead = await generateMetadata();
+
+// Locale wiring. `[locale]` matches any single segment, so an unsupported or
+// default-locale prefix has to be refused here rather than by the router.
+const locale = Astro.params.locale as Language;
+if (!isLocale(locale) || locale === 'en') {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+const head = mirrorMetadata(locale, '/kerala-lottery-results', enHead);
+
+---
+
+<BaseLayout head={head} locale={locale}>
+  <KeralaLotteryResultsArchivePage
+    lotterySlug={lotterySlug}
+    currentPage={currentPage}
+    data={data}
+  />
+</BaseLayout>

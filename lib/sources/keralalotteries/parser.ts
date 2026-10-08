@@ -532,9 +532,9 @@ interface TierState {
 // "Rs :7,000,000/-", and without it the tier amount is unreadable and the whole
 // tier (including its winning numbers) would be dropped.
 const TIER_HEADER =
-  /^(?:for the tickets ending with the following numbers\s*)?(\d{1,2})(?:st|nd|rd|th)\s+Prize\s*[:\-]?\s*(?:₹|Rs\.?)?\s*[:.]?\s*([\d,]+)?/i;
+  /^(?:for the tickets ending with the following numbers\s*)?(\d{1,2})(?:st|nd|rd|th)\s+Prize\s*[:-]?\s*(?:₹|Rs\.?)?\s*[:.]?\s*([\d,]+)?/i;
 const CONSOLATION_HEADER =
-  /^Consolation\s+Prize\s*[:\-]?\s*(?:₹|Rs\.?)?\s*[:.]?\s*([\d,]+)?/i;
+  /^Consolation\s+Prize\s*[:-]?\s*(?:₹|Rs\.?)?\s*[:.]?\s*([\d,]+)?/i;
 
 /**
  * Earlier publication eras put the tier name and its amount on separate lines

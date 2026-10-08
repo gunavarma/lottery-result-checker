@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { getCanonicalUrl, constructMetadata, SITE_URL } from '../lib/seo';
 import { isValidDateFormat, parseDateOnlyUtc, formatDateOnly } from '../lib/date';
-import robots from '../app/robots';
-import sitemap from '../app/sitemap';
+import { buildRobotsConfig } from '../lib/robots';
+import { buildSitemap } from '../lib/sitemap';
 
 import { vi } from 'vitest';
 import { prisma } from '../lib/prisma';
@@ -34,7 +34,7 @@ describe('Advanced Technical SEO & Programmatic Indexing', () => {
   });
 
   it('configures robots.txt to permit indexing of public pages while blocking private/admin and search queries', () => {
-    const robotRules = robots();
+    const robotRules = buildRobotsConfig();
     expect(robotRules.sitemap).toBe(`${SITE_URL}/sitemap.xml`);
 
     const rules = Array.isArray(robotRules.rules) ? robotRules.rules[0] : robotRules.rules;
@@ -60,7 +60,7 @@ describe('Advanced Technical SEO & Programmatic Indexing', () => {
     }));
     vi.spyOn(prisma.draw, 'findMany').mockResolvedValue(mockDraws as any);
 
-    const sitemapEntries = await sitemap();
+    const sitemapEntries = await buildSitemap();
     expect(sitemapEntries.length).toBeGreaterThan(50);
 
     // Verify core canonical URLs exist

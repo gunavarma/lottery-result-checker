@@ -1,7 +1,4 @@
-'use client';
-
 import React, { useState } from 'react';
-import { useRouter } from '@/hooks/astro-navigation';
 import { Search, Calendar, ChevronRight, Filter, Loader2 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { useLotteries } from '@/hooks/queries/useLotteries';
@@ -12,7 +9,6 @@ interface ResultFinderProps {
 }
 
 export function ResultFinder({ lotteries = [] }: ResultFinderProps) {
-  const router = useRouter();
   // If the server render arrived without schemes (failed database read or a
   // stale cached render), fetch the directory on the client so the selector is
   // never empty on a fresh device.

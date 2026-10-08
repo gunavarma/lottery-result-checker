@@ -198,7 +198,9 @@ describe('Publication window guard', () => {
 
 describe('Trust gating in the read surfaces', () => {
   it('excludes provisional results from the sitemap', () => {
-    const sitemap = fs.readFileSync(path.join(projectRoot, 'app/sitemap.ts'), 'utf8');
+    // The URL set is built by `lib/sitemap.ts`; `astro/pages/sitemap.xml.ts` only
+    // serializes it. The guard follows the code it is guarding.
+    const sitemap = fs.readFileSync(path.join(projectRoot, 'lib/sitemap.ts'), 'utf8');
     expect(sitemap).toContain("verificationLevel: 'OFFICIAL'");
   });
 

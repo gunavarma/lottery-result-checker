@@ -1,11 +1,7 @@
-import type { Metadata } from 'next';
-import { Language } from '@/lib/translations';
+import { SITE_URL } from '@/lib/seo';
+import type { SeoHead } from '@/lib/seo/types';
+import type { Language } from '@/lib/translations';
 import { languageAlternates } from './config';
-import {
-  SITE_URL,
-  SITE_NAME,
-  SITE_DESCRIPTION,
-} from '@/lib/seo';
 
 const LOCALE_META: Record<Language, { nativeName: string; localeTag: string }> = {
   en: { nativeName: 'English', localeTag: 'en_IN' },
@@ -14,28 +10,34 @@ const LOCALE_META: Record<Language, { nativeName: string; localeTag: string }> =
   hi: { nativeName: 'हिन्दी', localeTag: 'hi_IN' },
 };
 
-// Build metadata for a mirrored /[locale]/... page from the equivalent (en)
-// page metadata: keeps the title/description intent, fixes canonical + hreflang
-// alternates + og:locale to the locale URL.
-export function mirrorMetadata(locale: Language, path: string, en?: Metadata): Metadata {
+/**
+ * Re-derives the head of a mirrored `/[locale]/...` route from the equivalent
+ * English route's head.
+ *
+ * The title/description *intent* is preserved and everything that is a function
+ * of the URL is replaced: the canonical becomes the localized path, the
+ * `hreflang` alternates are rebuilt for the sibling locales, and `og:url` /
+ * `og:locale` describe the localized document instead of the English one.
+ *
+ * Called from each locale route's frontmatter, so it runs on the server and
+ * ships no code to the browser.
+ */
+export function mirrorMetadata(locale: Language, path: string, en: SeoHead): SeoHead {
   const meta = LOCALE_META[locale];
   const canonicalPath = `/${locale}${path === '/' ? '' : path}`;
-  const enTitle = typeof en?.title === 'string' ? en.title : undefined;
 
   return {
-    ...(en ?? {}),
-    metadataBase: new URL(SITE_URL),
-    title: enTitle ? `${enTitle} — ${meta.nativeName}` : `${SITE_NAME} — ${meta.nativeName}`,
-    description: typeof en?.description === 'string' ? en.description : SITE_DESCRIPTION,
+    ...en,
+    title: `${en.title} — ${meta.nativeName}`,
     alternates: {
       canonical: canonicalPath,
       languages: languageAlternates(path),
     },
     openGraph: {
-      ...(en?.openGraph ?? {}),
-      title: enTitle ? `${enTitle} — ${meta.nativeName}` : `${SITE_NAME} — ${meta.nativeName}`,
+      ...en.openGraph,
+      title: `${en.title} — ${meta.nativeName}`,
       url: `${SITE_URL}${canonicalPath}`,
-      siteName: SITE_NAME,
+      siteName: en.openGraph.siteName,
       locale: meta.localeTag,
     },
   };

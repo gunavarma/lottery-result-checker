@@ -157,7 +157,7 @@ describe('Security regression guards', () => {
   }
 
   it('has no hardcoded or defaulted automation secrets in route handlers', () => {
-    const routeFiles = walk('app/api');
+    const routeFiles = walk('astro/pages/api');
     expect(routeFiles.length).toBeGreaterThan(10);
 
     for (const file of routeFiles) {
@@ -175,7 +175,7 @@ describe('Security regression guards', () => {
   });
 
   it('keeps the /api/live response contract aligned with the client hook usage', () => {
-    const route = fs.readFileSync(path.join(projectRoot, 'app/api/live/route.ts'), 'utf8');
+    const route = fs.readFileSync(path.join(projectRoot, 'astro/pages/api/live.ts'), 'utf8');
     // `app/(en)/live/page.tsx` moved to the shared component during the Astro
     // migration; the field-usage contract it guarded is unchanged.
     const page = fs.readFileSync(path.join(projectRoot, 'components/pages/LivePage.tsx'), 'utf8');

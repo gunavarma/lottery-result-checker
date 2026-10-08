@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Astro island wrapper for Homepage recent results stream.
  *

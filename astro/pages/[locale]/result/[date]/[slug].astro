@@ -1,0 +1,21 @@
+---
+/**
+ * Locale mirror of the `/result/[date]/[slug]` alias.
+ *
+ * Same destination as the English route, but re-prefixed with the active
+ * locale: `/ml/calendar` must land on the Malayalam calendar page, not on the
+ * canonical English one.
+ */
+import { isLocale } from '@/lib/i18n/config';
+import type { Language } from '@/lib/translations';
+
+// Locale wiring. `[locale]` matches any single segment, so an unsupported or
+// default-locale prefix has to be refused here rather than by the router.
+const locale = Astro.params.locale as Language;
+if (!isLocale(locale) || locale === 'en') {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+return Astro.redirect(`/${locale}/kerala-lottery-result/${Astro.params.date}`, 308);
+---

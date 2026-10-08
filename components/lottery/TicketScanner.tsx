@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   X,
@@ -259,11 +257,9 @@ export function TicketScanner({
       } catch (firstErr: any) {
         console.warn(`Camera start with facingMode "${primaryFacing}" failed, trying alternate...`, firstErr);
         const altFacing = primaryFacing === 'environment' ? 'user' : 'environment';
-        try {
-          await html5QrCode.start({ facingMode: altFacing }, config, onScanSuccess, onScanError);
-        } catch (secondErr: any) {
-          throw secondErr;
-        }
+        // A failure with the alternate camera propagates to the handler below,
+        // which is what turns it into the error state and its explanation.
+        await html5QrCode.start({ facingMode: altFacing }, config, onScanSuccess, onScanError);
       }
 
       setCameraState('SCANNING');

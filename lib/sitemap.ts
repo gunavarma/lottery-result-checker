@@ -1,0 +1,235 @@
+/**
+ * The single definition of "which URLs exist".
+ *
+ * Astro serializes it to `/sitemap.xml` in `astro/pages/sitemap.xml.ts`, which
+ * keeps the builder framework-neutral and the crawler-visible URL set in one
+ * auditable place.
+ */
+export interface SitemapEntry {
+  url: string;
+  lastModified?: string | Date;
+  changeFrequency?: string;
+  priority?: number;
+  alternates?: { languages?: Record<string, string> };
+}
+
+import { prisma } from '@/lib/prisma';
+import { SITE_URL } from '@/lib/seo';
+import { getAllNews } from '@/lib/news';
+import { getAllGuides } from '@/lib/guides';
+import { formatDateOnly } from '@/lib/date';
+import { languageAlternates } from '@/lib/i18n/config';
+
+// Wrap a sitemap entry with hreflang alternates for the locale mirrors.
+function withAlternates(entry: SitemapEntry): SitemapEntry {
+  try {
+    const u = new URL(entry.url);
+    return { ...entry, alternates: { languages: languageAlternates(u.pathname) } };
+  } catch {
+    return entry;
+  }
+}
+
+/**
+ * Gazette-verified draws only, with a deployment-order safety net: if the
+ * additive trust-tier migration has not been applied yet, fall back to the
+ * pre-migration semantics (every published draw is official) instead of
+ * emitting a sitemap that has lost every result URL.
+ */
+async function fetchOfficialDraws() {
+  const select = { drawDate: true, updatedAt: true, verifiedAt: true } as const;
+
+  try {
+    return await prisma.draw.findMany({
+      where: { status: 'PUBLISHED', verificationLevel: 'OFFICIAL' },
+      select,
+      orderBy: { drawDate: 'desc' },
+    });
+  } catch (error: any) {
+    console.warn(
+      '[Sitemap] verificationLevel filter unavailable; falling back to all published draws:',
+      error?.message
+    );
+    return await prisma.draw.findMany({
+      where: { status: 'PUBLISHED' },
+      select,
+      orderBy: { drawDate: 'desc' },
+    });
+  }
+}
+
+export async function buildSitemap(): Promise<SitemapEntry[]> {
+  const baseUrl = SITE_URL;
+
+  // 1. Core Evergreen Landing Pages
+  const staticRoutes: SitemapEntry[] = [
+    {
+      url: baseUrl,
+      lastModified: new Date(),
+      changeFrequency: 'always',
+      priority: 1.0,
+    },
+    {
+      url: `${baseUrl}/kerala-lottery-result-today`,
+      lastModified: new Date(),
+      changeFrequency: 'hourly',
+      priority: 1.0,
+    },
+    {
+      url: `${baseUrl}/kerala-lottery-results`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/ticket-checker`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/kerala-lottery-results/2026`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/lottery-calendar`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/prize-structure`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/guides`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/news`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/about`,
+      lastModified: new Date('2026-08-01T00:00:00.000Z'),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: new Date('2026-08-01T00:00:00.000Z'),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/privacy-policy`,
+      lastModified: new Date('2026-08-01T00:00:00.000Z'),
+      changeFrequency: 'monthly',
+      priority: 0.4,
+    },
+    {
+      url: `${baseUrl}/terms`,
+      lastModified: new Date('2026-08-01T00:00:00.000Z'),
+      changeFrequency: 'monthly',
+      priority: 0.4,
+    },
+    {
+      url: `${baseUrl}/disclaimer`,
+      lastModified: new Date('2026-08-01T00:00:00.000Z'),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+  ];
+
+  try {
+    // 2. Canonical Lottery Scheme Landing Pages (/lottery/[slug])
+    const lotteries = await prisma.lottery.findMany({
+      where: { active: true },
+      select: { slug: true, updatedAt: true },
+    });
+
+    const lotteryRoutes: SitemapEntry[] = lotteries.map((l) => ({
+      url: `${baseUrl}/lottery/${l.slug}`,
+      lastModified: l.updatedAt,
+      changeFrequency: 'daily',
+      priority: 0.85,
+    }));
+
+    // 3. Canonical Date-Based Result Pages (/kerala-lottery-result/YYYY-MM-DD)
+    // Only gazette-verified draws are listed. Provisional live results are
+    // deliberately excluded so search engines never index unverified numbers.
+    const draws = await fetchOfficialDraws();
+
+    // Deduplicate dates for canonical date URLs
+    const dateMap = new Map<string, Date>();
+    const monthSet = new Set<string>();
+
+    for (const d of draws) {
+      const dateStr = formatDateOnly(d.drawDate);
+      const lastmod = d.verifiedAt || d.updatedAt || d.drawDate;
+      const existing = dateMap.get(dateStr);
+      if (!existing || lastmod > existing) {
+        dateMap.set(dateStr, lastmod);
+      }
+
+      const [y, m] = dateStr.split('-');
+      monthSet.add(`${y}/${m}`);
+    }
+
+    const dateResultRoutes: SitemapEntry[] = Array.from(dateMap.entries()).map(
+      ([dateStr, lastmod]) =>
+        withAlternates({
+          url: `${baseUrl}/kerala-lottery-result/${dateStr}`,
+          lastModified: lastmod,
+          changeFrequency: 'monthly',
+          priority: 0.8,
+        })
+    );
+
+    // 4. Canonical Monthly Archive Pages (/kerala-lottery-results/YYYY/MM)
+    const monthArchiveRoutes: SitemapEntry[] = Array.from(monthSet).map((ym) => ({
+      url: `${baseUrl}/kerala-lottery-results/${ym}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.75,
+    }));
+
+    // 5. Dynamic News Articles
+    const newsArticles = getAllNews();
+    const newsRoutes: SitemapEntry[] = newsArticles.map((article) => ({
+      url: `${baseUrl}/news/${article.slug}`,
+      lastModified: new Date(article.publishedAt),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    }));
+
+    // 6. Dynamic Helpful Guides
+    const guides = getAllGuides();
+    const guideRoutes: SitemapEntry[] = guides.map((guide) => ({
+      url: `${baseUrl}/guides/${guide.slug}`,
+      lastModified: new Date(guide.updatedAt || guide.publishedAt),
+      changeFrequency: 'monthly',
+      priority: 0.75,
+    }));
+
+    return [
+      ...staticRoutes,
+      ...lotteryRoutes,
+      ...monthArchiveRoutes,
+      ...dateResultRoutes,
+      ...newsRoutes,
+      ...guideRoutes,
+    ];
+  } catch (error) {
+    console.error('Error generating dynamic sitemap:', error);
+    return staticRoutes;
+  }
+}

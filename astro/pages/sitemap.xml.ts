@@ -1,18 +1,9 @@
 import type { APIRoute } from 'astro';
-// The sitemap builder is shared with the Next.js route (`app/sitemap.ts`) rather
-// than re-implemented: it is the single definition of "which URLs exist", and the
-// Astro branch was missing its own `/sitemap.xml` entirely, which would have
-// dropped every historical result URL from the index on deployment.
-import buildSitemap from '../../app/sitemap';
+// The URL set is built by `lib/sitemap.ts`, which owns no framework types: it is
+// the single definition of "which URLs exist", for the crawler-visible sitemap
+// and for every test that guards it.
+import { buildSitemap, type SitemapEntry } from '@/lib/sitemap';
 import { buildCacheHeaders, CACHE_TAG, REVALIDATE } from '../lib/cache-headers';
-
-interface SitemapEntry {
-  url: string;
-  lastModified?: string | Date;
-  changeFrequency?: string;
-  priority?: number;
-  alternates?: { languages?: Record<string, string> };
-}
 
 function escapeXml(value: string): string {
   return value
@@ -53,7 +44,7 @@ export const GET: APIRoute = async () => {
   // so a publication can purge it.
   const cacheHeaders = buildCacheHeaders(REVALIDATE.CONTENT, { tags: [CACHE_TAG.RESULTS] });
 
-  const entries = (await buildSitemap()) as SitemapEntry[];
+  const entries = await buildSitemap();
 
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',

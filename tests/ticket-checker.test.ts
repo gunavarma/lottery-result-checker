@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeTicketInput } from '../app/api/tickets/check/route';
+import { normalizeTicketInput } from '../astro/pages/api/tickets/check';
 
 describe('Ticket Checker Normalization & Verification', () => {
   it('normalizes space-separated ticket numbers', () => {

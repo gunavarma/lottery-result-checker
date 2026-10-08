@@ -1,0 +1,70 @@
+---
+/**
+ * Locale mirror of `/` (`/ml`, `/ta`, `/hi`).
+ *
+ * The body is the English route verbatim — same data fetch, same islands, same
+ * cache and analytics behaviour — with two deliberate differences: `en` and
+ * anything that is not a supported locale is refused with a real 404, and the
+ * head is re-derived through `mirrorMetadata()` so the canonical URL, the
+ * hreflang alternates and `og:locale` describe the localized page rather than
+ * the English one.
+ */
+/**
+ * English homepage — canonical unprefixed route.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import HomeContent from '../../components/HomeContent.astro';
+import { constructMetadata, getFAQSchema } from '@/lib/seo';
+import { HOMEPAGE_FAQS } from '@/lib/home-faqs';
+import { REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
+import { isLocale } from '@/lib/i18n/config';
+import { mirrorMetadata } from '@/lib/i18n/mirror';
+import type { Language } from '@/lib/translations';
+
+// Was `export const revalidate = 30` under Next.js ISR.
+setRevalidateHeaders(Astro, REVALIDATE.LIVE);
+
+const HOMEPAGE_TITLE = 'Kerala Lottery Result Today (Live) — Winning Numbers & Draw Schedule';
+const HOMEPAGE_DESCRIPTION =
+  'Kerala lottery result today live from Gorky Bhavan at 3:00 PM. Verified winning numbers, official weekly draw timetable, prize claim guide & instant ticket search.';
+
+const enHead = constructMetadata({
+  path: '/',
+  title: HOMEPAGE_TITLE,
+  description: HOMEPAGE_DESCRIPTION,
+  openGraphTitle: HOMEPAGE_TITLE,
+  openGraphDescription: HOMEPAGE_DESCRIPTION,
+  keywords: [
+    'Kerala Lottery Result Today',
+    'Kerala Lottery Winning Numbers',
+    'Kerala State Lottery Weekly Schedule',
+    'Bhagya Thara Result',
+    'Sthree Sakthi Result',
+    'Fifty Fifty Lottery Result',
+    'Karunya Plus Result',
+    'Nirmal Lottery Result',
+    'Karunya Lottery Result',
+    'Akshaya Samrudhi Result',
+    'Thiruvonam Bumper Result',
+    'Kerala Lottery Prize Claim Process',
+    'Kerala Lottery Tax TDS',
+  ],
+});
+
+const faqSchema = getFAQSchema(HOMEPAGE_FAQS);
+
+// Locale wiring. `[locale]` matches any single segment, so an unsupported or
+// default-locale prefix has to be refused here rather than by the router.
+const locale = Astro.params.locale as Language;
+if (!isLocale(locale) || locale === 'en') {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+const head = mirrorMetadata(locale, '/', enHead);
+
+---
+
+<BaseLayout head={head} locale={locale} jsonLd={[faqSchema]}>
+  <HomeContent locale={locale} />
+</BaseLayout>

@@ -1,5 +1,3 @@
-'use client';
-
 import React, { createContext, useContext, useCallback, useMemo } from 'react';
 import {
   Language,
@@ -7,6 +5,7 @@ import {
   LanguageOption,
   getTranslation,
 } from '@/lib/translations';
+import { LOCALE_COOKIE } from '@/lib/i18n/locale-cookie';
 
 interface LanguageContextType {
   language: Language;
@@ -25,10 +24,6 @@ const LanguageContext = createContext<LanguageContextType>({
 });
 
 const STORAGE_KEY = 'keraladraws_lang';
-// Was `NEXT_LOCALE`. Nothing in the codebase ever read it back — the locale
-// lives in the URL — so this is kept only as a neutral breadcrumb for other
-// tooling and renamed so no Next.js-shaped identifier survives the migration.
-const LOCALE_COOKIE = 'keraladraws_locale';
 
 /**
  * Locale provider.

@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Astro island wrapper for Live result page (polls during the draw window).
  *

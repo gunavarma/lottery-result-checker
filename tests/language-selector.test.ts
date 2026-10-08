@@ -106,7 +106,9 @@ describe('Locale switching (LanguageSelector navigation)', () => {
   });
 
   it('exposes a locale cookie name and per-path hreflang alternates', () => {
-    expect(LOCALE_COOKIE).toBe('NEXT_LOCALE');
+    // Must match what `LanguageProvider.setLanguage()` writes, or the stored
+    // preference is never read back.
+    expect(LOCALE_COOKIE).toBe('keraladraws_locale');
     const alts = languageAlternates('/results');
     expect(Object.keys(alts).sort()).toEqual(['en', 'en-IN', 'hi', 'ml', 'ta', 'x-default']);
     expect(alts['x-default']).toMatch(/\/results$/);

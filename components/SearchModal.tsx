@@ -1,8 +1,5 @@
-'use client';
-
 import React, { useState, useEffect, useRef } from 'react';
 import Link from '@/components/Link';
-import { useRouter } from '@/hooks/astro-navigation';
 import {
   Search,
   X,
@@ -24,7 +21,6 @@ interface SearchModalProps {
 }
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
-  const router = useRouter();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<{
@@ -137,7 +133,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const handleFullSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+      // Astro renders full documents, so submitting the full search is a real
+      // navigation rather than a client-side route transition.
+      window.location.assign(`/search?q=${encodeURIComponent(query.trim())}`);
       onClose();
     }
   };

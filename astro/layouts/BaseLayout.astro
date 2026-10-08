@@ -2,15 +2,12 @@
 /**
  * Shared document shell and page chrome for every route.
  *
- * Replaces both Next.js root layouts (`app/(en)/layout.tsx`,
- * `app/[locale]/layout.tsx`) *and* `components/layout/RootChrome.tsx`. Under
- * Next.js the chrome had to be a React component so it could sit inside the
- * provider tree; in Astro the chrome is markup plus islands, and the document
- * itself is the right place for it. Collapsing three files into one removes the
- * opportunity for the two locale trees to drift apart.
+ * One file owns the whole document: head, chrome, main slot and the
+ * browser-only prompts. The chrome is markup plus islands rather than a wrapper
+ * component, so it does not have to sit inside a provider tree, and the two
+ * locale trees share a single definition instead of being able to drift apart.
  *
- * The two browser-only prompts render with `client:only="react"`, which is
- * Astro's equivalent of Next's `dynamic(..., { ssr: false })`: they touch
+ * The two browser-only prompts render with `client:only="react"`: they touch
  * `navigator`/`beforeinstallprompt` and Firebase, so they must never run during
  * the server render, and shipping no HTML for them is correct.
  */

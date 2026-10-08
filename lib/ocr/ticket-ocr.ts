@@ -150,7 +150,7 @@ export function parseKeralaLotteryTicketOcr(rawText: string): DetectedTicketResu
   }
 
   // 2. Check explicit "SERIES: [A-Z]{2}" label
-  const seriesLabelMatch = rawText.match(/SERIES\s*[:.\-]?\s*([A-Za-z]{2})\b/i);
+  const seriesLabelMatch = rawText.match(/SERIES\s*[:.-]?\s*([A-Za-z]{2})\b/i);
   if (seriesLabelMatch && !NON_SERIES_WORDS.has(seriesLabelMatch[1].toUpperCase())) {
     detectedSeries = seriesLabelMatch[1].toUpperCase();
   }

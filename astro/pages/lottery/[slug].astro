@@ -1,6 +1,5 @@
 ---
 /**
- * Ported from `app/(en)/lottery/[slug]/page.tsx`.
  * Was `export const revalidate = 300`.
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -22,5 +21,5 @@ const head = await generateMetadata({ params: Promise.resolve({ slug }) });
 ---
 
 <BaseLayout head={head} locale="en">
-  <LotterySchemePageIsland client:load locale="en" lottery={lottery} />
+  <LotterySchemePageIsland client:idle={{ timeout: 1000 }} locale="en" lottery={lottery} />
 </BaseLayout>

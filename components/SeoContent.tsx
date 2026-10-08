@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState } from 'react';
 import { ChevronDown, HelpCircle, FileCheck, ShieldAlert, Award, Clock } from 'lucide-react';
 

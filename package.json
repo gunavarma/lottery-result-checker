@@ -37,7 +37,6 @@
     "firebase-admin": "^14.3.0",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^1.34.0",
-    "next": "16.3.3",
     "pdf-parse": "^2.4.5",
     "prisma": "^6.4.1",
     "react": "19.2.8",
@@ -50,6 +49,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@eslint/js": "^9.39.5",
     "@supabase/supabase-js": "^2.112.4",
     "@tailwindcss/postcss": "^4",
     "@types/deno": "^2.7.0",
@@ -59,9 +59,11 @@
     "@types/react-dom": "^19",
     "@types/web-push": "^3.6.4",
     "eslint": "^9",
-    "eslint-config-next": "16.3.3",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^14.0.0",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "typescript-eslint": "^8.71.1",
     "vitest": "^4.1.11"
   },
   "browserslist": [

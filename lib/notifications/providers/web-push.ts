@@ -5,7 +5,12 @@ export class WebPushProvider implements NotificationProvider {
   channel = 'PUSH' as const;
 
   constructor() {
-    const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || process.env.VAPID_PUBLIC_KEY;
+    // Accepts the Astro name, the older Next-style name, and the original
+    // server-only name so an existing deployment needs no reconfiguration.
+    const publicKey =
+      process.env.PUBLIC_VAPID_PUBLIC_KEY ||
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
+      process.env.VAPID_PUBLIC_KEY;
     const privateKey = process.env.VAPID_PRIVATE_KEY;
     const subject = process.env.VAPID_SUBJECT || 'mailto:admin@keralalottery.org';
 
@@ -20,7 +25,9 @@ export class WebPushProvider implements NotificationProvider {
 
   isEnabled(): boolean {
     return !!(
-      (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || process.env.VAPID_PUBLIC_KEY) &&
+      (process.env.PUBLIC_VAPID_PUBLIC_KEY ||
+        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
+        process.env.VAPID_PUBLIC_KEY) &&
       process.env.VAPID_PRIVATE_KEY
     );
   }

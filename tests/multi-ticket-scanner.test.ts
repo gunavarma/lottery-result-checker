@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { parseTicketCode } from '../lib/lottery/normalize-ticket';
-import { checkTicketsHandler } from '../app/api/tickets/check/route';
+import { checkTicketsHandler } from '../astro/pages/api/tickets/check';
 import { prisma } from '../lib/prisma';
 
 describe('Multi-Ticket Scanner & Batch Verification System', () => {

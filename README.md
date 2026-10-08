@@ -1,6 +1,6 @@
 # Kerala Lottery Results Platform
 
-A production-ready Kerala lottery results platform built with **Next.js 16 (App Router)**, **TypeScript**, **PostgreSQL (Supabase)**, **Prisma ORM**, **Supabase Cron (`pg_cron`)**, **TanStack Query**, and **Firebase Cloud Messaging (FCM)**.
+A production-ready Kerala lottery results platform built with **Astro 7** (server-rendered routes plus React islands), **TypeScript**, **PostgreSQL (Supabase)**, **Prisma ORM**, **Supabase Cron (`pg_cron`)**, **TanStack Query**, and **Firebase Cloud Messaging (FCM)**.
 
 The website automatically retrieves and verifies official lottery results directly from the **Lottery Information and Management System (LOTIS)** operated by the **Directorate of Kerala State Lotteries, Government of Kerala**, and dispatches automated browser push notifications to subscribed users upon official result publication.
 
@@ -8,7 +8,7 @@ The website automatically retrieves and verifies official lottery results direct
 
 ## 1. System Architecture
 
-There is exactly **one** synchronization pipeline. It is owned by the Next.js
+There is exactly **one** synchronization pipeline. It is owned by the
 application so that the parser, Zod validation, audit tables, cache
 invalidation, and notification dispatch cannot drift apart:
 
@@ -106,7 +106,7 @@ the official gazette pipeline runs.
 ## 2. Automated Scheduling Setup
 
 The authoritative scheduler is **Supabase `pg_cron`**, which calls the
-Next.js pipeline every 15 minutes. This is what covers the actual result
+pipeline every 15 minutes. This is what covers the actual result
 publication window (approximately 3:00 PM – 5:00 PM IST) with repeated,
 idempotent checks.
 
@@ -194,7 +194,7 @@ DATABASE_URL="postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supab
 DIRECT_URL="postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres"
 CRON_SECRET="<generated-32-byte-random-secret>"
 ADMIN_SECRET="<generated-32-byte-random-secret>"
-NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+PUBLIC_SITE_URL="http://localhost:3000"
 
 # ==========================================
 # Unofficial live result source (optional)
@@ -212,23 +212,27 @@ SUPABASE_SERVICE_ROLE_KEY="<YOUR_SERVICE_ROLE_KEY>"
 # ==========================================
 # Firebase Web Client Configuration (PUBLIC)
 # ==========================================
-NEXT_PUBLIC_FIREBASE_API_KEY="AIzaSyDemoDummyApiKeyForFirebase12345"
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="kerala-lottery-results.firebaseapp.com"
-NEXT_PUBLIC_FIREBASE_PROJECT_ID="kerala-lottery-results"
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="kerala-lottery-results.appspot.com"
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="123456789012"
-NEXT_PUBLIC_FIREBASE_APP_ID="1:123456789012:web:abcdef1234567890"
-NEXT_PUBLIC_FIREBASE_VAPID_KEY="BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBKr3qBUYIhbQFLXYp5Nksh8U"
+# Astro inlines these at build time, so a change needs a redeploy. The legacy
+# `NEXT_PUBLIC_` names are accepted too (`vite.envPrefix` in astro.config.ts), so
+# an existing deployment keeps working without re-entering any value; the
+# `PUBLIC_` spelling is the one to use for anything new. Read through
+# `lib/public-env.ts`, which is the only place that touches them.
+PUBLIC_FIREBASE_API_KEY="AIzaSyDemoDummyApiKeyForFirebase12345"
+PUBLIC_FIREBASE_AUTH_DOMAIN="kerala-lottery-results.firebaseapp.com"
+PUBLIC_FIREBASE_PROJECT_ID="kerala-lottery-results"
+PUBLIC_FIREBASE_STORAGE_BUCKET="kerala-lottery-results.appspot.com"
+PUBLIC_FIREBASE_MESSAGING_SENDER_ID="123456789012"
+PUBLIC_FIREBASE_APP_ID="1:123456789012:web:abcdef1234567890"
+PUBLIC_FIREBASE_VAPID_KEY="BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBKr3qBUYIhbQFLXYp5Nksh8U"
 
 # ==========================================
 # Google Analytics 4 (PUBLIC, Astro build)
 # ==========================================
 # The GA4 web-stream measurement ID. Astro only inlines `PUBLIC_`-prefixed
-# variables into the client, so this name is required for the Astro build (the
-# Next.js app read `NEXT_PUBLIC_GA_ID`; set both only if both are deployed). The
-# tag is rendered by `astro/layouts/BaseLayout.astro` — never by a page — and no
-# event is sent at all when the variable is empty. Never a secret: the ID is
-# visible in every page's HTML.
+# variables into the client, so this name is required. The tag is rendered by
+# `astro/layouts/BaseLayout.astro` — never by a page — and no event is sent at
+# all when the variable is empty. Never a secret: the ID is visible in every
+# page's HTML.
 PUBLIC_GA_MEASUREMENT_ID="G-XXXXXXXXXX"
 
 # ==========================================
