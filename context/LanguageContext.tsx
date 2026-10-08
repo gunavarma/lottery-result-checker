@@ -6,6 +6,7 @@ import {
   getTranslation,
 } from '@/lib/translations';
 import { LOCALE_COOKIE } from '@/lib/i18n/locale-cookie';
+import { switchLocalePath } from '@/lib/i18n/config';
 
 interface LanguageContextType {
   language: Language;
@@ -68,9 +69,7 @@ export function LanguageProvider({
     // The current path is read at click time rather than during render, which is
     // both correct and free of any SSR/hydration concerns.
     const currentPath = window.location.pathname || '/';
-    const target =
-      currentPath.replace(/^\/(en|ml|ta|hi)(?=\/|$)/, lang === 'en' ? '' : `/${lang}`) ||
-      '/';
+    const target = switchLocalePath(currentPath, lang);
 
     window.location.assign(target);
 
