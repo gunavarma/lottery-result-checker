@@ -212,7 +212,7 @@ describe('Trust gating in the read surfaces', () => {
       path.join(projectRoot, 'components/pages/KeralaLotteryResultDatePage.tsx'),
       'utf8'
     );
-    expect(datePage).toContain('noIndex: !hasOfficialDraw');
+    expect(datePage).toContain("noIndex: !hasPublishedDraw");
 
     const todayPage = fs.readFileSync(
       path.join(projectRoot, 'components/pages/TodayResultPage.tsx'),

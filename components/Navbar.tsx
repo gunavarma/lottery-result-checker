@@ -20,17 +20,12 @@ import {
 import { LanguageSelector } from './LanguageSelector';
 import { useLanguage } from '@/context/LanguageContext';
 
-// Lazy-load heavy modals so their JS (including Firebase SDK) is deferred
-// until the user actually opens them, reducing initial bundle by ~72 KiB.
 const SearchModal = lazy(() => import('./SearchModal').then((mod) => mod.SearchModal));
 const NotificationModal = lazy(() =>
   import('./NotificationModal').then((mod) => mod.NotificationModal)
 );
 
 export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
-  // Astro passes the request path in, so the active-link state is correct in the
-  // server-rendered HTML. The hook is only a fallback for call sites that render
-  // this component without that prop.
   const pathnameFromBrowser = usePathname();
   const pathname = pathnameProp ?? pathnameFromBrowser;
   const { t } = useLanguage();
@@ -50,51 +45,53 @@ export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E2E7E3] shadow-xs">
-        {/* Top Source Bar */}
-        <div className="bg-[#10201D] text-[#E2E7E3] text-[11px] py-1.5 px-4">
+        {/* Top Source Bar — cleaner, better readable */}
+        <div className="bg-[#0B3B32] text-white/90 text-[11px] py-1.5 px-4 font-medium">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#16845B]" />
-              <span className="tracking-wide">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#C8A45D]" />
+              <span className="tracking-wide text-[11px] font-semibold">
                 {t('ui.lotis_sync', 'LOTIS Synchronized • Kerala State Lotteries Information')}
               </span>
             </div>
-            <div className="hidden sm:flex items-center gap-4 text-slate-300">
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3 text-[#C8A45D]" />{' '}
-                {t('ui.daily_draw_time', 'Daily Draw: 3:00 PM IST')}
+            <div className="hidden sm:flex items-center gap-4">
+              <span className="flex items-center gap-1.5 text-white/80">
+                <Clock className="w-3.5 h-3.5 text-[#C8A45D]" />
+                <span className="text-[11px] font-medium">
+                  {t('ui.daily_draw_time', 'Daily Draw: 3:00 PM IST')}
+                </span>
               </span>
             </div>
           </div>
         </div>
 
-        {/* Main Desktop & Mobile Header */}
+        {/* Main Header */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-18">
-            {/* Brand Logo */}
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-14 h-14 flex items-center justify-center p-1 shrink-0">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            {/* Brand — smaller logo, tighter layout */}
+            <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+              <div className="w-9 h-9 flex items-center justify-center p-0.5 rounded-xl bg-[#0B3B32] ring-1 ring-[#C8A45D]/30">
                 <Image
                   src="/logo.svg"
                   alt="KeralaDraws Logo"
-                  width={56}
-                  height={56}
+                  width={36}
+                  height={36}
                   className="w-full h-full object-contain"
                   priority
                 />
               </div>
-              <div>
-                <span className="text-base sm:text-lg font-extrabold text-[#17201D] tracking-tight block leading-none">
+              <div className="leading-tight">
+                <span className="text-base font-extrabold text-[#17201D] tracking-tight block leading-none">
                   KeralaDraws
                 </span>
-                <span className="text-[10px] text-[#0B3B32] font-bold tracking-wider uppercase block mt-1 font-tabular">
+                <span className="text-[10px] text-[#0B3B32] font-bold tracking-widest uppercase block mt-0.5 font-tabular">
                   Results, Checker & Alerts
                 </span>
               </div>
             </Link>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-1">
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center gap-0.5">
               {navLinks.map((item) => {
                 const isActive =
                   pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
@@ -102,10 +99,10 @@ export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                       isActive
-                        ? 'bg-[#F1F4F2] text-[#0B3B32]'
-                        : 'text-[#17201D] hover:text-[#0B3B32] hover:bg-[#F7F7F4]'
+                        ? 'bg-[#0B3B32] text-white shadow-xs'
+                        : 'text-[#17201D] hover:text-[#0B3B32] hover:bg-[#F1F4F2]'
                     }`}
                   >
                     {item.label}
@@ -114,7 +111,7 @@ export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
               })}
             </nav>
 
-            {/* Right Action Icons (Desktop) */}
+            {/* Right Actions */}
             <div className="hidden lg:flex items-center gap-2">
               <button
                 onClick={() => setSearchModalOpen(true)}
@@ -128,24 +125,21 @@ export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
                 </kbd>
               </button>
 
-              {/* Language Selector Dropdown */}
               <LanguageSelector variant="header" />
 
               <button
                 onClick={() => setNotificationModalOpen(true)}
                 aria-label="Notification Preferences"
-                className="p-2.5 rounded-xl text-[#17201D] hover:text-[#0B3B32] hover:bg-[#F7F7F4] border border-transparent hover:border-[#E2E7E3] transition-colors"
+                className="p-2 rounded-xl text-[#17201D] hover:text-[#0B3B32] hover:bg-[#F7F7F4] transition-colors relative"
                 title="Notifications"
               >
-                <Bell className="w-4 h-4" />
+                <Bell className="w-4.5 h-4.5" />
               </button>
             </div>
 
-            {/* Mobile Header Right Icons */}
-            <div className="flex items-center gap-1.5 lg:hidden">
-              {/* Compact Language Selector on Mobile Header */}
+            {/* Mobile Right Icons */}
+            <div className="flex items-center gap-1 lg:hidden">
               <LanguageSelector variant="compact" />
-
               <button
                 onClick={() => setSearchModalOpen(true)}
                 aria-label="Open search"
@@ -165,21 +159,19 @@ export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
                 aria-label="Toggle navigation menu"
                 className="p-2 rounded-xl text-[#17201D] hover:bg-[#F7F7F4]"
               >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Mobile Menu Drawer */}
+        {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-[#E2E7E3] bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg animate-fadeIn">
-            {/* Language Selector Section in Mobile Drawer */}
-            <div className="pb-3 border-b border-[#E2E7E3]">
+          <div className="lg:hidden border-t border-[#E2E7E3] bg-white px-4 pt-3 pb-6 space-y-1 shadow-lg animate-fadeIn">
+            <div className="pb-3 border-b border-[#E2E7E3] mb-1">
               <LanguageSelector variant="drawer" />
             </div>
-
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {navLinks.map((item) => {
                 const isActive = pathname === item.href;
                 return (
@@ -187,9 +179,9 @@ export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
+                    className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${
                       isActive
-                        ? 'bg-[#F1F4F2] text-[#0B3B32]'
+                        ? 'bg-[#0B3B32] text-white'
                         : 'text-[#17201D] hover:bg-[#F7F7F4]'
                     }`}
                   >
@@ -199,18 +191,15 @@ export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
                 );
               })}
             </div>
-
-            <div className="pt-4 mt-3 border-t border-[#E2E7E3] flex items-center justify-between text-xs text-[#68736E] px-2">
-              <span className="flex items-center gap-1">
-                <ShieldCheck className="w-4 h-4 text-[#16845B]" />
-                <span>LOTIS Synchronized</span>
-              </span>
+            <div className="pt-3 mt-2 border-t border-[#E2E7E3] flex items-center gap-1.5 text-xs text-[#68736E] px-2">
+              <ShieldCheck className="w-4 h-4 text-[#16845B]" />
+              <span>LOTIS Synchronized</span>
             </div>
           </div>
         )}
       </header>
 
-      {/* Mobile Bottom Navigation Bar */}
+      {/* Mobile Bottom Nav */}
       <nav
         aria-label="Mobile Navigation"
         className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E2E7E3] py-2 px-3 flex items-center justify-around lg:hidden shadow-lg"
@@ -270,19 +259,10 @@ export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
         </Link>
       </nav>
 
-      {/* Global Search Modal
-
-          Rendered only while open. `lazy()` resolves its loader from a mount
-          effect, so an always-rendered element did not defer anything: both
-          modals mounted on every page, and the notification modal's mount
-          effect fetched `/api/lotteries` (and Firebase came along with the
-          search modal). Gating the render is what actually makes the lazy
-          boundary lazy. */}
       {searchModalOpen && (
         <SearchModal isOpen onClose={() => setSearchModalOpen(false)} />
       )}
 
-      {/* Notification Preferences Modal */}
       {notificationModalOpen && (
         <NotificationModal isOpen onClose={() => setNotificationModalOpen(false)} />
       )}

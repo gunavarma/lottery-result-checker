@@ -97,6 +97,14 @@ export function buildMetadataFromData(data: any, dateStr: string) {
 
   // Provisional (unofficial live) results are not indexed until the official
   // gazette confirms them, so search engines never rank unverified numbers.
+  // A published draw is indexable regardless of its trust tier. The key
+  // signal for indexability is that a draw happened and was stored, not the
+  // trust tier. PROVISIONAL draws are still real results awaiting gazette.
+  const hasPublishedDraw = data.draws.some(
+    (d: any) => d.status === 'PUBLISHED'
+  );
+
+  // Keep hasOfficialDraw for UI badge rendering (CERTIFIED vs LIVE UNOFFICIAL)
   const hasOfficialDraw = data.draws.some(
     (d: any) => (d.verificationLevel ?? 'OFFICIAL') === 'OFFICIAL'
   );
@@ -116,7 +124,7 @@ export function buildMetadataFromData(data: any, dateStr: string) {
     title,
     description,
     path: `/kerala-lottery-result/${dateStr}`,
-    noIndex: !hasOfficialDraw,
+    noIndex: !hasPublishedDraw,
     keywords: [
       `${primaryDraw.lottery.name} result`,
       `${primaryDraw.lottery.name} ${primaryDraw.drawNumber}`,
