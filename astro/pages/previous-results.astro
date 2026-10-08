@@ -1,13 +1,13 @@
 ---
 /**
- * Interactive archive browser,
- * so it is an island and is never CDN-cached (its contents depend on the
- * visitor's date selection).
+ * Interactive archive browser — now server-renders initial state so results
+ * appear immediately without client-side fetching.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { PreviousResultsPageIsland } from '@/components/island/previous-results-page';
 import { constructMetadata } from '@/lib/seo';
 import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../lib/cache-headers';
+import { getPreviousResultsInitialData } from '../lib/previous-results-data';
 
 setRevalidateHeaders(Astro, REVALIDATE.CONTENT, { tags: [CACHE_TAG.RESULTS] });
 
@@ -17,8 +17,16 @@ const head = constructMetadata({
     'Browse previous Kerala lottery results by scheme and date, with verified winning numbers and complete prize tables.',
   path: '/previous-results',
 });
+
+const initialData = await getPreviousResultsInitialData();
 ---
 
 <BaseLayout head={head} locale="en">
-  <PreviousResultsPageIsland client:load locale="en" />
+  <PreviousResultsPageIsland
+    client:load
+    locale="en"
+    initialAvailableDates={initialData.availableDates}
+    initialDate={initialData.initialDate}
+    initialDraws={initialData.initialDraws}
+  />
 </BaseLayout>

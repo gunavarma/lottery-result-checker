@@ -7,6 +7,8 @@
 import { prisma, serializeData } from '@/lib/prisma';
 import { getOrSetCache, PUBLISHED_DATA_STALE_IF_ERROR_MS } from '@/lib/cache';
 import { loadTodaySnapshot } from '@/lib/results/today-snapshot';
+import { getYesterdayIstStr } from '@/lib/date';
+import { DRAW_FULL } from '@/lib/results/projections';
 import { LOTTERY_SUMMARY, drawCardView } from '@/lib/results/projections';
 
 // Shared homepage data loader used by both the (en) and /[locale] home pages
@@ -17,22 +19,28 @@ import { LOTTERY_SUMMARY, drawCardView } from '@/lib/results/projections';
 // hero therefore started its countdown at zero, which is also the value that
 // means "draw in progress", and rendered a spinner instead of the countdown.
 export async function getHomepageData() {
-  // Failure handling deliberately wraps the cache call rather than living inside
-  // the fetcher. Previously the degraded "empty" payload was the value handed
-  // back to `getOrSetCache`, which then cached it as a success for 30s fresh and
-  // up to 5 minutes stale — so one failed database read could pin an empty
-  // homepage into the in-memory cache (and from there into the ISR HTML) long
-  // after the database had recovered. Now a rejected fetcher stores nothing.
   try {
     return await getOrSetCache(
-      'homepage_data_v4',
+      'homepage_data_v5',
       async () => {
-        const [today, latestDraws, popularLotteries] = await Promise.all([
-          loadTodaySnapshot(),
+        const today = await loadTodaySnapshot();
+        const yesterdayStr = getYesterdayIstStr();
+
+        // Fetch yesterday's draws in parallel with the other queries.
+        // Only show when today's result is not yet published.
+        const yesterdayDraws = await prisma.draw.findMany({
+          where: {
+            drawDate: { equals: yesterdayStr },
+            status: 'PUBLISHED',
+          },
+          select: DRAW_FULL,
+          orderBy: { drawDate: 'desc' },
+        });
+
+        const [latestDraws, popularLotteries] = await Promise.all([
           // `drawCardView` keeps the same shape the recent-results list renders
           // (three tiers, head numbers only) while dropping the Draw table's
-          // `rawText` audit column, which the old `include` carried — and, under
-          // Next, re-serialized into the RSC payload sent to the browser.
+          // `rawText` audit column.
           prisma.draw.findMany({
             where: { status: 'PUBLISHED' },
             orderBy: { drawDate: 'desc' },
@@ -81,21 +89,18 @@ export async function getHomepageData() {
           latestDraw: today.latestDraw ?? null,
           latestDraws,
           popularLotteries,
+          yesterdayStr,
+          yesterdayDraws,
         });
       },
-      // `staleIfErrorMs` is the second half of that defence: when the database
-      // refuses a connection, a warm instance re-renders from the payload it read
-      // minutes ago instead of throwing and letting the page's degraded branch
-      // take over. A slightly old homepage is strictly better than an empty one,
-      // and the values in it (published results) do not go out of date.
-      { ttlMs: 30_000, swrMs: 300_000, staleIfErrorMs: PUBLISHED_DATA_STALE_IF_ERROR_MS }
+      {
+        ttlMs: 60_000,
+        swrMs: 300_000,
+        staleIfErrorMs: PUBLISHED_DATA_STALE_IF_ERROR_MS,
+      }
     );
   } catch (error) {
     console.error('Error fetching homepage data:', error);
-    // Degraded but honest: report the day as not-yet-published rather than
-    // latching a spinner that can never resolve. The client components treat a
-    // `success: false` payload as untrusted and refetch immediately, so a fresh
-    // device recovers on its own instead of sitting on the empty state.
     return {
       success: false as const,
       isTodayAvailable: false,
@@ -104,6 +109,8 @@ export async function getHomepageData() {
       latestDraw: null,
       latestDraws: [],
       popularLotteries: [],
+      yesterdayStr: getYesterdayIstStr(),
+      yesterdayDraws: [],
     };
   }
 }

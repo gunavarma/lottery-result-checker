@@ -30,8 +30,6 @@
 /** Shape the hero reads out of `TodayResultResponse` in `HeroTodayCard`. */
 export function selectHeroData(data: any) {
   return {
-    // `success` drives `useLotteryResults`'s initial-data-trust decision, and
-    // `isTodayAvailable` / `liveStatus` drive its refetch interval.
     success: Boolean(data?.success),
     isTodayAvailable: Boolean(data?.isTodayAvailable),
     liveStatus: data?.liveStatus,
@@ -39,10 +37,7 @@ export function selectHeroData(data: any) {
     todayDate: data?.todayDate ?? '',
     todayDateFormatted: data?.todayDateFormatted ?? '',
     scheduledLottery: data?.scheduledLottery ?? null,
-    // Today's draw (with its prize tiers) is what the hero actually renders.
     todayDraw: data?.todayDraw ?? null,
-    // `latestDraw` only appears in the "Previous Draw" strip, which needs the
-    // scheme name, its slug and the draw code — never its prize table.
     latestDraw: selectPreviousDrawReference(data?.latestDraw),
   };
 }
@@ -57,12 +52,7 @@ function selectPreviousDrawReference(draw: any) {
   };
 }
 
-/**
- * The recent-results list renders a date capsule, the draw code, the scheme
- * name and the *first* winning number of the first prize tier. The server query
- * takes three tiers × five winning numbers, i.e. fifteen records per draw of
- * which two numbers are used.
- */
+/** The recent-results list: date capsule, draw code, scheme name, first winner. */
 export function selectRecentDrawItems(draws: any) {
   if (!Array.isArray(draws)) return [];
   return draws.map((draw) => ({
@@ -75,7 +65,6 @@ export function selectRecentDrawItems(draws: any) {
           orderIndex: prize.orderIndex,
           tierNumber: prize.tierNumber,
           amount: prize.amount,
-          // Only the head of each tier is ever displayed.
           winningNumbers: Array.isArray(prize.winningNumbers)
             ? prize.winningNumbers.slice(0, 1).map((winner: any) => ({
                 displayNumber: winner.displayNumber,
@@ -86,10 +75,7 @@ export function selectRecentDrawItems(draws: any) {
   }));
 }
 
-/**
- * The "Quick Jump" select renders `Name (CODE)` and posts the id, so the option
- * list needs four fields and none of the nesting.
- */
+/** The "Quick Jump" select needs four fields and no nesting. */
 export function selectSchemeOptions(lotteries: any) {
   if (!Array.isArray(lotteries)) return [];
   return lotteries.map((lottery) => ({
@@ -100,12 +86,7 @@ export function selectSchemeOptions(lotteries: any) {
   }));
 }
 
-/**
- * The scheme directory renders the code, draw day, name, ticket price and the
- * headline first-prize amount of the scheme's most recent published draw. The
- * nested draw arrives with a full prize table and winning numbers that the row
- * never touches.
- */
+/** The scheme directory renders code, draw day, name, ticket price, top prize. */
 export function selectDirectoryItems(lotteries: any) {
   if (!Array.isArray(lotteries)) return [];
   return lotteries.map((lottery) => {
@@ -125,16 +106,51 @@ export function selectDirectoryItems(lotteries: any) {
   });
 }
 
-/**
- * The ticket checker's scheme `<select>` needs an id, a label and a code. It
- * previously fetched `/api/lotteries` on mount for exactly this list; passing it
- * from the server render removes a request that also cost a 404 page.
- */
+/** The ticket checker's scheme `<select>` needs id, label and code. */
 export function selectSchemeChoices(lotteries: any) {
   if (!Array.isArray(lotteries)) return [];
   return lotteries.map((lottery) => ({
     id: lottery.id,
     name: lottery.name,
     code: lottery.code,
+  }));
+}
+
+/**
+ * Project yesterday's full draws for the homepage "yesterday result" section.
+ * Keeps the full prize tree and all winning numbers — the HTML is small because
+ * the section only renders when today's result is NOT yet available.
+ */
+export function selectYesterdayDraws(draws: any) {
+  if (!Array.isArray(draws)) return [];
+  return draws.map((draw) => ({
+    id: draw.id,
+    drawNumber: draw.drawNumber,
+    drawDate: draw.drawDate,
+    drawTime: draw.drawTime,
+    status: draw.status,
+    sourceDocumentUrl: draw.sourceDocumentUrl ?? null,
+    verificationLevel: draw.verificationLevel ?? null,
+    lottery: draw.lottery ? {
+      id: draw.lottery.id,
+      name: draw.lottery.name,
+      slug: draw.lottery.slug,
+      code: draw.lottery.code,
+      drawDay: draw.lottery.drawDay,
+    } : null,
+    prizes: Array.isArray(draw.prizes) ? draw.prizes.map((prize: any) => ({
+      id: prize.id,
+      category: prize.category,
+      description: prize.description ?? null,
+      amount: prize.amount,
+      orderIndex: prize.orderIndex,
+      winningNumbers: Array.isArray(prize.winningNumbers) ? prize.winningNumbers.map((wn: any) => ({
+        id: wn.id,
+        series: wn.series ?? null,
+        number: wn.number ?? null,
+        displayNumber: wn.displayNumber,
+        location: wn.location ?? null,
+      })) : [],
+    })) : [],
   }));
 }

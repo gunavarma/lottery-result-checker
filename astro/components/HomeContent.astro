@@ -35,6 +35,7 @@ import {
   selectSchemeOptions,
   selectDirectoryItems,
   selectSchemeChoices,
+  selectYesterdayDraws,
 } from '@/lib/home-view-models';
 
 interface Props {
@@ -45,42 +46,177 @@ const { locale = 'en' } = Astro.props;
 
 const data = await getHomepageData();
 
-// Islands serialise their props into the HTML, so each one is handed only the
-// slice it renders. Passing `data` wholesale made the production document
-// 529 KB (423 KB of it island props) and dominated FCP/LCP. See
-// `lib/home-view-models.ts` for the field-by-field reasoning.
 const heroData = selectHeroData(data);
 const recentDrawItems = selectRecentDrawItems(data.latestDraws || []);
 const schemeOptions = selectSchemeOptions(data.popularLotteries || []);
 const directoryItems = selectDirectoryItems(data.popularLotteries || []);
 const schemeChoices = selectSchemeChoices(data.popularLotteries || []);
+const yesterdayDraws = selectYesterdayDraws(data.yesterdayDraws || []);
 
 const allNews = getAllNews();
 const featuredArticle = getFeaturedNews();
 const secondaryNews = allNews.filter((a) => a.id !== featuredArticle.id).slice(0, 3);
+
+// Only show yesterday's section when today's result is NOT yet available
+const showYesterdaySection = !data.isTodayAvailable && yesterdayDraws.length > 0;
 ---
 
 <div class="space-y-10 sm:space-y-14 pb-16">
   {/* 1. Hero Result Terminal (Immediate 1-second Answer) */}
   <section id="today-result" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 space-y-6 scroll-mt-24">
-    {/* client:idle because the full hero HTML is already server-rendered with
-        initialData — hydration only adds the live-refresh and countdown timer,
-        neither of which is needed during FCP/LCP. */}
     <HeroTodayCardIsland client:idle locale={locale} initialData={heroData} />
     <ResultFinderIsland client:visible locale={locale} lotteries={schemeOptions} />
   </section>
 
-  {/* 2. Quick-Jump Navigation & Authority Bar */}
+  {/* 2. Yesterday's Full Results (shown until today's result publishes) */}
+  {showYesterdaySection && (
+    <section id="yesterday-result" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 scroll-mt-24">
+      <div
+        class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2E7E3] pb-3"
+      >
+        <div>
+          <span
+            class="text-[11px] font-bold text-[#0B5D45] uppercase tracking-wider block font-tabular"
+          >
+            Previous Day's Result
+          </span>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
+            {data.yesterdayStr} — Full Result
+          </h2>
+        </div>
+        <a
+          href={`/results/date/${data.yesterdayStr}`}
+          class="inline-flex items-center gap-1 text-xs font-bold text-[#0B5D45] hover:text-[#084835] transition-colors shrink-0"
+        >
+          <span>View All Yesterday's Results</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </a>
+      </div>
+
+      <div class="space-y-6">
+        {yesterdayDraws.map((draw) => {
+          const firstPrize = Array.isArray(draw.prizes) ? draw.prizes.find(
+            (p: any) => p.orderIndex === 0 || p.category.toLowerCase().includes('1st')
+          ) : null;
+          const firstWinner = firstPrize && Array.isArray(firstPrize.winningNumbers)
+            ? firstPrize.winningNumbers[0] : null;
+
+          return (
+            <div
+              class="bg-white rounded-3xl p-6 sm:p-8 lg:p-10 border border-[#E2E7E3] shadow-xs space-y-6"
+            >
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E2E7E3] pb-6">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-mono font-bold bg-[#F1F4F2] text-[#0B3B32] px-2.5 py-0.5 rounded-md border border-[#E2E7E3]">
+                      {draw.lottery?.code}
+                    </span>
+                    <span class="font-bold text-xs bg-[#0B3B32] text-white px-3 py-0.5 rounded-md">
+                      OFFICIAL VERIFIED
+                    </span>
+                    {draw.sourceDocumentUrl && (
+                      <span class="text-[10px] text-[#68736E] font-medium">
+                        Official Gazette
+                      </span>
+                    )}
+                  </div>
+                  <h2 class="text-2xl sm:text-3xl font-extrabold text-[#17201D]">
+                    {draw.lottery?.name} ({draw.drawNumber})
+                  </h2>
+                  <p class="text-xs text-[#68736E]">
+                    Held on {draw.drawDate} at {draw.drawTime || '3:00 PM'} |
+                    {(draw.verificationLevel ?? 'OFFICIAL') === 'PROVISIONAL'
+                      ? 'Live source — awaiting gazette'
+                      : 'Official Gazette Certified'}
+                  </p>
+                </div>
+
+                {firstWinner && (
+                  <div class="bg-[#F7F7F4] rounded-2xl p-4 border border-[#E2E7E3] text-center shrink-0 min-w-[200px]">
+                    <span class="text-[10px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
+                      1st Prize Prize
+                    </span>
+                    <span class="text-2xl font-black font-mono text-[#16845B] block mt-1">
+                      {firstWinner.displayNumber}
+                    </span>
+                    {firstWinner.location && (
+                      <span class="text-[11px] text-[#68736E] font-medium block mt-0.5">
+                        Sold at: {firstWinner.location}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Prize Table */}
+              <div class="space-y-3">
+                {Array.isArray(draw.prizes) && draw.prizes.map((prize: any) => (
+                  <div class="bg-[#F7F7F4] rounded-2xl p-4 border border-[#E2E7E3]">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-xs font-bold text-[#17201D]">
+                        {prize.category}
+                      </span>
+                      <span class="text-xs font-bold text-[#0B3B32]">
+                        {(typeof prize.amount === 'number' ? Math.round(prize.amount) : prize.amount).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                    {prize.description && (
+                      <p class="text-[10px] text-[#68736E] mb-2 italic">
+                        {prize.description}
+                      </p>
+                    )}
+                    <div class="flex flex-wrap gap-2">
+                      {Array.isArray(prize.winningNumbers) && prize.winningNumbers.map((wn: any) => (
+                        <span
+                          class="inline-flex items-center gap-1 text-xs font-mono font-bold bg-white px-2.5 py-1 rounded-lg border border-[#E2E7E3] text-[#17201D]"
+                        >
+                          {wn.series && <span class="text-[#68736E]">{wn.series} </span>}
+                          {wn.displayNumber}
+                          {wn.location && (
+                            <span class="text-[10px] text-[#68736E] ml-1">
+                              ({wn.location})
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[#E2E7E3]">
+                <a
+                  href={`/results/${draw.lottery?.slug}/${draw.drawNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                  class="inline-flex items-center gap-2 bg-[#0B3B32] hover:bg-[#16845B] text-white px-4 py-2 rounded-xl font-bold text-xs shadow-xs transition-colors"
+                >
+                  <span>View Complete Result</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+                <a
+                  href={`/results/date/${data.yesterdayStr}`}
+                  class="text-xs font-bold text-[#0B5D45] hover:underline"
+                >
+                  Other draws on this date →
+                </a>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  )}
+
+  {/* 3. Quick-Jump Navigation & Authority Bar */}
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <HomeQuickNav />
   </section>
 
-  {/* 3. Ticket Verification Terminal */}
+  {/* 4. Ticket Verification Terminal */}
   <section id="ticket-checker" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
     <TicketCheckerIsland client:visible locale={locale} lotteries={schemeChoices} />
   </section>
 
-  {/* 4. Scannable Recent Results Stream (Table / List Hybrid) */}
+  {/* 5. Scannable Recent Results Stream (Table / List Hybrid) */}
   <section id="recent-results" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 scroll-mt-24">
     <div
       class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2E7E3] pb-3"
@@ -104,23 +240,20 @@ const secondaryNews = allNews.filter((a) => a.id !== featuredArticle.id).slice(0
       </a>
     </div>
 
-    {/* Everything below the hero is off the first screen, so it hydrates when
-        it scrolls into view. The markup is still server-rendered (no CLS, no
-        SEO cost); only the hydration and the island's JavaScript are deferred. */}
     <RecentResultsStreamIsland client:visible locale={locale} draws={recentDrawItems} />
   </section>
 
-  {/* 5. Upcoming Draws Timeline */}
+  {/* 6. Upcoming Draws Timeline */}
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <UpcomingDrawsTimelineIsland client:visible locale={locale} />
   </section>
 
-  {/* 6. Official Kerala Lottery Weekly Timetable & Bumper Matrix */}
+  {/* 7. Official Kerala Lottery Weekly Timetable & Bumper Matrix */}
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <HomeWeeklySchedule />
   </section>
 
-  {/* 7. Active Kerala Schemes Directory */}
+  {/* 8. Active Kerala Schemes Directory */}
   <section id="lotteries" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 scroll-mt-24">
     <div class="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
       <div>
@@ -145,17 +278,17 @@ const secondaryNews = allNews.filter((a) => a.id !== featuredArticle.id).slice(0
     <LotteryDirectoryListIsland client:visible locale={locale} lotteries={directoryItems} />
   </section>
 
-  {/* 8. Official Prize Claim Guidelines & Legal Rules */}
+  {/* 9. Official Prize Claim Guidelines & Legal Rules */}
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <HomePrizeClaimGuide />
   </section>
 
-  {/* 9. SEO Frequently Asked Questions (FAQ) */}
+  {/* 10. SEO Frequently Asked Questions (FAQ) */}
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <HomeFaqSection />
   </section>
 
-  {/* 10. Editorial Gazette News & Analysis */}
+  {/* 11. Editorial Gazette News & Analysis */}
   <section id="news" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 scroll-mt-24">
     <div class="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
       <div>
@@ -177,23 +310,20 @@ const secondaryNews = allNews.filter((a) => a.id !== featuredArticle.id).slice(0
       </a>
     </div>
 
-    {/* Presentational only — rendered inline, no hydration, no JS shipped. */}
     <div class="space-y-6">
       <FeaturedNewsHero article={featuredArticle} />
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* No `key`: Astro renders each React component as its own instance, so
-            there is no list for React to reconcile. */}
         {secondaryNews.map((article) => <NewsCard article={article} />)}
       </div>
     </div>
   </section>
 
-  {/* 11. Notification Opt-in Prompt */}
+  {/* 12. Notification Opt-in Prompt */}
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <NotificationBannerIsland client:visible locale={locale} />
   </section>
 
-  {/* 12. Trust & Verification 4-Step Pipeline */}
+  {/* 13. Trust & Verification 4-Step Pipeline */}
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <TrustSection />
   </section>

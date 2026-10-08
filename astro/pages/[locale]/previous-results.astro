@@ -2,17 +2,7 @@
 /**
  * Locale mirror of `/previous-results` (`/ml`, `/ta`, `/hi`).
  *
- * The body is the English route verbatim — same data fetch, same islands, same
- * cache and analytics behaviour — with two deliberate differences: `en` and
- * anything that is not a supported locale is refused with a real 404, and the
- * head is re-derived through `mirrorMetadata()` so the canonical URL, the
- * hreflang alternates and `og:locale` describe the localized page rather than
- * the English one.
- */
-/**
- * Interactive archive browser,
- * so it is an island and is never CDN-cached (its contents depend on the
- * visitor's date selection).
+ * Now server-renders initial state like the English route.
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { PreviousResultsPageIsland } from '@/components/island/previous-results-page';
@@ -21,6 +11,7 @@ import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../lib/cache-hea
 import { isLocale } from '@/lib/i18n/config';
 import { mirrorMetadata } from '@/lib/i18n/mirror';
 import type { Language } from '@/lib/translations';
+import { getPreviousResultsInitialData } from '../../lib/previous-results-data';
 
 setRevalidateHeaders(Astro, REVALIDATE.CONTENT, { tags: [CACHE_TAG.RESULTS] });
 
@@ -31,8 +22,6 @@ const enHead = constructMetadata({
   path: '/previous-results',
 });
 
-// Locale wiring. `[locale]` matches any single segment, so an unsupported or
-// default-locale prefix has to be refused here rather than by the router.
 const locale = Astro.params.locale as Language;
 if (!isLocale(locale) || locale === 'en') {
   Astro.response.status = 404;
@@ -41,8 +30,15 @@ if (!isLocale(locale) || locale === 'en') {
 
 const head = mirrorMetadata(locale, '/previous-results', enHead);
 
+const initialData = await getPreviousResultsInitialData();
 ---
 
 <BaseLayout head={head} locale={locale}>
-  <PreviousResultsPageIsland client:load locale={locale} />
+  <PreviousResultsPageIsland
+    client:load
+    locale={locale}
+    initialAvailableDates={initialData.availableDates}
+    initialDate={initialData.initialDate}
+    initialDraws={initialData.initialDraws}
+  />
 </BaseLayout>

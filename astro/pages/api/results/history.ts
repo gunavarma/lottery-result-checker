@@ -62,8 +62,8 @@ export const GET: APIRoute = async ({ request }) => {
         `${cacheKey}_count`,
         () => withDbRetry(() => prisma.draw.count({ where })),
         {
-          ttlMs: 60_000,
-          swrMs: 300_000,
+          ttlMs: 300_000,
+          swrMs: 600_000,
           staleIfErrorMs: PUBLISHED_DATA_STALE_IF_ERROR_MS,
         }
       ),
@@ -94,8 +94,8 @@ export const GET: APIRoute = async ({ request }) => {
             })
           ),
         {
-          ttlMs: 60_000,
-          swrMs: 300_000,
+          ttlMs: 300_000,
+          swrMs: 600_000,
           staleIfErrorMs: PUBLISHED_DATA_STALE_IF_ERROR_MS,
         }
       ),
@@ -118,7 +118,7 @@ export const GET: APIRoute = async ({ request }) => {
       }),
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
         },
       }
     );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from "@/components/Link";
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PrizeTable } from '@/components/PrizeTable';
@@ -7,11 +7,8 @@ import { ResultShareBar } from '@/components/ResultShareBar';
 import { formatINR } from '@/lib/format';
 import {
   Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
   ArrowRight,
   ShieldCheck,
-  Search,
   RotateCcw,
   Loader2,
   AlertCircle,
@@ -25,7 +22,6 @@ interface DrawResult {
   status: string;
   sourceUrl: string;
   sourceDocumentUrl?: string | null;
-  /** 'PROVISIONAL' means unofficial live source, pending gazette. */
   verificationLevel?: 'OFFICIAL' | 'PROVISIONAL' | null;
   sourceProvider?: string | null;
   provisionalUpdatedAt?: string | null;
@@ -52,18 +48,32 @@ interface DrawResult {
   }>;
 }
 
-export default function PreviousResultsPage() {
-  const [availableDates, setAvailableDates] = useState<string[]>([]);
-  const [selectedDate, setSelectedDate] = useState<string>('');
+interface PreviousResultsPageProps {
+  initialAvailableDates?: string[];
+  initialDate?: string;
+  initialDraws?: DrawResult[];
+  locale?: string;
+}
+
+export default function PreviousResultsPage({
+  initialAvailableDates = [],
+  initialDate = '',
+  initialDraws = [],
+  locale = 'en',
+}: PreviousResultsPageProps) {
+  const [availableDates, setAvailableDates] = useState<string[]>(initialAvailableDates);
+  const [selectedDate, setSelectedDate] = useState<string>(initialDate);
   const [selectedLottery, setSelectedLottery] = useState<string>('all');
-  const [loadingDates, setLoadingDates] = useState<boolean>(true);
+  const [loadingDates, setLoadingDates] = useState<boolean>(initialAvailableDates.length === 0);
   const [loadingResults, setLoadingResults] = useState<boolean>(false);
-  const [draws, setDraws] = useState<DrawResult[]>([]);
-  const [searchedDate, setSearchedDate] = useState<string>('');
+  const [draws, setDraws] = useState<DrawResult[]>(initialDraws);
+  const [searchedDate, setSearchedDate] = useState<string>(initialDate);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // 1. Fetch available verified dates on mount
+  // Fetch dates only if server didn't provide them (offline/degraded)
   useEffect(() => {
+    if (availableDates.length > 0) return;
+
     async function loadDates() {
       try {
         setLoadingDates(true);
@@ -71,11 +81,12 @@ export default function PreviousResultsPage() {
         const json = await res.json();
         if (json.success && Array.isArray(json.dates) && json.dates.length > 0) {
           setAvailableDates(json.dates);
-          const initialDate = json.dates[0];
-          setSelectedDate(initialDate);
-          fetchResultsForDate(initialDate);
-        } else {
-          setAvailableDates([]);
+          if (!selectedDate || !json.dates.includes(selectedDate)) {
+            const newInitial = json.dates[0];
+            setSelectedDate(newInitial);
+            setSearchedDate(newInitial);
+            fetchResultsForDate(newInitial);
+          }
         }
       } catch (err: any) {
         console.error('Failed to load available dates:', err);
@@ -86,7 +97,7 @@ export default function PreviousResultsPage() {
     loadDates();
   }, []);
 
-  // 2. Fetch results for a specific date
+  // Fetch results for a specific date
   async function fetchResultsForDate(dateStr: string) {
     if (!dateStr) return;
     try {
@@ -126,14 +137,15 @@ export default function PreviousResultsPage() {
     fetchResultsForDate(dateStr);
   };
 
-  // Filter draws by lottery if a scheme is selected
   const filteredDraws = selectedLottery === 'all'
     ? draws
     : draws.filter((d) => d.lottery.slug === selectedLottery || d.lottery.code === selectedLottery);
 
-  // Unique lotteries available in current draws
-  const availableLotteries = Array.from(
-    new Map(draws.map((d) => [d.lottery.slug, d.lottery])).values()
+  const availableLotteries = useMemo(() =>
+    Array.from(
+      new Map(draws.map((d) => [d.lottery.slug, d.lottery])).values()
+    ),
+    [draws]
   );
 
   return (
@@ -146,7 +158,6 @@ export default function PreviousResultsPage() {
         ]}
       />
 
-      {/* Page Header */}
       <div className="border-b border-[#E2E7E3] pb-6 space-y-2">
         <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
           Authoritative Archive
@@ -159,7 +170,6 @@ export default function PreviousResultsPage() {
         </p>
       </div>
 
-      {/* Date Search & Filter Control Card */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2E7E3] shadow-xs space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E2E7E3] pb-6">
           <div className="flex items-center gap-2 text-[#17201D]">
@@ -169,7 +179,6 @@ export default function PreviousResultsPage() {
             </h2>
           </div>
 
-          {/* Quick Date Pills from Real Database Dates */}
           {availableDates.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[11px] font-bold uppercase text-[#68736E] mr-1 font-tabular">
@@ -193,9 +202,7 @@ export default function PreviousResultsPage() {
           )}
         </div>
 
-        {/* Interactive Selector Inputs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Database-Driven Date Dropdown */}
           <div className="space-y-1.5">
             <label htmlFor="select-available-date" className="text-xs font-bold text-[#17201D] block">
               Available Verified Dates
@@ -223,7 +230,6 @@ export default function PreviousResultsPage() {
             </div>
           </div>
 
-          {/* Custom Date Input */}
           <div className="space-y-1.5">
             <label htmlFor="custom-date-picker" className="text-xs font-bold text-[#17201D] block">
               Calendar Date Picker
@@ -237,7 +243,6 @@ export default function PreviousResultsPage() {
             />
           </div>
 
-          {/* Scheme Filter */}
           <div className="space-y-1.5">
             <label htmlFor="lottery-scheme-filter" className="text-xs font-bold text-[#17201D] block">
               Filter Scheme (On this date)
@@ -260,10 +265,8 @@ export default function PreviousResultsPage() {
         </div>
       </div>
 
-      {/* Results Content Area */}
       <div className="space-y-6">
         {loadingResults ? (
-          /* 1. Loading State */
           <div className="bg-white rounded-3xl p-16 text-center border border-[#E2E7E3] shadow-xs space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-[#F7F7F4] text-[#0B3B32] flex items-center justify-center mx-auto animate-spin">
               <Loader2 className="w-6 h-6 text-[#0B3B32]" />
@@ -278,7 +281,6 @@ export default function PreviousResultsPage() {
             </div>
           </div>
         ) : errorMessage ? (
-          /* 2. Real Error State */
           <div className="bg-white rounded-3xl p-12 text-center border border-red-200 shadow-xs space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto">
               <AlertCircle className="w-6 h-6" />
@@ -301,7 +303,6 @@ export default function PreviousResultsPage() {
             </button>
           </div>
         ) : filteredDraws.length === 0 ? (
-          /* 3. Accurate Empty State */
           <div className="bg-white rounded-3xl p-12 text-center border border-[#E2E7E3] shadow-xs space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-[#F7F7F4] text-[#68736E] flex items-center justify-center mx-auto">
               <CalendarIcon className="w-6 h-6 text-[#C8A45D]" />
@@ -314,7 +315,6 @@ export default function PreviousResultsPage() {
                 No official Kerala State Lottery draw occurred or has been published for {searchedDate || selectedDate}. Kerala lotteries run according to the official weekly draw timetable.
               </p>
             </div>
-
             <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
               <Link
                 href="/results"
@@ -332,7 +332,6 @@ export default function PreviousResultsPage() {
             </div>
           </div>
         ) : (
-          /* 4. Complete Verified Results Card */
           <div className="space-y-8">
             {filteredDraws.map((draw) => {
               const firstPrize = draw.prizes?.find(
@@ -366,7 +365,7 @@ export default function PreviousResultsPage() {
                         {draw.lottery.name} ({draw.drawNumber})
                       </h2>
                       <p className="text-xs text-[#68736E]">
-                        Held on {draw.drawDate} at {draw.drawTime} |{' '}
+                        Held on {draw.drawDate} at {draw.drawTime} |
                         {(draw.verificationLevel ?? 'OFFICIAL') === 'PROVISIONAL'
                           ? 'Live source — awaiting gazette'
                           : 'Official Gazette Certified'}
@@ -390,7 +389,6 @@ export default function PreviousResultsPage() {
                     )}
                   </div>
 
-                  {/* Prize Table */}
                   <div className="space-y-3">
                     <PrizeTable
                       lotteryName={draw.lottery.name}
@@ -420,7 +418,6 @@ export default function PreviousResultsPage() {
         )}
       </div>
 
-      {/* Trust & Guarantee Banner */}
       <div className="bg-[#F7F7F4] rounded-3xl p-6 sm:p-8 border border-[#E2E7E3] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-[#68736E]">
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-5 h-5 text-[#16845B] shrink-0" />
