@@ -1,0 +1,170 @@
+---
+/**
+ * The headline result card: which draw, when it was published, and — when the
+ * draw stores them — the series codes a ticket must carry to win.
+ *
+ * This is the block the visitor (and a crawler) sees first, so it is rendered
+ * entirely on the server from the newest *published* draw. It carries the draw
+ * name, number, date, weekday and update time as text, and it links to both the
+ * draw page and the date archive for that draw, which is what keeps the two
+ * historical routes reachable from the homepage without any click-through.
+ *
+ * "Latest published" rather than "today": after 3:00 PM the newest published
+ * draw is today's; before it, this card is yesterday's, and saying so is more
+ * honest than showing an empty shell for a draw that has not happened yet.
+ */
+import { ExternalLink, FileText, ArrowRight, Link2 } from 'lucide-react';
+import {
+  drawResultHref,
+  dateArchiveHref,
+  formatDdMmYyyy,
+  formatIstTimestamp,
+  seriesCodes,
+  weekdayName,
+  type DrawReference,
+  type Prize,
+} from './home-format';
+
+interface Props {
+  draw: (DrawReference & {
+    id?: string;
+    drawTime?: string | null;
+    status?: string | null;
+    verificationLevel?: string | null;
+    sourceDocumentUrl?: string | null;
+    publishedAt?: string | null;
+    verifiedAt?: string | null;
+    updatedAt?: string | null;
+    prizes?: Prize[] | null;
+  }) | null;
+  /** True when the newest published draw is today's. */
+  isToday?: boolean;
+}
+
+const { draw, isToday = false } = Astro.props;
+
+const resultHref = drawResultHref(draw);
+const archiveHref = dateArchiveHref(draw?.drawDate);
+const codes = seriesCodes(draw?.prizes);
+const isProvisional = (draw?.verificationLevel ?? 'OFFICIAL') === 'PROVISIONAL';
+const updatedAt = formatIstTimestamp(draw?.updatedAt ?? draw?.verifiedAt ?? draw?.publishedAt);
+
+const metaBoxes = [
+  { label: 'Draw Number', value: draw?.drawNumber ?? '—' },
+  { label: 'Draw Date', value: formatDdMmYyyy(draw?.drawDate) },
+  { label: 'Draw Day', value: weekdayName(draw?.drawDate) || draw?.lottery?.code || '—' },
+  { label: 'Update Time', value: draw?.drawTime || updatedAt?.replace(/^.*?,\s*/, '') || '3:00 PM' },
+];
+---
+
+{
+  draw ? (
+    <section
+      id="latest-result"
+      class="overflow-hidden rounded-xl border border-[#0A4E3A]/30 bg-gradient-to-br from-[#0F7B4F] via-[#0B5D45] to-[#0A4A38] text-white shadow-sm"
+    >
+      <div class="space-y-4 px-4 py-4 sm:px-6 sm:py-5">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="rounded bg-black/25 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-[#9EE6BE] font-tabular">
+            {isToday ? "Today's Published Result" : 'Latest Published Result'}
+          </span>
+          <span
+            class={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider font-tabular ${
+              isProvisional ? 'bg-[#C59B27]/25 text-[#F5DFA0]' : 'bg-white/10 text-white/80'
+            }`}
+          >
+            {isProvisional ? 'Live Source · Awaiting Gazette' : 'Official Gazette Certified'}
+          </span>
+        </div>
+
+        <h2 class="text-xl font-extrabold tracking-tight sm:text-2xl">
+          {draw.lottery?.name} ({draw.drawNumber}) Result
+        </h2>
+
+        <dl class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {metaBoxes.map((box) => (
+            <div class="rounded-lg border border-white/10 bg-white/10 px-3 py-2">
+              <dt class="text-[9px] font-bold uppercase tracking-wider text-white/60 font-tabular">
+                {box.label}
+              </dt>
+              <dd class="mt-0.5 text-sm font-bold font-tabular">{box.value}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-semibold">
+          {resultHref && (
+            <a
+              href={resultHref}
+              class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[#0B3B32] transition-colors hover:bg-[#E9F3EE]"
+            >
+              <span>View Complete Result</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </a>
+          )}
+          {archiveHref && (
+            <a
+              href={archiveHref}
+              class="inline-flex items-center gap-1.5 text-white/85 hover:text-white hover:underline"
+            >
+              <span>All draws on {formatDdMmYyyy(draw.drawDate)}</span>
+            </a>
+          )}
+          {draw.sourceDocumentUrl && (
+            <a
+              href={draw.sourceDocumentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 text-white/85 hover:text-white hover:underline"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              <span>Official Gazette PDF</span>
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+          {resultHref && (
+            <a
+              href={`${resultHref}#prize-chart`}
+              class="ml-auto inline-flex items-center gap-1.5 text-white/70 hover:text-white hover:underline"
+              title="Permanent link to this result"
+            >
+              <Link2 className="h-3.5 w-3.5" />
+              <span>Permalink</span>
+            </a>
+          )}
+        </div>
+
+        {updatedAt && (
+          <p class="text-[10px] text-white/60">Verified and last updated {updatedAt}.</p>
+        )}
+      </div>
+
+      {
+        codes.length > 0 && (
+          <div class="border-t border-white/10 bg-black/15 px-4 py-3 sm:px-6">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-white/60 font-tabular">
+              Today&apos;s Lottery Series Codes
+            </p>
+            <ul class="mt-1.5 flex flex-wrap gap-1.5">
+              {codes.map((code) => (
+                <li class="rounded border border-white/15 bg-white/10 px-2 py-0.5 text-xs font-bold font-mono font-tabular">
+                  {code}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+    </section>
+  ) : (
+    <section
+      id="latest-result"
+      class="rounded-xl border border-[#E2E7E3] bg-white px-4 py-6 text-center text-xs text-[#5F6B66] sm:px-6"
+    >
+      <p class="font-bold text-[#17201D]">Result synchronising with the official LOTIS gazette.</p>
+      <p class="mt-1">
+        The latest draw is being retrieved. Kerala results are published daily at 3:00 PM IST.
+      </p>
+    </section>
+  )
+}

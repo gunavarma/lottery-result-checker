@@ -1,0 +1,253 @@
+---
+/**
+ * The full prize chart of the latest published draw, rendered as static HTML.
+ *
+ * This is the content the redesign bought: previously the homepage showed a
+ * headline number and the complete tier table was one navigation away on
+ * `/results/[slug]/[drawNumber]`. Now every tier — 1st prize, the consolation
+ * series, the mid tiers and all of the "ending with" tiers — is in the document
+ * the visitor lands on, in the order the official gazette prints them.
+ *
+ * It is plain Astro on purpose. The tiers are data, not interaction, so this
+ * ships no JavaScript and, unlike the island-based hero it replaces, none of it
+ * is serialised into the document as an island prop payload (see
+ * `lib/home-view-models.ts` for why that mattered: props were 423 KB of a 529 KB
+ * homepage before).
+ *
+ * Grouping comes from `groupPrizes()` in `./home-format.ts`, which classifies a
+ * tier by the shape of its numbers (series-prefixed full numbers vs a batch of
+ * short endings) instead of by `orderIndex` — weekly and bumper schemes order
+ * their tiers differently, and the numbers are the stable signal.
+ */
+import { FileText, Link2, MapPin, Printer, Info } from 'lucide-react';
+import {
+  drawResultHref,
+  groupPrizes,
+  longestDigitCount,
+  prizeAmount,
+  prizeAmountShort,
+  seriesOf,
+  type Prize,
+} from './home-format';
+
+interface Props {
+  draw:
+    | {
+        drawNumber?: string | null;
+        drawDate?: string | null;
+        verificationLevel?: string | null;
+        sourceDocumentUrl?: string | null;
+        lottery?: { name?: string | null; slug?: string | null; code?: string | null } | null;
+        prizes?: Prize[] | null;
+      }
+    | null;
+}
+
+const { draw } = Astro.props;
+
+const prizes = draw?.prizes ?? [];
+const { headline, consolation, fullNumberTiers, endingTiers } = groupPrizes(prizes);
+const resultHref = drawResultHref(draw);
+const schemeLabel = draw?.lottery?.code || draw?.lottery?.name || 'Kerala Lottery';
+const isProvisional = (draw?.verificationLevel ?? 'OFFICIAL') === 'PROVISIONAL';
+
+const DIGIT_WORDS: Record<number, string> = { 1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five' };
+
+/** "Last four digits to be drawn 19 times" — derived from the tier's own length. */
+function endingNote(prize: Prize): string | null {
+  const digits = longestDigitCount(prize);
+  const count = prize.winningNumbers?.length ?? 0;
+  const word = DIGIT_WORDS[digits];
+  if (!word || count === 0) return null;
+  return `Last ${word} digits to be drawn ${count} time${count === 1 ? '' : 's'}`;
+}
+
+/** `1st Prize ₹1,00,00,000/- [1 Crore]` — exact amount plus its short form. */
+function tierTitle(prize: Prize): string {
+  const label = prize.category?.trim() || 'Prize';
+  if (!prize.amount) return label;
+  return `${label} ${prizeAmount(prize.amount)}/-`;
+}
+---
+
+<section id="prize-chart" class="scroll-mt-24 space-y-3">
+  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E7E3] pb-2.5">
+    <h2 class="text-lg font-extrabold tracking-tight text-[#17201D] sm:text-xl">
+      {schemeLabel} Prize Chart
+      {draw?.drawNumber ? ` — ${draw.drawNumber}` : ''}
+    </h2>
+    <div class="flex items-center gap-3">
+      {resultHref && (
+        <a
+          href={resultHref}
+          class="inline-flex items-center gap-1.5 text-xs font-bold text-[#0B5D45] hover:underline"
+        >
+          <Link2 className="h-3.5 w-3.5" />
+          <span>Permalink</span>
+        </a>
+      )}
+      <button
+        type="button"
+        data-kd-print
+        class="inline-flex items-center gap-1.5 rounded-lg border border-[#E2E7E3] bg-white px-2.5 py-1.5 text-xs font-bold text-[#17201D] transition-colors hover:bg-[#F4F5F2]"
+      >
+        <Printer className="h-3.5 w-3.5 text-[#68736E]" />
+        <span>Print</span>
+      </button>
+    </div>
+  </div>
+
+  {
+    prizes.length === 0 ? (
+      <div class="rounded-xl border border-[#E2E7E3] bg-white px-4 py-6 text-center text-xs text-[#5F6B66]">
+        The prize chart for this draw is still being verified against the official gazette.
+      </div>
+    ) : (
+      <div class="space-y-3">
+        {headline?.winningNumbers?.length ? (
+          <section class="rounded-xl border border-[#F2CE8A] bg-[#FFF8E8] px-4 py-4 text-center">
+            <h3 class="text-base font-extrabold text-[#B45309] sm:text-lg">
+              {tierTitle(headline)}
+              {headline.amount ? (
+                <span class="font-bold text-[#B45309]"> [{prizeAmountShort(headline.amount)}]</span>
+              ) : null}
+            </h3>
+            {headline.description && (
+              <p class="mt-0.5 text-[11px] font-semibold italic text-[#92400E]">
+                {headline.description}
+              </p>
+            )}
+            <ul class="mt-2 space-y-3">
+              {headline.winningNumbers.map((number) => (
+                <li>
+                  <p class="font-mono text-2xl font-black tracking-wide text-[#17201D] font-tabular sm:text-3xl">
+                    {seriesOf(number) && (
+                      <span class="text-[#68736E]">{seriesOf(number)} </span>
+                    )}
+                    {number.displayNumber?.replace(/^[A-Za-z]{1,3}\s/, '')}
+                  </p>
+                  {number.location && (
+                    <p class="mt-1 inline-flex items-center gap-1 rounded bg-[#FDEBC8] px-2 py-0.5 text-[11px] font-bold text-[#92400E]">
+                      <MapPin className="h-3 w-3" />
+                      <span>{number.location}</span>
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {consolation?.winningNumbers?.length ? (
+          <section class="rounded-xl border border-dashed border-[#BFE3CC] bg-[#EFF8F1] px-4 py-4 text-center">
+            <h3 class="text-base font-extrabold text-[#0B5D45] sm:text-lg">
+              {tierTitle(consolation)}
+            </h3>
+            <p class="mt-0.5 text-[11px] font-semibold italic text-[#16845B]">
+              {consolation.description || 'Matching number in the remaining series'}
+            </p>
+            <ul class="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+              {consolation.winningNumbers.map((number) => (
+                <li class="rounded-lg border border-[#CFE7D8] bg-white px-2 py-1.5 font-mono text-sm font-bold text-[#17201D] font-tabular">
+                  {seriesOf(number) && <span class="text-[#68736E]">{seriesOf(number)} </span>}
+                  {number.displayNumber?.replace(/^[A-Za-z]{1,3}\s/, '')}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {fullNumberTiers.map((prize) => (
+          <section class="rounded-xl border border-[#E2E7E3] bg-white px-4 py-4 text-center">
+            <h3 class="text-base font-extrabold text-[#0B5D45] sm:text-lg">{tierTitle(prize)}</h3>
+            {prize.description && (
+              <p class="mt-0.5 text-[11px] font-semibold italic text-[#16845B]">
+                {prize.description}
+              </p>
+            )}
+            <ul class="mt-2 space-y-3">
+              {(prize.winningNumbers ?? []).map((number) => (
+                <li>
+                  <p class="font-mono text-xl font-black tracking-wide text-[#17201D] font-tabular sm:text-2xl">
+                    {seriesOf(number) && (
+                      <span class="text-[#68736E]">{seriesOf(number)} </span>
+                    )}
+                    {number.displayNumber?.replace(/^[A-Za-z]{1,3}\s/, '')}
+                  </p>
+                  {number.location && (
+                    <p class="mt-1 inline-flex items-center gap-1 rounded bg-[#EEF3F1] px-2 py-0.5 text-[11px] font-bold text-[#0B3B32]">
+                      <MapPin className="h-3 w-3" />
+                      <span>{number.location}</span>
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+
+        {endingTiers.length > 0 && (
+          <p class="flex justify-center pt-1">
+            <span class="rounded-full bg-[#0B5D45] px-5 py-1.5 text-center text-xs font-bold text-white sm:text-sm">
+              For the tickets ending with the following numbers
+            </span>
+          </p>
+        )}
+
+        {endingTiers.map((prize) => (
+          <section class="rounded-xl border border-[#E2E7E3] bg-white px-4 py-4">
+            <h3 class="text-center text-base font-extrabold text-[#0B5D45] sm:text-lg">
+              {tierTitle(prize)}
+            </h3>
+            <p class="mt-0.5 text-center text-[11px] font-semibold italic text-[#C2410C]">
+              {prize.description || endingNote(prize)}
+            </p>
+            <ul class="mt-2.5 grid grid-cols-4 gap-1.5 sm:grid-cols-6 lg:grid-cols-8">
+              {(prize.winningNumbers ?? []).map((number) => (
+                <li class="rounded-md border border-[#E2E7E3] bg-[#F4F5F2] px-1.5 py-1 text-center font-mono text-xs font-bold text-[#17201D] font-tabular sm:text-sm">
+                  {number.displayNumber}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    )
+  }
+
+  <div class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#E2E7E3] bg-white px-4 py-3 text-[11px]">
+    <p class="flex items-start gap-1.5 text-[#5F6B66]">
+      <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#0B5D45]" />
+      <span>
+        {isProvisional
+          ? 'Live numbers from an unofficial source — the official gazette has not been published yet.'
+          : 'Official Result Source: Directorate of Kerala State Lotteries (Kerala Government Gazette).'}
+      </span>
+    </p>
+    <div class="flex items-center gap-3 font-bold">
+      {draw?.sourceDocumentUrl && (
+        <a
+          href={draw.sourceDocumentUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 text-[#0B5D45] hover:underline"
+        >
+          <FileText className="h-3.5 w-3.5" />
+          <span>Gazette PDF</span>
+        </a>
+      )}
+      <a href="/prize-structure" class="inline-flex items-center gap-1.5 text-[#0B5D45] hover:underline">
+        <span>Prize structure explained</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  // The only script in the chart: wire up the print control. There is exactly one
+  // per page, and without JavaScript the button simply does nothing rather than
+  // leaving the page in a broken state.
+  document.querySelectorAll('[data-kd-print]').forEach((button) => {
+    button.addEventListener('click', () => window.print());
+  });
+</script>

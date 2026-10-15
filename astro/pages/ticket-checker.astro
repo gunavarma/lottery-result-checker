@@ -71,6 +71,13 @@ const faqs = [
       </p>
     </div>
 
-    <TicketCheckerIsland client:load locale="en" />
+    {/* `/ticket-checker?number=…` is the target of the homepage sidebar's plain
+        GET form. The number is only prefilled — the comparison runs when the
+        visitor submits — so a shared or crawled URL cannot trigger a lookup. */}
+    <TicketCheckerIsland
+      client:load
+      locale="en"
+      initialNumber={Astro.url.searchParams.get('number')?.slice(0, 20) ?? undefined}
+    />
   </div>
 </BaseLayout>

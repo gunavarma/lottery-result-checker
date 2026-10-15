@@ -1,0 +1,76 @@
+---
+/**
+ * "About this site" plus the two statements a lottery results page owes its
+ * readers: what was verified and when, and what the site does *not* do.
+ *
+ * The verification line is generated from the draw's own timestamps, so it
+ * cannot claim a review that did not happen, and the notice about the statutory
+ * ban on selling lottery tickets online reproduces the site's existing
+ * disclaimer rather than introducing a new claim.
+ */
+import { BadgeCheck, AlertTriangle, ExternalLink } from 'lucide-react';
+import { formatIstTimestamp } from './home-format';
+
+interface Props {
+  /** Timestamp of the latest published draw, used for the "last updated" line. */
+  lastUpdated?: string | Date | null;
+  /** Draw number of the latest published draw, quoted in the verified line. */
+  drawNumber?: string | null;
+  lotteryName?: string | null;
+}
+
+const { lastUpdated = null, drawNumber = null, lotteryName = null } = Astro.props;
+
+const verifiedAt = formatIstTimestamp(lastUpdated);
+const verifiedFor = [lotteryName, drawNumber].filter(Boolean).join(' ');
+---
+
+<section class="rounded-xl border border-[#E2E7E3] bg-white p-4 sm:p-5">
+  <h2 class="text-base font-extrabold tracking-tight text-[#17201D]">About KeralaDraws</h2>
+
+  <p class="mt-2 text-xs leading-relaxed text-[#5F6B66]">
+    KeralaDraws is an independent information portal for Kerala State Lottery results. It publishes
+    daily results, the weekly draw timetable, prize breakdowns and step-by-step ticket verification
+    guides for ticket holders.
+  </p>
+  <p class="mt-2 text-xs leading-relaxed text-[#5F6B66]">
+    It is not affiliated with the Government of Kerala, the Directorate of Kerala State Lotteries,
+    or any official lottery authority. Everything published here is general reference information.
+    Winners should always cross-check their tickets against the official Kerala Government Gazette.
+  </p>
+
+  <div class="mt-3 flex items-start gap-2 rounded-lg border border-[#BFE3CC] bg-[#EFF8F1] px-3 py-2.5">
+    <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#16845B]" />
+    <p class="text-[11px] leading-relaxed text-[#0B3B32]">
+      <strong>Verified:</strong> {verifiedFor ? `${verifiedFor} ` : 'The latest result '}has been
+      cross-checked with the official Kerala Government Gazette PDF.
+      {verifiedAt ? ` Last updated ${verifiedAt}.` : ''}
+    </p>
+  </div>
+
+  <div class="mt-2.5 flex items-start gap-2 rounded-lg border border-[#F2CE8A] bg-[#FFF8E8] px-3 py-2.5">
+    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#B45309]" />
+    <p class="text-[11px] leading-relaxed text-[#7C3F06]">
+      <strong>Important notice:</strong> the online sale and purchase of lottery tickets is banned
+      in Kerala. Only physical tickets bought from authorised agents and retailers are valid. This
+      website is intended solely for results and information — it does not sell tickets and does not
+      run any online purchase. Before claiming a prize, verify your ticket against the official
+      gazette result.
+    </p>
+  </div>
+
+  <p class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] font-bold">
+    <a href="/about" class="text-[#0B5D45] hover:underline">About us</a>
+    <a href="/contact" class="text-[#0B5D45] hover:underline">Contact</a>
+    <a href="/privacy-policy" class="text-[#0B5D45] hover:underline">Privacy policy</a>
+    <a
+      href="https://www.lotteryagent.kerala.gov.in"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-flex items-center gap-1 text-[#0B5D45] hover:underline"
+    >
+      <span>Official LOTIS portal</span>
+      <ExternalLink className="h-3 w-3" />
+    </a>
+  </p>
+</section>

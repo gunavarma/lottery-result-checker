@@ -1,0 +1,165 @@
+---
+/**
+ * The homepage sidebar: three small utilities that stay useful at any scroll
+ * position — a fast ticket-number check, the scheme directory, and the newest
+ * published draws.
+ *
+ * All three are static markup. The ticket check is a real `<form method="get">`
+ * that submits to `/ticket-checker?number=…`, which is why it works with
+ * JavaScript disabled; the checker page prefills that number and runs the
+ * comparison with the query layer it already had.
+ *
+ * The recent-results rows deliberately carry two links each: the draw page
+ * (`/results/[scheme]/[draw]`) and the date archive
+ * (`/kerala-lottery-result/YYYY-MM-DD`). The second is the dynamic historical
+ * route, and keeping it in the link graph of the homepage is what keeps the
+ * archive reachable without a click-through.
+ */
+import { Search, Camera, ChevronRight, CalendarDays, ArrowRight } from 'lucide-react';
+import {
+  dateArchiveHref,
+  drawResultHref,
+  formatDdMmYyyy,
+  type DrawReference,
+} from './home-format';
+
+interface Props {
+  /** Newest published draws, newest first (`data.latestDraws`). */
+  recentDraws?: Array<DrawReference>;
+  /** Active schemes (`data.popularLotteries`). */
+  lotteries?: Array<{
+    id?: string;
+    name?: string | null;
+    slug?: string | null;
+    code?: string | null;
+    drawDay?: string | null;
+  }>;
+}
+
+const { recentDraws = [], lotteries = [] } = Astro.props;
+
+const schemes = lotteries.filter((lottery) => lottery.slug && lottery.name);
+---
+
+<aside class="space-y-3" aria-label="Result tools and navigation">
+  <section class="rounded-xl border border-[#E2E7E3] bg-white p-4">
+    <h2 class="text-sm font-extrabold tracking-tight text-[#17201D]">Check Ticket Number</h2>
+    <form action="/ticket-checker" method="get" class="mt-2.5 flex items-center gap-2">
+      <label for="home-ticket-number" class="sr-only">Kerala lottery ticket number</label>
+      <input
+        id="home-ticket-number"
+        name="number"
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        placeholder="e.g. 1234 or KN"
+        class="min-w-0 flex-1 rounded-lg border border-[#E2E7E3] bg-[#FAFAF7] px-3 py-2 text-xs font-bold text-[#17201D] placeholder:font-normal placeholder:text-[#95A09B] focus:border-[#0B5D45] focus:bg-white focus:outline-hidden font-tabular"
+      />
+      <button
+        type="submit"
+        class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#0B5D45] px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-[#084835]"
+      >
+        <Search className="h-3.5 w-3.5" />
+        <span>Search</span>
+      </button>
+    </form>
+    <a
+      href="/ticket-checker"
+      class="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#0B5D45] hover:underline"
+    >
+      <Camera className="h-3.5 w-3.5" />
+      <span>Or scan the ticket with your camera</span>
+    </a>
+  </section>
+
+  {
+    schemes.length > 0 && (
+      <section class="rounded-xl border border-[#E2E7E3] bg-white p-4">
+        <h2 class="text-sm font-extrabold tracking-tight text-[#17201D]">Kerala Lotteries</h2>
+        <ul class="mt-2 divide-y divide-[#EEF1EE]">
+          {schemes.map((scheme) => (
+            <li class="flex items-center justify-between gap-2 py-2 text-xs">
+              <a
+                href={`/lottery/${scheme.slug}`}
+                class="font-bold text-[#17201D] hover:text-[#0B5D45]"
+              >
+                {scheme.name}
+              </a>
+              <span class="shrink-0 rounded bg-[#F4F5F2] px-2 py-0.5 text-[10px] font-bold text-[#5F6B66] font-tabular">
+                {scheme.drawDay || scheme.code}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <a
+          href="/lotteries"
+          class="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#0B5D45] hover:underline"
+        >
+          <span>All schemes, prices &amp; top prizes</span>
+          <ArrowRight className="h-3 w-3" />
+        </a>
+      </section>
+    )
+  }
+
+  {
+    recentDraws.length > 0 && (
+      <section class="rounded-xl border border-[#E2E7E3] bg-white p-4">
+        <h2 class="text-sm font-extrabold tracking-tight text-[#17201D]">Recent Result Updates</h2>
+        <ul class="mt-1 divide-y divide-[#EEF1EE]">
+          {recentDraws.map((draw) => {
+            const resultHref = drawResultHref(draw);
+            const archiveHref = dateArchiveHref(draw.drawDate);
+            const label = `${draw.lottery?.name ?? 'Kerala Lottery'} (${draw.drawNumber ?? '—'})`;
+
+            return (
+              <li class="flex items-center justify-between gap-2 py-2">
+                <div class="min-w-0">
+                  {resultHref ? (
+                    <a
+                      href={resultHref}
+                      class="block truncate text-xs font-bold text-[#17201D] hover:text-[#0B5D45]"
+                    >
+                      {label}
+                    </a>
+                  ) : (
+                    <span class="block truncate text-xs font-bold text-[#17201D]">{label}</span>
+                  )}
+                  {archiveHref ? (
+                    <a
+                      href={archiveHref}
+                      class="mt-0.5 flex items-center gap-1 text-[10px] font-semibold text-[#5F6B66] hover:text-[#0B5D45] font-tabular"
+                    >
+                      <CalendarDays className="h-3 w-3" />
+                      <span>{formatDdMmYyyy(draw.drawDate)}</span>
+                    </a>
+                  ) : (
+                    <span class="mt-0.5 block text-[10px] font-semibold text-[#5F6B66] font-tabular">
+                      {formatDdMmYyyy(draw.drawDate)}
+                    </span>
+                  )}
+                </div>
+                {resultHref && (
+                  <a
+                    href={resultHref}
+                    aria-label={`Open ${label}`}
+                    class="shrink-0 rounded p-1 text-[#95A09B] hover:bg-[#F4F5F2] hover:text-[#0B5D45]"
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </a>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+        <a
+          href="/previous-results"
+          class="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#0B5D45] hover:underline"
+        >
+          <span>All previous results</span>
+          <ArrowRight className="h-3 w-3" />
+        </a>
+      </section>
+    )
+  }
+</aside>

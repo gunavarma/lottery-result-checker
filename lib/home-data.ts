@@ -7,7 +7,8 @@
 import { prisma, serializeData } from '@/lib/prisma';
 import { getOrSetCache, PUBLISHED_DATA_STALE_IF_ERROR_MS } from '@/lib/cache';
 import { loadTodaySnapshot } from '@/lib/results/today-snapshot';
-import { getYesterdayIstStr } from '@/lib/date';
+import { computeLiveState, EXPECTED_DRAW_TIME } from '@/lib/live-state';
+import { formatIstDate, getYesterdayIstStr } from '@/lib/date';
 import { DRAW_FULL } from '@/lib/results/projections';
 import { LOTTERY_SUMMARY, drawCardView } from '@/lib/results/projections';
 
@@ -21,7 +22,7 @@ import { LOTTERY_SUMMARY, drawCardView } from '@/lib/results/projections';
 export async function getHomepageData() {
   try {
     return await getOrSetCache(
-      'homepage_data_v5',
+      'homepage_data_v6',
       async () => {
         const today = await loadTodaySnapshot();
         const yesterdayStr = getYesterdayIstStr();
@@ -35,6 +36,23 @@ export async function getHomepageData() {
           },
           select: DRAW_FULL,
           orderBy: { drawDate: 'desc' },
+        });
+
+        // The homepage renders the *whole* prize chart of the latest published
+        // draw server-side (see `astro/components/home/HomePrizeChart.astro`), so
+        // the loader needs the complete prize tree — not the truncated
+        // `todayDrawView` projection the API polls with.
+        //
+        // This is the one read the redesign added. It is a single draw (~30 KB,
+        // no audit columns) behind the same 60s cache, and it is what removes the
+        // extra navigation every visitor previously had to make to see the prize
+        // chart. It is deliberately NOT handed to any island: the chart is
+        // markup, so none of this reaches the document as a prop payload (see
+        // the payload notes in `lib/home-view-models.ts`).
+        const displayDraw = await prisma.draw.findFirst({
+          where: { status: 'PUBLISHED' },
+          orderBy: { drawDate: 'desc' },
+          select: DRAW_FULL,
         });
 
         const [latestDraws, popularLotteries] = await Promise.all([
@@ -87,6 +105,7 @@ export async function getHomepageData() {
         return serializeData({
           ...today,
           latestDraw: today.latestDraw ?? null,
+          displayDraw: displayDraw ?? null,
           latestDraws,
           popularLotteries,
           yesterdayStr,
@@ -101,14 +120,32 @@ export async function getHomepageData() {
     );
   } catch (error) {
     console.error('Error fetching homepage data:', error);
+    // The fallback keeps the *shape* of a successful read, not just its
+    // emptiness: the homepage renders the countdown, the scheduled scheme and
+    // today's date straight from these fields, so omitting them here would make
+    // a failed database read change the page's type, not only its content.
+    const fallbackClock = computeLiveState(false);
+
     return {
       success: false as const,
       isTodayAvailable: false,
       liveStatus: 'DELAYED' as const,
+      todayDate: fallbackClock.todayDate,
+      todayDateFormatted: formatIstDate(new Date()),
       todayDraw: null,
       latestDraw: null,
+      displayDraw: null,
       latestDraws: [],
       popularLotteries: [],
+      scheduledLottery: {
+        name: 'Kerala State Lottery',
+        code: 'KL',
+        drawTime: '3:00 PM',
+        drawDay: fallbackClock.todayDayOfWeek,
+      },
+      expectedDrawTime: EXPECTED_DRAW_TIME,
+      secondsUntilDraw: fallbackClock.secondsUntilDraw,
+      currentIstTime: fallbackClock.currentIstTime,
       yesterdayStr: getYesterdayIstStr(),
       yesterdayDraws: [],
     };

@@ -8,30 +8,29 @@ import { HOMEPAGE_FAQS } from '@/lib/home-faqs';
 import { HelpCircle, ChevronDown } from 'lucide-react';
 ---
 
-<div id="faqs" class="space-y-6 scroll-mt-24">
+<div id="faqs" class="scroll-mt-24 space-y-4">
   {/* Header */}
-  <div class="border-b border-[#E2E7E3] pb-4 space-y-1">
-    <div class="flex items-center gap-2">
-      <span class="text-[11px] font-bold text-[#0B5D45] uppercase tracking-wider block font-tabular">
-        Frequently Asked Questions
-      </span>
-      <span class="text-xs bg-[#E9F3EE] text-[#0B5D45] font-bold px-2 py-0.5 rounded-full font-tabular">
-        {HOMEPAGE_FAQS.length} Questions Answered
-      </span>
+  <div class="flex flex-wrap items-end justify-between gap-2 border-b border-[#E2E7E3] pb-2.5">
+    <div>
+      <h2 class="flex items-center gap-2 text-lg font-extrabold tracking-tight text-[#17201D] sm:text-xl">
+        <HelpCircle className="h-4.5 w-4.5 text-[#0B5D45]" />
+        <span>Kerala Lottery Results &amp; Verification FAQs</span>
+      </h2>
+      <p class="mt-0.5 max-w-2xl text-xs text-[#5F6B66]">
+        Clear, verified answers on daily 3:00 PM draw times, weekly schemes, prize claim protocols,
+        taxes and government gazette verification.
+      </p>
     </div>
-    <h2 class="text-2xl sm:text-3xl font-extrabold text-[#17201D] tracking-tight flex items-center gap-2">
-      <HelpCircle className="w-6 h-6 text-[#0B5D45]" />
-      <span>Kerala Lottery Results &amp; Verification FAQs</span>
-    </h2>
-    <p class="text-xs sm:text-sm text-[#5F6B66] max-w-2xl">
-      Clear, verified answers regarding daily 3:00 PM draw times, weekly schemes, prize claim protocols, taxes, and government gazette verification.
-    </p>
+    <span class="shrink-0 rounded-full bg-[#E9F3EE] px-2.5 py-0.5 text-[11px] font-bold text-[#0B5D45] font-tabular">
+      {HOMEPAGE_FAQS.length} questions answered
+    </span>
   </div>
 
-  {/* Accordion Container */}
-  <div class="bg-white rounded-3xl p-4 sm:p-8 border border-[#E2E7E3] shadow-xs divide-y divide-[#E2E7E3]">
+  {/* Accordion Container — native <details>, so the answers are in the HTML
+      whether or not the browser has JavaScript, and no accordion library ships. */}
+  <div class="divide-y divide-[#E2E7E3] rounded-xl border border-[#E2E7E3] bg-white p-4 sm:p-5">
     {HOMEPAGE_FAQS.map((faq, index) => (
-      <details class="group py-4 sm:py-5 first:pt-0 last:pb-0 cursor-pointer" open={index === 0}>
+      <details class="group cursor-pointer py-3.5 first:pt-0 last:pb-0" open={index === 0}>
         <summary class="list-none flex items-center justify-between gap-4 text-left select-none">
           <div class="flex items-start gap-3">
             <span class="text-xs font-mono font-bold text-[#0B5D45] bg-[#E9F3EE] px-2 py-1 rounded-md shrink-0 font-tabular mt-0.5">

@@ -62,6 +62,17 @@ const htmlLang = LOCALE_HTML_LANG[locale] ?? 'en';
 // rediscovered from `window.location` after hydration.
 const pathname = Astro.url.pathname;
 
+// Today's date in IST, formatted once on the server and handed to the chrome.
+// The navbar prints it in the source bar; computing it here (rather than on the
+// client) means the rendered date and the hydrated date are the same string.
+const todayLabel = new Intl.DateTimeFormat('en-GB', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'Asia/Kolkata',
+}).format(new Date());
+
 // GA4 is opt-in through the environment, and the measurement ID is never
 // hardcoded: with no variable set the tag is not rendered at all and every
 // `trackEvent()` call degrades to a no-op. `PUBLIC_GA_ID` is still honoured so a
@@ -201,7 +212,7 @@ const gaEvents = analyticsEvents
 
     {/* Switched from client:load to client:idle so hydration doesn't compete
         with FCP/LCP. The server-rendered HTML is identical either way. */}
-    <NavbarIsland client:idle locale={locale} pathname={pathname} />
+    <NavbarIsland client:idle locale={locale} pathname={pathname} todayLabel={todayLabel} />
 
     <main id="main-content" class="flex-grow">
       <slot />

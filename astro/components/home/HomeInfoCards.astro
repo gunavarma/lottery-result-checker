@@ -1,0 +1,123 @@
+---
+/**
+ * The explanatory cards: how to verify a result, what to do after winning, and
+ * how the bumper schemes work.
+ *
+ * These are the homepage's "answer the next question" block. They are plain text
+ * with a few internal links, so they cost nothing to render and nothing to ship,
+ * and they are deliberately kept: explanatory content of this kind is what makes
+ * the page useful after the numbers are read, and it is the part a redesign
+ * should reorganise rather than delete.
+ *
+ * Every claim here is about how the site's own data works (gazette verification,
+ * claim windows) or a general fact about the schemes; nothing states a live
+ * value, so there is nothing here that can go stale or wrong.
+ */
+import { CheckCircle2, Landmark, Trophy, FileText, ShieldCheck } from 'lucide-react';
+
+const verifySteps = [
+  'Check the lottery name shown on your ticket.',
+  'Confirm the draw number.',
+  'Confirm the draw date.',
+  'Compare your ticket number with the published winning numbers.',
+  'Check which prize category your ticket falls into.',
+  'Verify the result against the applicable official gazette publication.',
+];
+
+const bumperSchemes = [
+  { name: 'Thiruvonam Bumper', href: '/lottery/thiruvonam-bumper', prize: '₹25 Crore' },
+  { name: 'Xmas New Year Bumper', href: '/lottery/xmas-new-year-bumper', prize: '₹20 Crore' },
+  { name: 'Vishu Bumper', href: '/lottery/vishu-bumper', prize: '₹12 Crore' },
+  { name: 'Pooja Bumper', href: '/lottery/pooja-bumper', prize: '₹12 Crore' },
+  { name: 'Monsoon Bumper', href: '/lottery/monsoon-bumper', prize: '₹10 Crore' },
+];
+---
+
+<div class="space-y-3">
+  <section class="rounded-xl border border-[#E2E7E3] bg-white p-4 sm:p-5">
+    <h2 class="flex items-center gap-2 text-base font-extrabold tracking-tight text-[#17201D]">
+      <ShieldCheck className="h-4.5 w-4.5 text-[#0B5D45]" />
+      <span>How to Verify a Kerala Lottery Result</span>
+    </h2>
+    <p class="mt-2 text-xs leading-relaxed text-[#5F6B66]">
+      The result information published here is an independent reference. The applicable official
+      result publication is the record that decides a claim, so treat this page as the fast check
+      and the gazette as the final one.
+    </p>
+    <ol class="mt-3 grid gap-1.5 sm:grid-cols-2">
+      {
+        verifySteps.map((step, index) => (
+          <li class="flex items-start gap-2 text-xs text-[#17201D]">
+            <span class="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded bg-[#E9F3EE] text-[10px] font-bold text-[#0B5D45] font-tabular">
+              {index + 1}
+            </span>
+            <span>{step}</span>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="mt-3 flex items-start gap-1.5 border-t border-[#E2E7E3] pt-3 text-[11px] font-semibold text-[#17201D]">
+      <Landmark className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#0B5D45]" />
+      <span>Official result source: Directorate of Kerala State Lotteries (Kerala Government Gazette).</span>
+    </p>
+    <p class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] font-bold">
+      <a href="/guides" class="text-[#0B5D45] hover:underline">Verification guides</a>
+      <a href="/disclaimer" class="text-[#0B5D45] hover:underline">Disclaimer &amp; claim rules</a>
+      <a href="/kerala-lottery-results" class="text-[#0B5D45] hover:underline">Results archive</a>
+    </p>
+  </section>
+
+  <section class="rounded-xl border border-[#E2E7E3] bg-white p-4 sm:p-5">
+    <h2 class="flex items-center gap-2 text-base font-extrabold tracking-tight text-[#17201D]">
+      <CheckCircle2 className="h-4.5 w-4.5 text-[#0B5D45]" />
+      <span>What to Do After Winning a Kerala Lottery Prize</span>
+    </h2>
+    <p class="mt-2 text-xs leading-relaxed text-[#5F6B66]">
+      If your ticket matches a winning number, the first thing to do is double-check everything:
+      the lottery name, the draw number, the draw date and the prize category. Cross-check all of
+      them against the official Kerala Government Gazette publication before you act on the result.
+    </p>
+    <p class="mt-2 text-xs leading-relaxed text-[#5F6B66]">
+      Keep the original ticket safe and undamaged — a damaged or torn ticket can delay or invalidate
+      a claim. Then confirm the current claim rules, the documents required and the submission
+      deadline for your prize amount before heading out.
+    </p>
+    <p class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] font-bold">
+      <a href="/ticket-checker" class="text-[#0B5D45] hover:underline">Check another ticket</a>
+      <a href="/prize-structure" class="text-[#0B5D45] hover:underline">Prize amounts &amp; tiers</a>
+      <a href="/kerala-lottery-result-today" class="text-[#0B5D45] hover:underline">Today&apos;s result</a>
+    </p>
+  </section>
+
+  <section class="rounded-xl border border-[#E2E7E3] bg-white p-4 sm:p-5">
+    <h2 class="flex items-center gap-2 text-base font-extrabold tracking-tight text-[#17201D]">
+      <Trophy className="h-4.5 w-4.5 text-[#C8A45D]" />
+      <span>Kerala Bumper Lottery</span>
+    </h2>
+    <p class="mt-2 text-xs leading-relaxed text-[#5F6B66]">
+      Alongside the seven weekly draws, Kerala State Lotteries runs seasonal bumper draws with
+      jackpots in crores of rupees. Bumper tickets cost more than a weekly ticket and the prize
+      figures are larger, but the rules are the same: the claim must be submitted within the
+      statutory window from the draw date, and standard TDS applies to the winnings.
+    </p>
+    <ul class="mt-3 grid gap-1.5 sm:grid-cols-2">
+      {
+        bumperSchemes.map((scheme) => (
+          <li class="flex items-center justify-between gap-2 rounded-lg border border-[#E2E7E3] bg-[#FAFAF7] px-2.5 py-1.5 text-xs">
+            <a href={scheme.href} class="font-bold text-[#17201D] hover:text-[#0B5D45]">
+              {scheme.name}
+            </a>
+            <span class="font-bold text-[#C8A45D] font-tabular">{scheme.prize}</span>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="mt-2 flex items-start gap-1.5 text-[11px] text-[#5F6B66]">
+      <FileText className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#68736E]" />
+      <span>
+        Exact bumper draw dates move slightly each year — always use the official draw calendar for
+        the current year. <a href="/lottery-calendar" class="font-bold text-[#0B5D45] hover:underline">See the draw schedule</a>.
+      </span>
+    </p>
+  </section>
+</div>

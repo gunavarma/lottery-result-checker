@@ -1,115 +1,108 @@
 ---
 /**
- * Official Kerala Lottery Prize Claim & Legal Guide.
- * 100% Server Rendered in Astro (0 KB JavaScript client bundle).
- * Provides deep informational depth for high-intent queries:
- * "How to claim Kerala lottery prize", "Kerala lottery tax TDS", "Kerala lottery claim rules".
+ * Kerala lottery prize claim guide and legal rules — server-rendered, no
+ * JavaScript.
+ *
+ * Content is unchanged from the previous version (ticket care, the ₹1 lakh
+ * retailer/district-office boundary, the Directorate route above it, and the TDS
+ * plus claim-deadline rules). The redesign flattened four separate cards into
+ * one card with four steps, which keeps nested boxes out of the page while
+ * keeping every paragraph and its internal wording.
  */
 import { FileCheck, ShieldAlert, Coins, Clock, Building2, CheckCircle2 } from 'lucide-react';
+
+const STEPS = [
+  {
+    icon: FileCheck,
+    eyebrow: 'Step 01: Secure your ticket',
+    title: 'Sign the original ticket',
+    body: 'Write your full legal name, permanent address and signature on the reverse of the original ticket. Never tamper with, staple or fold the barcode region, and check both the two-letter series code and the six-digit number against the official LOTIS gazette.',
+    note: 'A pristine original ticket is required.',
+    tone: 'brand' as const,
+  },
+  {
+    icon: Coins,
+    eyebrow: 'Step 02: Prizes under ₹1,00,000',
+    title: 'Claim at a retailer or district office',
+    body: 'Prize amounts up to ₹1,00,000 can be encashed through any licensed Kerala lottery retailer or through a District Lottery Office. Retailers deduct their statutory commission and pay the remaining prize amount immediately.',
+    note: '14 District Lottery Offices.',
+    tone: 'brand' as const,
+  },
+  {
+    icon: Building2,
+    eyebrow: 'Step 03: Prizes above ₹1,00,000',
+    title: 'Directorate and bank surrender',
+    body: 'For higher tiers, submit the original winning ticket with a completed claim application, a self-attested PAN card, Aadhaar card, two passport photographs and a cancelled bank cheque to the Directorate of Kerala State Lotteries in Thiruvananthapuram, or through an authorised bank.',
+    note: 'Paid by direct bank transfer (NEFT/RTGS).',
+    tone: 'brand' as const,
+  },
+  {
+    icon: Clock,
+    eyebrow: 'Rule 04: Taxes and deadlines',
+    title: 'TDS and the claim window',
+    body: 'Prize winnings attract tax deducted at source, and any agent commission is also deducted before the amount is credited. Claims must be submitted within the statutory window from the draw date; unclaimed amounts lapse.',
+    note: 'Claim within the statutory deadline.',
+    tone: 'gold' as const,
+  },
+];
+
+const toneClasses = {
+  brand: {
+    icon: 'bg-[#E9F3EE] text-[#0B5D45]',
+    eyebrow: 'text-[#0B5D45]',
+    footer: 'text-[#0B5D45]',
+  },
+  gold: {
+    icon: 'bg-[#FAF6ED] text-[#A66A00]',
+    eyebrow: 'text-[#A66A00]',
+    footer: 'text-[#A66A00]',
+  },
+};
 ---
 
-<div id="prize-guide" class="space-y-6 scroll-mt-24">
-  {/* Header */}
-  <div class="border-b border-[#E2E7E3] pb-4 space-y-1">
-    <span class="text-[11px] font-bold text-[#0B5D45] uppercase tracking-wider block font-tabular">
-      Official Rules &amp; Regulations
+<section id="prize-guide" class="scroll-mt-24 rounded-xl border border-[#E2E7E3] bg-white p-4 sm:p-5">
+  <h2 class="text-lg font-extrabold tracking-tight text-[#17201D] sm:text-xl">
+    How to Claim Kerala Lottery Prize Money
+  </h2>
+  <p class="mt-1 max-w-3xl text-xs leading-relaxed text-[#5F6B66]">
+    The Directorate of Kerala State Lotteries' claim protocol for prize winnings, tax deductions and
+    ticket security. Rules apply equally to the seven weekly schemes and to bumper draws.
+  </p>
+
+  <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+    {
+      STEPS.map((step) => {
+        const Icon = step.icon;
+        const tone = toneClasses[step.tone];
+        return (
+          <article class="flex flex-col justify-between rounded-lg border border-[#E2E7E3] bg-[#FAFAF7] p-3.5">
+            <div>
+              <span class={`flex h-9 w-9 items-center justify-center rounded-lg ${tone.icon}`}>
+                <Icon className="h-4.5 w-4.5" />
+              </span>
+              <p class={`mt-2.5 text-[10px] font-black uppercase tracking-wider font-tabular ${tone.eyebrow}`}>
+                {step.eyebrow}
+              </p>
+              <h3 class="mt-0.5 text-sm font-extrabold text-[#17201D]">{step.title}</h3>
+              <p class="mt-1 text-xs leading-relaxed text-[#5F6B66]">{step.body}</p>
+            </div>
+            <p class={`mt-3 flex items-center gap-1.5 border-t border-[#E2E7E3] pt-2.5 text-[11px] font-semibold ${tone.footer}`}>
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span>{step.note}</span>
+            </p>
+          </article>
+        );
+      })
+    }
+  </div>
+
+  <p class="mt-3 flex items-start gap-1.5 rounded-lg border border-[#F2CE8A] bg-[#FFF8E8] px-3 py-2.5 text-[11px] leading-relaxed text-[#7C3F06]">
+    <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#B45309]" />
+    <span>
+      Claim limits, documents and tax rates are set by the Government of Kerala and by Indian income
+      tax law, and can change. Always confirm the current rules with the
+      <a href="/disclaimer" class="mx-1 font-bold text-[#B45309] underline">official claim instructions</a>
+      before submitting a claim.
     </span>
-    <h2 class="text-2xl sm:text-3xl font-extrabold text-[#17201D] tracking-tight">
-      How to Claim Kerala Lottery Prize Money &amp; Verify Winnings
-    </h2>
-    <p class="text-xs sm:text-sm text-[#5F6B66] max-w-2xl">
-      Official government protocol established by the Directorate of Kerala State Lotteries for claiming prize winnings, tax calculations, and ticket security.
-    </p>
-  </div>
-
-  {/* 4 Cards Grid */}
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-    {/* Card 1: Ticket Care & Signing */}
-    <div class="bg-white rounded-2xl p-5 border border-[#E2E7E3] hover:border-[#0B5D45]/40 transition-colors shadow-2xs space-y-3 flex flex-col justify-between">
-      <div class="space-y-3">
-        <div class="w-10 h-10 rounded-xl bg-[#E9F3EE] text-[#0B5D45] flex items-center justify-center font-bold">
-          <FileCheck className="w-5 h-5" />
-        </div>
-        <span class="text-[10px] font-black uppercase tracking-wider text-[#0B5D45] font-tabular block">
-          Step 01: Secure Your Ticket
-        </span>
-        <h3 class="text-base font-extrabold text-[#17201D]">
-          Sign Original Ticket &amp; Verify
-        </h3>
-        <p class="text-xs text-[#5F6B66] leading-relaxed">
-          Immediately write your full legal name, permanent address, and signature on the reverse side of the original ticket. Never tamper, staple, or fold the barcode region. Check both the 2-letter series code and the 6-digit number against the official LOTIS gazette.
-        </p>
-      </div>
-      <div class="pt-2 border-t border-[#E2E7E3]/60 text-[11px] font-semibold text-[#0B5D45] flex items-center gap-1">
-        <CheckCircle2 className="w-3.5 h-3.5" />
-        <span>Pristine ticket required</span>
-      </div>
-    </div>
-
-    {/* Card 2: Prizes Up to 1 Lakh */}
-    <div class="bg-white rounded-2xl p-5 border border-[#E2E7E3] hover:border-[#0B5D45]/40 transition-colors shadow-2xs space-y-3 flex flex-col justify-between">
-      <div class="space-y-3">
-        <div class="w-10 h-10 rounded-xl bg-[#E9F3EE] text-[#0B5D45] flex items-center justify-center font-bold">
-          <Coins className="w-5 h-5" />
-        </div>
-        <span class="text-[10px] font-black uppercase tracking-wider text-[#0B5D45] font-tabular block">
-          Step 02: Under ₹1,00,000
-        </span>
-        <h3 class="text-base font-extrabold text-[#17201D]">
-          Claim at Agent or District Office
-        </h3>
-        <p class="text-xs text-[#5F6B66] leading-relaxed">
-          Prize amounts up to ₹1,00,000 can be encashed directly through any licensed Kerala lottery retailer or through any of the 14 District Lottery Offices (DLO). Retailers deduct statutory commission and disburse the remaining prize amount immediately.
-        </p>
-      </div>
-      <div class="pt-2 border-t border-[#E2E7E3]/60 text-[11px] font-semibold text-[#0B5D45] flex items-center gap-1">
-        <CheckCircle2 className="w-3.5 h-3.5" />
-        <span>14 District Offices available</span>
-      </div>
-    </div>
-
-    {/* Card 3: Prizes Above 1 Lakh */}
-    <div class="bg-white rounded-2xl p-5 border border-[#E2E7E3] hover:border-[#0B5D45]/40 transition-colors shadow-2xs space-y-3 flex flex-col justify-between">
-      <div class="space-y-3">
-        <div class="w-10 h-10 rounded-xl bg-[#E9F3EE] text-[#0B5D45] flex items-center justify-center font-bold">
-          <Building2 className="w-5 h-5" />
-        </div>
-        <span class="text-[10px] font-black uppercase tracking-wider text-[#0B5D45] font-tabular block">
-          Step 03: Above ₹1,00,000
-        </span>
-        <h3 class="text-base font-extrabold text-[#17201D]">
-          Directorate &amp; Bank Surrender
-        </h3>
-        <p class="text-xs text-[#5F6B66] leading-relaxed">
-          For top prizes above ₹1 Lakh, winners must submit the original winning ticket along with a completed claim application, self-attested PAN card, Aadhaar card, 2 passport photos, and a cancelled bank cheque directly to the Directorate in Thiruvananthapuram or through a Nationalized Bank.
-        </p>
-      </div>
-      <div class="pt-2 border-t border-[#E2E7E3]/60 text-[11px] font-semibold text-[#0B5D45] flex items-center gap-1">
-        <CheckCircle2 className="w-3.5 h-3.5" />
-        <span>Direct bank transfer (NEFT/RTGS)</span>
-      </div>
-    </div>
-
-    {/* Card 4: Taxes & Time Limits */}
-    <div class="bg-white rounded-2xl p-5 border border-[#E2E7E3] hover:border-[#0B5D45]/40 transition-colors shadow-2xs space-y-3 flex flex-col justify-between">
-      <div class="space-y-3">
-        <div class="w-10 h-10 rounded-xl bg-[#FAF6ED] text-[#C8A45D] flex items-center justify-center font-bold">
-          <Clock className="w-5 h-5 text-[#A66A00]" />
-        </div>
-        <span class="text-[10px] font-black uppercase tracking-wider text-[#A66A00] font-tabular block">
-          Rule 04: Taxes &amp; Deadlines
-        </span>
-        <h3 class="text-base font-extrabold text-[#17201D]">
-          30% TDS &amp; 90-Day Deadline
-        </h3>
-        <p class="text-xs text-[#5F6B66] leading-relaxed">
-          Under Indian Income Tax Section 194B, all prize winnings above ₹10,000 incur a mandatory flat 30% TDS plus 4% education cess (effective 31.2%). Claims must be lodged strictly within <strong>90 days</strong> from the official draw date. Unclaimed funds revert to the state treasury.
-        </p>
-      </div>
-      <div class="pt-2 border-t border-[#E2E7E3]/60 text-[11px] font-semibold text-[#A66A00] flex items-center gap-1">
-        <ShieldAlert className="w-3.5 h-3.5" />
-        <span>Strict 90-day legal validity</span>
-      </div>
-    </div>
-  </div>
-</div>
+  </p>
+</section>

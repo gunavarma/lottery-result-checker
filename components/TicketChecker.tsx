@@ -32,6 +32,16 @@ interface TicketCheckerProps {
   initialLotteryId?: string;
   initialDrawNumber?: string;
   /**
+   * Ticket number to prefill, taken from the `?number=` query parameter.
+   *
+   * The homepage sidebar checks tickets with a plain `<form method="get">` that
+   * submits here, which is what lets that control work without JavaScript. The
+   * value is only prefilled, never submitted automatically: the comparison still
+   * runs when the visitor asks for it, so a shared or crawled URL cannot trigger
+   * a lookup on its own.
+   */
+  initialNumber?: string;
+  /**
    * The active scheme list as rendered by the server.
    *
    * The scheme `<select>` needs an id, a name and a code. Fetching that from
@@ -47,12 +57,13 @@ interface TicketCheckerProps {
 export function TicketChecker({
   initialLotteryId,
   initialDrawNumber,
+  initialNumber,
   lotteries: serverLotteries,
 }: TicketCheckerProps) {
   const { t } = useLanguage();
   const [lotteries, setLotteries] = useState<any[]>(() => serverLotteries ?? []);
   const [selectedLottery, setSelectedLottery] = useState(initialLotteryId || 'all');
-  const [ticketInput, setTicketInput] = useState('');
+  const [ticketInput, setTicketInput] = useState(initialNumber ?? '');
   const [singleResults, setSingleResults] = useState<any[] | null>(null);
   const [hasSearchedSingle, setHasSearchedSingle] = useState(false);
   const [singleLoading, setSingleLoading] = useState(false);

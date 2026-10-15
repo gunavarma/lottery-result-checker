@@ -1,0 +1,88 @@
+---
+/**
+ * Ticket scanner and checker — the tool itself, still the one island it always
+ * was.
+ *
+ * The card matches the rest of the homepage's card style, and the interactive
+ * checker inside it is the same `TicketChecker` island the site already shipped
+ * here (`client:visible`, so its JavaScript is fetched and hydrated only when
+ * the card scrolls into view, never on first paint). Nothing about the query
+ * layer moved: it still runs through TanStack Query with the server-held scheme
+ * list as a prop.
+ *
+ * The camera/QR scanner stays lazy inside the island — `html5-qrcode` and
+ * `tesseract.js` are only pulled in when someone actually opens the scanner.
+ */
+import { Ticket, QrCode, Camera, ShieldCheck, ArrowRight } from 'lucide-react';
+import { TicketCheckerIsland } from '@/components/island/ticket-checker';
+
+interface Props {
+  locale?: 'en' | 'ml' | 'ta' | 'hi';
+  /** `{ id, name, code }` per active scheme — the island's `<select>` options. */
+  lotteries?: Array<{ id: string; name: string; code: string }>;
+}
+
+const { locale = 'en', lotteries = [] } = Astro.props;
+---
+
+<section id="ticket-checker" class="scroll-mt-24 space-y-3">
+  <div class="rounded-xl border border-[#E2E7E3] bg-white p-4 sm:p-5">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div class="flex items-start gap-3">
+        <span
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E9F3EE] text-[#0B5D45]"
+        >
+          <Ticket className="h-4.5 w-4.5" />
+        </span>
+        <div>
+          <h2 class="text-base font-extrabold tracking-tight text-[#17201D]">
+            Kerala Lottery Ticket Scanner &amp; Checker
+          </h2>
+          <p class="mt-0.5 text-xs text-[#68736E]">
+            Select the draw and type your ticket number, or scan the ticket with your camera, to
+            check every prize tier against the certified result.
+          </p>
+        </div>
+      </div>
+
+      <a
+        href="/ticket-checker"
+        class="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg bg-[#E9730C] px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-[#CF6408]"
+      >
+        <Camera className="h-3.5 w-3.5" />
+        <span>Open Ticket Scanner Page</span>
+        <ArrowRight className="h-3.5 w-3.5" />
+      </a>
+    </div>
+
+    <div class="mt-4 border-t border-[#E2E7E3] pt-4">
+      <TicketCheckerIsland client:visible locale={locale} lotteries={lotteries} />
+    </div>
+  </div>
+
+  <div
+    class="flex flex-col gap-3 rounded-xl border border-[#E2E7E3] bg-[#F4F9F6] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+  >
+    <div class="flex items-start gap-3">
+      <span
+        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-[#0B5D45]"
+      >
+        <ShieldCheck className="h-4 w-4" />
+      </span>
+      <div class="text-xs">
+        <p class="font-bold text-[#17201D]">Every number on this page comes from the gazette</p>
+        <p class="mt-0.5 text-[#5F6B66]">
+          Results, prize tiers and winning numbers are stored from the official LOTIS notices and
+          the Kerala Government Gazette PDFs, then published as static HTML.
+        </p>
+      </div>
+    </div>
+    <a
+      href="/kerala-lottery-results"
+      class="inline-flex shrink-0 items-center gap-1.5 text-xs font-bold text-[#0B5D45] hover:underline"
+    >
+      <QrCode className="h-3.5 w-3.5" />
+      <span>Browse the results archive</span>
+    </a>
+  </div>
+</section>

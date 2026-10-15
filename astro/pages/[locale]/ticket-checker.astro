@@ -95,6 +95,12 @@ const head = mirrorMetadata(locale, '/ticket-checker', enHead);
       </p>
     </div>
 
-    <TicketCheckerIsland client:load locale={locale} />
+    {/* Same `/ticket-checker?number=…` prefill as the English route (see that
+        file for why the number is prefilled but not submitted). */}
+    <TicketCheckerIsland
+      client:load
+      locale={locale}
+      initialNumber={Astro.url.searchParams.get('number')?.slice(0, 20) ?? undefined}
+    />
   </div>
 </BaseLayout>

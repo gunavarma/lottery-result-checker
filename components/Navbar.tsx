@@ -16,6 +16,7 @@ import {
   Home,
   Award,
   Newspaper,
+  ScanLine,
 } from 'lucide-react';
 import { LanguageSelector } from './LanguageSelector';
 import { useLanguage } from '@/context/LanguageContext';
@@ -25,7 +26,19 @@ const NotificationModal = lazy(() =>
   import('./NotificationModal').then((mod) => mod.NotificationModal)
 );
 
-export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
+export function Navbar({
+  pathname: pathnameProp,
+  todayLabel,
+}: {
+  pathname?: string;
+  /**
+   * Today's date in IST, formatted by the server. Passed in rather than read on
+   * the client so the top bar cannot render two different dates during
+   * hydration (a tab left open over midnight would otherwise disagree with the
+   * server-rendered HTML).
+   */
+  todayLabel?: string;
+}) {
   const pathnameFromBrowser = usePathname();
   const pathname = pathnameProp ?? pathnameFromBrowser;
   const { t } = useLanguage();
@@ -61,6 +74,12 @@ export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
                   {t('ui.daily_draw_time', 'Daily Draw: 3:00 PM IST')}
                 </span>
               </span>
+              {todayLabel && (
+                <span className="flex items-center gap-1.5 text-white/80">
+                  <Calendar className="w-3.5 h-3.5 text-[#C8A45D]" />
+                  <span className="text-[11px] font-medium font-tabular">{todayLabel}</span>
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -68,8 +87,10 @@ export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
         {/* Main Header */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
-            {/* Brand — smaller logo, tighter layout */}
-            <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+            {/* Brand — smaller logo, tighter layout. `min-w-0` lets the text
+                truncate on a narrow phone instead of pushing the icon cluster
+                past the viewport edge. */}
+            <Link href="/" className="group flex min-w-0 items-center gap-2.5">
               <div className="w-9 h-9 flex items-center justify-center p-0.5 rounded-xl bg-[#0B3B32] ring-1 ring-[#C8A45D]/30">
                 <Image
                   src="/logo.svg"
@@ -113,6 +134,14 @@ export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
 
             {/* Right Actions */}
             <div className="hidden lg:flex items-center gap-2">
+              <Link
+                href="/ticket-checker"
+                className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F59E0B] to-[#E9730C] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-opacity hover:opacity-90"
+              >
+                <ScanLine className="w-3.5 h-3.5" />
+                <span>Scan Ticket</span>
+              </Link>
+
               <button
                 onClick={() => setSearchModalOpen(true)}
                 aria-label="Search database"
@@ -137,9 +166,15 @@ export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
               </button>
             </div>
 
-            {/* Mobile Right Icons */}
-            <div className="flex items-center gap-1 lg:hidden">
-              <LanguageSelector variant="compact" />
+            {/* Mobile Right Icons.
+                The compact language selector is hidden on very narrow phones:
+                with the brand block beside it, the cluster overflowed a 390px
+                viewport by ~30px, and the drawer inside the menu already offers
+                the same switch one tap away. */}
+            <div className="flex shrink-0 items-center gap-1 lg:hidden">
+              <span className="hidden min-[430px]:inline-flex">
+                <LanguageSelector variant="compact" />
+              </span>
               <button
                 onClick={() => setSearchModalOpen(true)}
                 aria-label="Open search"
@@ -191,6 +226,14 @@ export function Navbar({ pathname: pathnameProp }: { pathname?: string }) {
                 );
               })}
             </div>
+            <Link
+              href="/ticket-checker"
+              onClick={() => setMobileMenuOpen(false)}
+              className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F59E0B] to-[#E9730C] px-4 py-3 text-sm font-bold text-white"
+            >
+              <ScanLine className="w-4 h-4" />
+              <span>Scan Ticket</span>
+            </Link>
             <div className="pt-3 mt-2 border-t border-[#E2E7E3] flex items-center gap-1.5 text-xs text-[#68736E] px-2">
               <ShieldCheck className="w-4 h-4 text-[#16845B]" />
               <span>LOTIS Synchronized</span>

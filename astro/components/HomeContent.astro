@@ -1,41 +1,51 @@
 ---
 /**
- * Homepage content, ported from `components/home/HomeContent.tsx`.
+ * Homepage layout: a result portal in two columns — a wide main column that
+ * answers "what are today's numbers" at the top and then explains them, and a
+ * narrow sidebar holding the three tools a visitor reaches for next.
  *
- * The Next.js version was a React *Server* Component: an `async` function that
- * awaited the database and returned JSX. Astro has no async components, so the
- * data fetching moves into the frontmatter — which is exactly where Astro wants
- * it — and this file keeps the original section order and markup.
+ * What changed and why
+ * --------------------
+ * The previous version was a full-width stack of twelve sections that each
+ * re-introduced the same draw from a different angle (hero terminal, finder,
+ * checker, recent stream, timeline, directory, claim guide, FAQ, news, alerts,
+ * trust pipeline). The most useful answer — the complete prize chart — was one
+ * navigation away on a result page.
  *
- * The split follows one rule: anything that owns state, effects or a query hook
- * is an island (`client:load`); anything purely presentational is rendered by
- * Astro inline and ships no JavaScript at all. That is why `TrustSection` and
- * the news cards appear bare while `TicketChecker` and `UpcomingDrawsTimeline`
- * are islands.
+ * This version renders that chart on the homepage itself. Everything above the
+ * fold is server-rendered static HTML: the headline result card, the full prize
+ * tiers, the series codes and the verification statement. The two islands that
+ * remain are the tools that genuinely need interactivity (the ticket checker and
+ * the date finder), and both hydrate on `client:visible` so they never compete
+ * with the first paint.
+ *
+ * Nothing that was here for search engines was dropped: the H1, the explanatory
+ * copy, the FAQ block, the weekly schedule, the claim guide, the news links and
+ * the scheme directory all stay, and the sidebar keeps the links to
+ * `/results/[scheme]/[draw]` and `/kerala-lottery-result/YYYY-MM-DD` in the HTML.
  */
-import { HeroTodayCardIsland } from '@/components/island/hero-today-card';
+import { ArrowRight } from 'lucide-react';
+import HomeNextDraw from './home/HomeNextDraw.astro';
+import HomeLatestResult from './home/HomeLatestResult.astro';
+import HomeCheckTools from './home/HomeCheckTools.astro';
+import HomePrizeChart from './home/HomePrizeChart.astro';
+import HomeInfoCards from './home/HomeInfoCards.astro';
+import HomeAbout from './home/HomeAbout.astro';
+import HomeSidebar from './home/HomeSidebar.astro';
+import HomeWeeklySchedule from './home/HomeWeeklySchedule.astro';
+import HomePrizeClaimGuide from './home/HomePrizeClaimGuide.astro';
+import HomeFaqSection from './home/HomeFaqSection.astro';
 import { ResultFinderIsland } from '@/components/island/result-finder';
-import { RecentResultsStreamIsland } from '@/components/island/recent-results-stream';
-import { TicketCheckerIsland } from '@/components/island/ticket-checker';
-import { UpcomingDrawsTimelineIsland } from '@/components/island/upcoming-draws-timeline';
 import { LotteryDirectoryListIsland } from '@/components/island/lottery-directory-list';
 import { NotificationBannerIsland } from '@/components/island/notification-banner';
 import { FeaturedNewsHero, NewsCard } from '@/components/NewsComponents';
 import { TrustSection } from '@/components/TrustSection';
-import HomeQuickNav from './home/HomeQuickNav.astro';
-import HomeWeeklySchedule from './home/HomeWeeklySchedule.astro';
-import HomePrizeClaimGuide from './home/HomePrizeClaimGuide.astro';
-import HomeFaqSection from './home/HomeFaqSection.astro';
-import { ArrowRight } from 'lucide-react';
 import { getHomepageData } from '@/lib/home-data';
 import { getAllNews, getFeaturedNews } from '@/lib/news';
 import {
-  selectHeroData,
-  selectRecentDrawItems,
   selectSchemeOptions,
   selectDirectoryItems,
   selectSchemeChoices,
-  selectYesterdayDraws,
 } from '@/lib/home-view-models';
 
 interface Props {
@@ -44,287 +54,153 @@ interface Props {
 
 const { locale = 'en' } = Astro.props;
 
+// The single shared homepage loader — the same one the API uses, so the page and
+// `/api/results/today` can never disagree about what today's draw is.
 const data = await getHomepageData();
 
-const heroData = selectHeroData(data);
-const recentDrawItems = selectRecentDrawItems(data.latestDraws || []);
+// `displayDraw` is the newest *published* draw with its complete prize tree: after
+// 3:00 PM that is today's draw, before it it is the previous draw. Reading it
+// from one field keeps the headline card, the series codes and the prize chart
+// consistent with each other by construction.
+const displayDraw = (data as any).displayDraw ?? null;
+const isToday = Boolean(data.isTodayAvailable && displayDraw?.drawDate === data.todayDate);
+
 const schemeOptions = selectSchemeOptions(data.popularLotteries || []);
-const directoryItems = selectDirectoryItems(data.popularLotteries || []);
 const schemeChoices = selectSchemeChoices(data.popularLotteries || []);
-const yesterdayDraws = selectYesterdayDraws(data.yesterdayDraws || []);
+const directoryItems = selectDirectoryItems(data.popularLotteries || []);
 
 const allNews = getAllNews();
 const featuredArticle = getFeaturedNews();
-const secondaryNews = allNews.filter((a) => a.id !== featuredArticle.id).slice(0, 3);
-
-// Only show yesterday's section when today's result is NOT yet available
-const showYesterdaySection = !data.isTodayAvailable && yesterdayDraws.length > 0;
+const secondaryNews = allNews.filter((article) => article.id !== featuredArticle.id).slice(0, 3);
 ---
 
-<div class="space-y-10 sm:space-y-14 pb-16">
-  {/* 1. Hero Result Terminal (Immediate 1-second Answer) */}
-  <section id="today-result" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 space-y-6 scroll-mt-24">
-    <HeroTodayCardIsland client:idle locale={locale} initialData={heroData} />
-    <ResultFinderIsland client:visible locale={locale} lotteries={schemeOptions} />
-  </section>
+<div class="mx-auto max-w-[1200px] px-4 pb-12 pt-5 sm:px-6">
+  <div class="flex flex-col gap-5 lg:flex-row lg:items-start">
+    {/* ── Main column ───────────────────────────────────────────────────── */}
+    <div class="min-w-0 flex-1 space-y-4">
+      {/* Page heading. The title/meta tags are unchanged; this H1 carries the
+          same query as the tag above it and is the only H1 on the page. */}
+      <header class="space-y-1.5">
+        <h1
+          class="text-xl font-extrabold tracking-tight text-[#17201D] sm:text-2xl lg:text-[28px] lg:leading-tight"
+        >
+          Kerala Lottery Result Today LIVE at 3 PM — Check Full Result
+        </h1>
+        <p class="text-xs leading-relaxed text-[#5F6B66] sm:text-[13px]">
+          Kerala lottery result today: the live 3:00 PM draw, the 1st prize and the complete prize
+          list, draw number, date, series codes and previous results — all cross-checked with the
+          official Kerala Government Gazette.
+        </p>
+      </header>
 
-  {/* 2. Yesterday's Full Results (shown until today's result publishes) */}
-  {showYesterdaySection && (
-    <section id="yesterday-result" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 scroll-mt-24">
-      <div
-        class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2E7E3] pb-3"
-      >
-        <div>
-          <span
-            class="text-[11px] font-bold text-[#0B5D45] uppercase tracking-wider block font-tabular"
-          >
-            Previous Day's Result
-          </span>
-          <h2 class="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
-            {data.yesterdayStr} — Full Result
-          </h2>
+      <HomeNextDraw
+        scheduledLottery={data.scheduledLottery}
+        todayDate={data.todayDate}
+        liveStatus={data.liveStatus}
+        isTodayAvailable={data.isTodayAvailable}
+        secondsUntilDraw={data.secondsUntilDraw}
+      />
+
+      <HomeLatestResult draw={displayDraw} isToday={isToday} />
+
+      <HomeCheckTools locale={locale} lotteries={schemeChoices} />
+
+      <HomePrizeChart draw={displayDraw} />
+
+      {/* Historical lookup: the date/scheme finder, unchanged from before but
+          now labelled and framed as what it is. */}
+      <section id="find-result" class="scroll-mt-24 space-y-3">
+        <div class="flex flex-wrap items-end justify-between gap-2 border-b border-[#E2E7E3] pb-2.5">
+          <div>
+            <h2 class="text-lg font-extrabold tracking-tight text-[#17201D] sm:text-xl">
+              Search Any Previous Result
+            </h2>
+            <p class="mt-0.5 text-xs text-[#5F6B66]">
+              Pick a draw date, or narrow it down to one scheme, to open the archived result.
+            </p>
+          </div>
+          <div class="flex items-center gap-3 text-[11px] font-bold">
+            <a href="/previous-results" class="text-[#0B5D45] hover:underline">Previous results</a>
+            <a href="/kerala-lottery-results" class="text-[#0B5D45] hover:underline">
+              Full archive
+            </a>
+          </div>
         </div>
-        <a
-          href={`/results/date/${data.yesterdayStr}`}
-          class="inline-flex items-center gap-1 text-xs font-bold text-[#0B5D45] hover:text-[#084835] transition-colors shrink-0"
-        >
-          <span>View All Yesterday's Results</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </a>
-      </div>
+        <ResultFinderIsland client:visible locale={locale} lotteries={schemeOptions} />
+      </section>
 
-      <div class="space-y-6">
-        {yesterdayDraws.map((draw) => {
-          const firstPrize = Array.isArray(draw.prizes) ? draw.prizes.find(
-            (p: any) => p.orderIndex === 0 || p.category.toLowerCase().includes('1st')
-          ) : null;
-          const firstWinner = firstPrize && Array.isArray(firstPrize.winningNumbers)
-            ? firstPrize.winningNumbers[0] : null;
+      <HomeInfoCards />
 
-          return (
-            <div
-              class="bg-white rounded-3xl p-6 sm:p-8 lg:p-10 border border-[#E2E7E3] shadow-xs space-y-6"
-            >
-              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E2E7E3] pb-6">
-                <div class="space-y-1">
-                  <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-mono font-bold bg-[#F1F4F2] text-[#0B3B32] px-2.5 py-0.5 rounded-md border border-[#E2E7E3]">
-                      {draw.lottery?.code}
-                    </span>
-                    <span class="font-bold text-xs bg-[#0B3B32] text-white px-3 py-0.5 rounded-md">
-                      OFFICIAL VERIFIED
-                    </span>
-                    {draw.sourceDocumentUrl && (
-                      <span class="text-[10px] text-[#68736E] font-medium">
-                        Official Gazette
-                      </span>
-                    )}
-                  </div>
-                  <h2 class="text-2xl sm:text-3xl font-extrabold text-[#17201D]">
-                    {draw.lottery?.name} ({draw.drawNumber})
-                  </h2>
-                  <p class="text-xs text-[#68736E]">
-                    Held on {draw.drawDate} at {draw.drawTime || '3:00 PM'} |
-                    {(draw.verificationLevel ?? 'OFFICIAL') === 'PROVISIONAL'
-                      ? 'Live source — awaiting gazette'
-                      : 'Official Gazette Certified'}
-                  </p>
-                </div>
+      <HomeWeeklySchedule />
 
-                {firstWinner && (
-                  <div class="bg-[#F7F7F4] rounded-2xl p-4 border border-[#E2E7E3] text-center shrink-0 min-w-[200px]">
-                    <span class="text-[10px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
-                      1st Prize Prize
-                    </span>
-                    <span class="text-2xl font-black font-mono text-[#16845B] block mt-1">
-                      {firstWinner.displayNumber}
-                    </span>
-                    {firstWinner.location && (
-                      <span class="text-[11px] text-[#68736E] font-medium block mt-0.5">
-                        Sold at: {firstWinner.location}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
+      {/* Scheme directory — the same island as before, kept for the ticket price
+          and top-prize columns and for its links to every scheme page. */}
+      <section id="lotteries" class="scroll-mt-24 space-y-3">
+        <div class="flex flex-wrap items-end justify-between gap-2 border-b border-[#E2E7E3] pb-2.5">
+          <div>
+            <h2 class="text-lg font-extrabold tracking-tight text-[#17201D] sm:text-xl">
+              Active Kerala Lottery Schemes
+            </h2>
+            <p class="mt-0.5 text-xs text-[#5F6B66]">
+              Weekly and bumper schemes, ticket prices and top prizes.
+            </p>
+          </div>
+          <a
+            href="/lotteries"
+            class="inline-flex items-center gap-1 text-[11px] font-bold text-[#0B5D45] hover:underline"
+          >
+            <span>All schemes</span>
+            <ArrowRight className="h-3 w-3" />
+          </a>
+        </div>
+        <LotteryDirectoryListIsland client:visible locale={locale} lotteries={directoryItems} />
+      </section>
 
-              {/* Prize Table */}
-              <div class="space-y-3">
-                {Array.isArray(draw.prizes) && draw.prizes.map((prize: any) => (
-                  <div class="bg-[#F7F7F4] rounded-2xl p-4 border border-[#E2E7E3]">
-                    <div class="flex items-center justify-between mb-2">
-                      <span class="text-xs font-bold text-[#17201D]">
-                        {prize.category}
-                      </span>
-                      <span class="text-xs font-bold text-[#0B3B32]">
-                        {(typeof prize.amount === 'number' ? Math.round(prize.amount) : prize.amount).toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                    {prize.description && (
-                      <p class="text-[10px] text-[#68736E] mb-2 italic">
-                        {prize.description}
-                      </p>
-                    )}
-                    <div class="flex flex-wrap gap-2">
-                      {Array.isArray(prize.winningNumbers) && prize.winningNumbers.map((wn: any) => (
-                        <span
-                          class="inline-flex items-center gap-1 text-xs font-mono font-bold bg-white px-2.5 py-1 rounded-lg border border-[#E2E7E3] text-[#17201D]"
-                        >
-                          {wn.series && <span class="text-[#68736E]">{wn.series} </span>}
-                          {wn.displayNumber}
-                          {wn.location && (
-                            <span class="text-[10px] text-[#68736E] ml-1">
-                              ({wn.location})
-                            </span>
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+      <HomePrizeClaimGuide />
 
-              <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[#E2E7E3]">
-                <a
-                  href={`/results/${draw.lottery?.slug}/${draw.drawNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
-                  class="inline-flex items-center gap-2 bg-[#0B3B32] hover:bg-[#16845B] text-white px-4 py-2 rounded-xl font-bold text-xs shadow-xs transition-colors"
-                >
-                  <span>View Complete Result</span>
-                  <ArrowRight className="w-4 h-4" />
-                </a>
-                <a
-                  href={`/results/date/${data.yesterdayStr}`}
-                  class="text-xs font-bold text-[#0B5D45] hover:underline"
-                >
-                  Other draws on this date →
-                </a>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  )}
+      <HomeAbout
+        lastUpdated={displayDraw?.verifiedAt ?? displayDraw?.updatedAt ?? null}
+        drawNumber={displayDraw?.drawNumber ?? null}
+        lotteryName={displayDraw?.lottery?.name ?? null}
+      />
 
-  {/* 3. Quick-Jump Navigation & Authority Bar */}
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <HomeQuickNav />
-  </section>
+      <HomeFaqSection />
 
-  {/* 4. Ticket Verification Terminal */}
-  <section id="ticket-checker" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
-    <TicketCheckerIsland client:visible locale={locale} lotteries={schemeChoices} />
-  </section>
+      {/* Editorial news. Kept where it was in the old page order — it is the
+          only block that links into /news, so removing it would orphan that
+          section of the site. */}
+      <section id="news" class="scroll-mt-24 space-y-4">
+        <div class="flex flex-wrap items-end justify-between gap-2 border-b border-[#E2E7E3] pb-2.5">
+          <div>
+            <h2 class="text-lg font-extrabold tracking-tight text-[#17201D] sm:text-xl">
+              Latest Lottery News &amp; Reports
+            </h2>
+            <p class="mt-0.5 text-xs text-[#5F6B66]">
+              Gazette releases, schedule changes and prize announcements.
+            </p>
+          </div>
+          <a
+            href="/news"
+            class="inline-flex items-center gap-1 text-[11px] font-bold text-[#0B5D45] hover:underline"
+          >
+            <span>All news</span>
+            <ArrowRight className="h-3 w-3" />
+          </a>
+        </div>
+        <FeaturedNewsHero article={featuredArticle} />
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+          {secondaryNews.map((article) => <NewsCard article={article} />)}
+        </div>
+      </section>
 
-  {/* 5. Scannable Recent Results Stream (Table / List Hybrid) */}
-  <section id="recent-results" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 scroll-mt-24">
-    <div
-      class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2E7E3] pb-3"
-    >
-      <div>
-        <span
-          class="text-[11px] font-bold text-[#0B5D45] uppercase tracking-wider block font-tabular"
-        >
-          Chronological Stream
-        </span>
-        <h2 class="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
-          Recent Official Results
-        </h2>
-      </div>
-      <a
-        href="/results"
-        class="inline-flex items-center gap-1 text-xs font-bold text-[#0B5D45] hover:text-[#084835] transition-colors shrink-0"
-      >
-        <span>View All Results</span>
-        <ArrowRight className="w-3.5 h-3.5" />
-      </a>
+      <TrustSection />
+
+      <NotificationBannerIsland client:visible locale={locale} />
     </div>
 
-    <RecentResultsStreamIsland client:visible locale={locale} draws={recentDrawItems} />
-  </section>
-
-  {/* 6. Upcoming Draws Timeline */}
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <UpcomingDrawsTimelineIsland client:visible locale={locale} />
-  </section>
-
-  {/* 7. Official Kerala Lottery Weekly Timetable & Bumper Matrix */}
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <HomeWeeklySchedule />
-  </section>
-
-  {/* 8. Active Kerala Schemes Directory */}
-  <section id="lotteries" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 scroll-mt-24">
-    <div class="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
-      <div>
-        <span
-          class="text-[11px] font-bold text-[#0B5D45] uppercase tracking-wider block font-tabular"
-        >
-          Weekly &amp; Bumper Schemes
-        </span>
-        <h2 class="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
-          Active Kerala Lottery Schemes Directory
-        </h2>
-      </div>
-      <a
-        href="/lotteries"
-        class="text-xs font-bold text-[#0B5D45] hover:text-[#084835] inline-flex items-center gap-1 transition-colors"
-      >
-        <span>All Schemes</span>
-        <ArrowRight className="w-3.5 h-3.5" />
-      </a>
+    {/* ── Sidebar ───────────────────────────────────────────────────────── */}
+    <div class="w-full shrink-0 lg:w-[320px]">
+      <HomeSidebar recentDraws={data.latestDraws || []} lotteries={data.popularLotteries || []} />
     </div>
-
-    <LotteryDirectoryListIsland client:visible locale={locale} lotteries={directoryItems} />
-  </section>
-
-  {/* 9. Official Prize Claim Guidelines & Legal Rules */}
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <HomePrizeClaimGuide />
-  </section>
-
-  {/* 10. SEO Frequently Asked Questions (FAQ) */}
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <HomeFaqSection />
-  </section>
-
-  {/* 11. Editorial Gazette News & Analysis */}
-  <section id="news" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 scroll-mt-24">
-    <div class="flex items-center justify-between border-b border-[#E2E7E3] pb-3">
-      <div>
-        <span
-          class="text-[11px] font-bold text-[#0B5D45] uppercase tracking-wider block font-tabular"
-        >
-          Gazette Releases
-        </span>
-        <h2 class="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
-          Latest Lottery News &amp; Reports
-        </h2>
-      </div>
-      <a
-        href="/news"
-        class="text-xs font-bold text-[#0B5D45] hover:text-[#084835] inline-flex items-center gap-1 transition-colors"
-      >
-        <span>View All News</span>
-        <ArrowRight className="w-3.5 h-3.5" />
-      </a>
-    </div>
-
-    <div class="space-y-6">
-      <FeaturedNewsHero article={featuredArticle} />
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {secondaryNews.map((article) => <NewsCard article={article} />)}
-      </div>
-    </div>
-  </section>
-
-  {/* 12. Notification Opt-in Prompt */}
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <NotificationBannerIsland client:visible locale={locale} />
-  </section>
-
-  {/* 13. Trust & Verification 4-Step Pipeline */}
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <TrustSection />
-  </section>
+  </div>
 </div>

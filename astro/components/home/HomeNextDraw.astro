@@ -1,0 +1,169 @@
+---
+/**
+ * The "next draw" strip — one line of state above the result card.
+ *
+ * It replaces the countdown that used to live inside the `HeroTodayCard` island.
+ * The point of the change is that the state a visitor actually needs ("the draw
+ * is at 3:00 PM", "today's numbers are published") is now part of the server
+ * HTML, so it is correct on the first paint even with JavaScript disabled. The
+ * only thing script does here is count down, and when a countdown reaches zero
+ * the page reloads itself once — which is how the freshly published result
+ * appears without a polling client component.
+ *
+ * The deadline is computed on the server from `secondsUntilDraw` (the same value
+ * `/api/results/today` serves), so the strip can never disagree with the API
+ * about when the draw is.
+ */
+import { formatDdMmYyyy, weekdayName } from './home-format';
+
+interface Props {
+  /** Lottery scheduled for today, as resolved by `loadTodaySnapshot()`. */
+  scheduledLottery?: {
+    name?: string | null;
+    code?: string | null;
+    drawTime?: string | null;
+    drawDay?: string | null;
+  } | null;
+  todayDate?: string | null;
+  liveStatus?: 'WAITING' | 'CHECKING' | 'DELAYED' | 'PUBLISHED' | null;
+  isTodayAvailable?: boolean;
+  secondsUntilDraw?: number;
+}
+
+const {
+  scheduledLottery = null,
+  todayDate = null,
+  liveStatus = null,
+  isTodayAvailable = false,
+  secondsUntilDraw = 0,
+} = Astro.props;
+
+const drawTime = scheduledLottery?.drawTime || '3:00 PM';
+const lotteryName = scheduledLottery?.name || 'Kerala State Lottery';
+const dayLabel = scheduledLottery?.drawDay || weekdayName(todayDate);
+const dateLabel = formatDdMmYyyy(todayDate);
+
+// A countdown is only honest while the draw has not started. Once the live
+// window opens the strip states the status instead of showing a clock at zero.
+const isCountingDown = !isTodayAvailable && liveStatus === 'WAITING' && secondsUntilDraw > 0;
+const deadlineMs = Date.now() + Math.max(0, secondsUntilDraw) * 1000;
+
+const statusText =
+  liveStatus === 'PUBLISHED' || isTodayAvailable
+    ? "Today's result is published"
+    : liveStatus === 'CHECKING'
+      ? 'Draw in progress — result is being published'
+      : liveStatus === 'DELAYED'
+        ? "Today's result has not been published yet"
+        : `Publishes at ${drawTime} IST`;
+
+const clockUnits = [
+  { id: 'next-draw-hours', label: 'hrs' },
+  { id: 'next-draw-minutes', label: 'min' },
+  { id: 'next-draw-seconds', label: 'sec' },
+];
+---
+
+<section
+  id="next-draw"
+  aria-label="Next draw"
+  class="flex flex-col gap-3 rounded-xl bg-[#10201D] px-4 py-3 text-white sm:flex-row sm:items-center sm:justify-between"
+>
+  <div class="flex flex-wrap items-center gap-2 text-[11px] leading-tight sm:text-xs">
+    <span
+      class="shrink-0 rounded bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-[#9EE6BE] font-tabular"
+    >
+      Next Draw
+    </span>
+    <span class="font-semibold">
+      {lotteryName} ({drawTime}) · {dayLabel}{dateLabel ? ` ${dateLabel}` : ''}
+    </span>
+  </div>
+
+  {
+    isCountingDown ? (
+      <div
+        id="next-draw-clock"
+        data-deadline={deadlineMs}
+        data-label={statusText}
+        class="flex items-center gap-2 self-start sm:self-auto"
+      >
+        {clockUnits.map((unit) => (
+          <span class="flex min-w-[46px] flex-col items-center rounded-lg bg-white/10 px-2 py-1">
+            <span
+              id={unit.id}
+              class="text-base font-black font-mono text-white font-tabular leading-tight"
+            >
+              --
+            </span>
+            <span class="text-[9px] font-bold uppercase tracking-wider text-white/50">
+              {unit.label}
+            </span>
+          </span>
+        ))}
+      </div>
+    ) : (
+      <p class="text-[11px] font-semibold text-[#9EE6BE] sm:text-xs">{statusText}</p>
+    )
+  }
+</section>
+
+<script>
+  // Two behaviours, both bounded: a one-second countdown, and — only when that
+  // countdown runs out — a single self-reload so a visitor who left the page
+  // open at 3:00 PM still ends up looking at the published result. The reload is
+  // guarded by a sessionStorage key so a stale cached document cannot reload in
+  // a loop.
+  (() => {
+    const clock = document.getElementById('next-draw-clock');
+    if (!clock) return;
+
+    const deadline = Number(clock.dataset.deadline || 0);
+    const label = clock.dataset.label || 'Publishes soon';
+    const hours = document.getElementById('next-draw-hours');
+    const minutes = document.getElementById('next-draw-minutes');
+    const seconds = document.getElementById('next-draw-seconds');
+    if (!hours || !minutes || !seconds || !deadline) return;
+
+    let reloaded = false;
+    const pad = (value: number) => String(value).padStart(2, '0');
+
+    const finish = () => {
+      const status = document.createElement('p');
+      status.className = 'text-[11px] font-semibold text-[#9EE6BE] sm:text-xs';
+      status.textContent = label;
+      clock.replaceChildren(status);
+
+      try {
+        const key = 'kd-countdown-reload:' + deadline;
+        if (reloaded || sessionStorage.getItem(key)) return;
+        reloaded = true;
+        sessionStorage.setItem(key, '1');
+        // The short delay lets the CDN's own 30s entry expire first, so the
+        // reload is likely to bring back the published result rather than the
+        // same cached document.
+        window.setTimeout(() => window.location.reload(), 20_000);
+      } catch {
+        // Storage blocked (private mode): the countdown still ends correctly.
+      }
+    };
+
+    const tick = () => {
+      const remaining = Math.max(0, deadline - Date.now());
+      const totalSeconds = Math.floor(remaining / 1000);
+
+      hours.textContent = pad(Math.floor(totalSeconds / 3600));
+      minutes.textContent = pad(Math.floor((totalSeconds % 3600) / 60));
+      seconds.textContent = pad(totalSeconds % 60);
+
+      if (totalSeconds > 0) {
+        window.setTimeout(tick, 1000);
+        return;
+      }
+
+      finish();
+    };
+
+    tick();
+  })();
+</script>
