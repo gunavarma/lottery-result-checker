@@ -8,9 +8,27 @@ import { prisma, serializeData } from '@/lib/prisma';
 import { getOrSetCache, PUBLISHED_DATA_STALE_IF_ERROR_MS } from '@/lib/cache';
 import { loadTodaySnapshot } from '@/lib/results/today-snapshot';
 import { computeLiveState, EXPECTED_DRAW_TIME } from '@/lib/live-state';
-import { formatIstDate, getYesterdayIstStr } from '@/lib/date';
+import { formatIstDate, getYesterdayIstStr, parseDateOnlyUtc } from '@/lib/date';
 import { DRAW_FULL } from '@/lib/results/projections';
 import { LOTTERY_SUMMARY, drawCardView } from '@/lib/results/projections';
+
+// A failure in one of the *navigation* reads below must not be able to blank
+// the whole homepage again. Until Oct 2026 an invalid value in the yesterday
+// filter threw PrismaClientValidationError on every render, and the catch-all
+// in getHomepageData turned that into the "results are synchronizing" state —
+// i.e. the entire page silently lost its results for every visitor.
+//
+// Only the reads that carry today's result (snapshot, display draw, latest
+// draws) stay fatal: without them there is genuinely nothing to show, and
+// masking that would be dishonest.
+async function bestEffort<T>(label: string, load: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await load();
+  } catch (error) {
+    console.error(`getHomepageData: ${label} failed, continuing without it:`, error);
+    return fallback;
+  }
+}
 
 // Shared homepage data loader used by both the (en) and /[locale] home pages
 // so the two locale trees always render identical information.
@@ -27,17 +45,6 @@ export async function getHomepageData() {
         const today = await loadTodaySnapshot();
         const yesterdayStr = getYesterdayIstStr();
 
-        // Fetch yesterday's draws in parallel with the other queries.
-        // Only show when today's result is not yet published.
-        const yesterdayDraws = await prisma.draw.findMany({
-          where: {
-            drawDate: { equals: yesterdayStr },
-            status: 'PUBLISHED',
-          },
-          select: DRAW_FULL,
-          orderBy: { drawDate: 'desc' },
-        });
-
         // The homepage renders the *whole* prize chart of the latest published
         // draw server-side (see `astro/components/home/HomePrizeChart.astro`), so
         // the loader needs the complete prize tree — not the truncated
@@ -49,22 +56,29 @@ export async function getHomepageData() {
         // chart. It is deliberately NOT handed to any island: the chart is
         // markup, so none of this reaches the document as a prop payload (see
         // the payload notes in `lib/home-view-models.ts`).
-        const displayDraw = await prisma.draw.findFirst({
-          where: { status: 'PUBLISHED' },
-          orderBy: { drawDate: 'desc' },
-          select: DRAW_FULL,
-        });
-
-        const [latestDraws, popularLotteries] = await Promise.all([
-          // `drawCardView` keeps the same shape the recent-results list renders
-          // (three tiers, head numbers only) while dropping the Draw table's
-          // `rawText` audit column.
-          prisma.draw.findMany({
+        const loadDisplayDraw = () =>
+          prisma.draw.findFirst({
             where: { status: 'PUBLISHED' },
             orderBy: { drawDate: 'desc' },
-            take: 6,
-            select: drawCardView(3, 5),
-          }),
+            select: DRAW_FULL,
+          });
+
+        // Yesterday's draws feed only the "Recent Result Updates" sidebar, and
+        // the lottery directory only the scheme links. `parseDateOnlyUtc` is
+        // required here: `drawDate` is a Prisma `DateTime`, and a bare
+        // `YYYY-MM-DD` string is rejected by Prisma's runtime validation with a
+        // PrismaClientValidationError — the failure that used to blank the page.
+        const loadYesterdayDraws = () =>
+          prisma.draw.findMany({
+            where: {
+              drawDate: { equals: parseDateOnlyUtc(yesterdayStr) },
+              status: 'PUBLISHED',
+            },
+            select: DRAW_FULL,
+            orderBy: { drawDate: 'desc' },
+          });
+
+        const loadPopularLotteries = () =>
           prisma.lottery.findMany({
             where: { active: true },
             take: 8,
@@ -99,7 +113,21 @@ export async function getHomepageData() {
                 },
               },
             },
+          });
+
+        const [displayDraw, latestDraws, popularLotteries, yesterdayDraws] = await Promise.all([
+          loadDisplayDraw(),
+          // `drawCardView` keeps the same shape the recent-results list renders
+          // (three tiers, head numbers only) while dropping the Draw table's
+          // `rawText` audit column.
+          prisma.draw.findMany({
+            where: { status: 'PUBLISHED' },
+            orderBy: { drawDate: 'desc' },
+            take: 6,
+            select: drawCardView(3, 5),
           }),
+          bestEffort('popularLotteries', loadPopularLotteries, []),
+          bestEffort('yesterdayDraws', loadYesterdayDraws, []),
         ]);
 
         return serializeData({

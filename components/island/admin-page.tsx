@@ -104,7 +104,7 @@ export default function AdminPage() {
   const removeWinningNumber = (prizeIndex: number, numIndex: number) => {
     setPrizes(prizes.map((p, i) => {
       if (i !== prizeIndex) return p;
-      return { ...p, numbers: p.numbers.filter((_, j) => j !== numIndex) };
+      return { ...p, numbers: p.numbers.filter((_: unknown, j: number) => j !== numIndex) };
     }));
   };
 

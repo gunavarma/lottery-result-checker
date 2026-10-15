@@ -84,7 +84,7 @@ export async function loadTodaySnapshot(): Promise<TodaySnapshot> {
       }),
       prisma.lottery.findFirst({
         where: {
-          drawDay: { contains: clock.todayDayOfWeek, mode: 'insensitive' },
+          drawDay: { contains: clock.todayDayOfWeek },
           active: true,
         },
         select: SCHEDULED_LOTTERY_SELECT,
