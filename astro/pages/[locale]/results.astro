@@ -44,5 +44,10 @@ const head = mirrorMetadata(locale, '/results', metadata);
 ---
 
 <BaseLayout head={head} locale={locale}>
-  <ResultsHubPage latestDraws={latestDraws} lotteries={lotteries} />
+  <ResultsHubPage
+    latestDraws={latestDraws}
+    lotteries={lotteries}
+    locale={locale}
+    prefix={`/${locale}`}
+  />
 </BaseLayout>

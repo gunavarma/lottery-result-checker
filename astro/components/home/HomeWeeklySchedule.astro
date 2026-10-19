@@ -9,30 +9,46 @@
  * instead of a section header plus a dark banner plus the table.
  */
 import { ArrowRight, Calendar, Award } from 'lucide-react';
+import { createTranslator, weekdayNameForIndex } from '@/lib/i18n/server';
+import { withLocale } from '@/lib/i18n/client-path';
+import type { Language } from '@/lib/translations';
 
+interface Props {
+  /** Locale of the page being rendered. */
+  locale?: Language;
+}
+
+const { locale = 'en' } = Astro.props;
+const { t, tf } = createTranslator(locale);
+const href = (path: string) => withLocale(path, locale);
+
+// `dow` is the weekday index (0 = Sunday). The visible day name is formatted by
+// `Intl` per locale, so the table is localized without a hand-written list of
+// seven names per language; the index is also what the "today" row compares.
 const WEEKLY_DRAWS = [
-  { day: 'Sunday', name: 'Samrudhi / Akshaya', code: 'SM', slug: 'samrudhi', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore' },
-  { day: 'Monday', name: 'Bhagya Thara', code: 'BT', slug: 'bhagya-thara', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore' },
-  { day: 'Tuesday', name: 'Sthree Sakthi', code: 'SS', slug: 'sthree-sakthi', time: '3:00 PM IST', price: '₹50', firstPrize: '₹1 Crore' },
-  { day: 'Wednesday', name: 'Fifty-Fifty / Dhanalekshmi', code: 'FF', slug: 'fifty-fifty', time: '3:00 PM IST', price: '₹50', firstPrize: '₹1 Crore' },
-  { day: 'Thursday', name: 'Karunya Plus', code: 'KN', slug: 'karunya-plus', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore' },
-  { day: 'Friday', name: 'Suvarna Keralam / Nirmal', code: 'SK', slug: 'suvarna-keralam', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore' },
-  { day: 'Saturday', name: 'Karunya', code: 'KR', slug: 'karunya', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore' },
+  { dow: 0, name: 'Samrudhi / Akshaya', code: 'SM', slug: 'samrudhi', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore' },
+  { dow: 1, name: 'Bhagya Thara', code: 'BT', slug: 'bhagya-thara', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore' },
+  { dow: 2, name: 'Sthree Sakthi', code: 'SS', slug: 'sthree-sakthi', time: '3:00 PM IST', price: '₹50', firstPrize: '₹1 Crore' },
+  { dow: 3, name: 'Fifty-Fifty / Dhanalekshmi', code: 'FF', slug: 'fifty-fifty', time: '3:00 PM IST', price: '₹50', firstPrize: '₹1 Crore' },
+  { dow: 4, name: 'Karunya Plus', code: 'KN', slug: 'karunya-plus', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore' },
+  { dow: 5, name: 'Suvarna Keralam / Nirmal', code: 'SK', slug: 'suvarna-keralam', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore' },
+  { dow: 6, name: 'Karunya', code: 'KR', slug: 'karunya', time: '3:00 PM IST', price: '₹40', firstPrize: '₹1 Crore' },
 ];
 
 const BUMPERS = [
-  { name: 'Thiruvonam Bumper', season: 'September (Annual Onam)', slug: 'thiruvonam-bumper', price: '₹500', firstPrize: '₹25 Crore' },
-  { name: "X'mas New Year Bumper", season: 'January (New Year)', slug: 'xmas-new-year-bumper', price: '₹400', firstPrize: '₹20 Crore' },
-  { name: 'Vishu Bumper', season: 'May (Summer Festival)', slug: 'vishu-bumper', price: '₹300', firstPrize: '₹12 Crore' },
-  { name: 'Pooja Bumper', season: 'November (Festive)', slug: 'pooja-bumper', price: '₹300', firstPrize: '₹12 Crore' },
-  { name: 'Monsoon Bumper', season: 'July (Monsoon Season)', slug: 'monsoon-bumper', price: '₹250', firstPrize: '₹10 Crore' },
-  { name: 'Summer Bumper', season: 'March (Spring Season)', slug: 'summer-bumper', price: '₹250', firstPrize: '₹10 Crore' },
+  { name: 'Thiruvonam Bumper', seasonKey: 'home.bumper.season_thiruvonam', slug: 'thiruvonam-bumper', price: '₹500', firstPrize: '₹25 Crore' },
+  { name: "X'mas New Year Bumper", seasonKey: 'home.bumper.season_xmas', slug: 'xmas-new-year-bumper', price: '₹400', firstPrize: '₹20 Crore' },
+  { name: 'Vishu Bumper', seasonKey: 'home.bumper.season_vishu', slug: 'vishu-bumper', price: '₹300', firstPrize: '₹12 Crore' },
+  { name: 'Pooja Bumper', seasonKey: 'home.bumper.season_pooja', slug: 'pooja-bumper', price: '₹300', firstPrize: '₹12 Crore' },
+  { name: 'Monsoon Bumper', seasonKey: 'home.bumper.season_monsoon', slug: 'monsoon-bumper', price: '₹250', firstPrize: '₹10 Crore' },
+  { name: 'Summer Bumper', seasonKey: 'home.bumper.season_summer', slug: 'summer-bumper', price: '₹250', firstPrize: '₹10 Crore' },
 ];
 
-const currentDayName = new Intl.DateTimeFormat('en-US', {
-  weekday: 'long',
-  timeZone: 'Asia/Kolkata',
-}).format(new Date());
+// Sunday = 0, matching the `dow` values above.
+const todayDow = new Date(
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date()) +
+    'T12:00:00+05:30'
+).getDay();
 ---
 
 <div id="weekly-schedule" class="scroll-mt-24 space-y-4">
@@ -40,64 +56,65 @@ const currentDayName = new Intl.DateTimeFormat('en-US', {
     <div class="flex flex-wrap items-end justify-between gap-2">
       <div>
         <h2 class="text-lg font-extrabold tracking-tight text-[#17201D] sm:text-xl">
-          Kerala Lottery Weekly Schedule
+          {t('home.schedule.title')}
         </h2>
         <p class="mt-0.5 max-w-2xl text-xs leading-relaxed text-[#5F6B66]">
-          Kerala runs seven weekly lotteries, one fixed for each day. Each has its own series of
-          draw numbers; the prize categories are similar across schemes but the amounts differ.
-          Draws are held at Gorky Bhavan, Thiruvananthapuram at 3:00 PM IST.
+          {t('home.schedule.intro')}
         </p>
       </div>
       <span
         class="flex shrink-0 items-center gap-1.5 rounded-full border border-[#0B5D45]/20 bg-[#E9F3EE] px-3 py-1.5 text-[11px] font-bold text-[#0B5D45] font-tabular"
       >
         <Calendar className="h-3.5 w-3.5" />
-        <span>Today in Kerala: <strong>{currentDayName}</strong></span>
+        <span>{t('home.schedule.today_in')} <strong>{weekdayNameForIndex(todayDow, locale)}</strong></span>
       </span>
     </div>
 
     <p class="mt-3 text-[11px] font-semibold text-[#5F6B66]">
-      Daily recurring timetable · draw at 3:00 PM IST · LOTIS verified results published by 4:00 PM IST.
+      {t('home.schedule.note')}
     </p>
 
     <div class="mt-2 -mx-4 overflow-x-auto sm:-mx-5">
       <table class="w-full text-left text-xs sm:min-w-[620px] sm:text-sm">
         <caption class="sr-only">
-          Kerala State Lottery weekly draw schedule: day, scheme, draw code, draw time, ticket price
-          and first prize.
+          {t('home.schedule.caption')}
         </caption>
         <thead class="border-y border-[#E2E7E3] bg-[#F7F7F4] text-[11px] font-bold uppercase text-[#5F6B66]">
           <tr>
-            <th scope="col" class="px-4 py-2.5 sm:px-5">Draw Day</th>
-            <th scope="col" class="px-4 py-2.5 sm:px-5">Lottery Scheme</th>
-            <th scope="col" class="hidden px-4 py-2.5 sm:table-cell sm:px-5">Code</th>
-            <th scope="col" class="hidden px-4 py-2.5 sm:table-cell sm:px-5">Ticket Price</th>
-            <th scope="col" class="px-4 py-2.5 sm:px-5">1st Prize</th>
+            <th scope="col" class="px-4 py-2.5 sm:px-5">{t('home.schedule.col_day')}</th>
+            <th scope="col" class="px-4 py-2.5 sm:px-5">{t('home.schedule.col_scheme')}</th>
+            <th scope="col" class="hidden px-4 py-2.5 sm:table-cell sm:px-5">
+              {t('home.schedule.col_code')}
+            </th>
+            <th scope="col" class="hidden px-4 py-2.5 sm:table-cell sm:px-5">
+              {t('home.schedule.col_price')}
+            </th>
+            <th scope="col" class="px-4 py-2.5 sm:px-5">{t('home.schedule.col_first_prize')}</th>
             <th scope="col" class="hidden px-4 py-2.5 text-right sm:table-cell sm:px-5">
-              Scheme
+              {t('home.schedule.col_action')}
             </th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#E2E7E3]">
           {WEEKLY_DRAWS.map((draw) => {
-            const isToday = draw.day.toLowerCase() === currentDayName.toLowerCase();
+            const isToday = draw.dow === todayDow;
             return (
               <tr class={isToday ? 'bg-[#F0F7F4]' : 'hover:bg-[#FAFAF7]'}>
                 <td class="px-4 py-3 sm:px-5">
                   <span class="flex items-center gap-2">
                     <span class={isToday ? 'font-extrabold text-[#0B5D45]' : 'text-[#17201D]'}>
-                      {draw.day}
+                      {weekdayNameForIndex(draw.dow, locale)}
                     </span>
                     {isToday && (
                       <span class="rounded bg-[#0B5D45] px-1.5 py-0.5 text-[9px] font-bold text-white font-tabular">
-                        TODAY
+                        {t('home.schedule.today_chip')}
                       </span>
                     )}
                   </span>
                 </td>
                 <td class="px-4 py-3 font-bold text-[#17201D] sm:px-5">
                   <a
-                    href={`/lottery/${draw.slug}`}
+                    href={href(`/lottery/${draw.slug}`)}
                     class="hover:text-[#0B5D45] hover:underline underline-offset-2"
                   >
                     {draw.name}
@@ -115,11 +132,11 @@ const currentDayName = new Intl.DateTimeFormat('en-US', {
                 </td>
                 <td class="hidden px-4 py-3 text-right sm:table-cell sm:px-5">
                   <a
-                    href={`/lottery/${draw.slug}`}
-                    aria-label={`View ${draw.name} results and schedule`}
+                    href={href(`/lottery/${draw.slug}`)}
+                    aria-label={tf('home.schedule.view_aria', { name: draw.name })}
                     class="inline-flex items-center gap-1 rounded-lg bg-[#E9F3EE] px-2.5 py-1.5 text-xs font-bold text-[#0B5D45] transition-colors hover:bg-[#D5E8DF]"
                   >
-                    <span>View</span>
+                    <span>{t('home.schedule.view')}</span>
                     <ArrowRight className="h-3 w-3" />
                   </a>
                 </td>
@@ -131,9 +148,9 @@ const currentDayName = new Intl.DateTimeFormat('en-US', {
     </div>
 
     <p class="mt-2 text-[11px] text-[#5F6B66]">
-      Bumper draw dates shift slightly each year — confirm the current year&apos;s calendar on the <a
-        href="/lottery-calendar"
-        class="font-bold text-[#0B5D45] hover:underline">draw schedule page</a
+      {t('home.schedule.bumper_note_before')}{' '}
+      <a href={href('/lottery-calendar')} class="font-bold text-[#0B5D45] hover:underline">
+        {t('home.schedule.bumper_note_link')}</a
       >.
     </p>
   </section>
@@ -143,10 +160,10 @@ const currentDayName = new Intl.DateTimeFormat('en-US', {
       <div>
         <h2 class="flex items-center gap-2 text-lg font-extrabold tracking-tight text-[#17201D] sm:text-xl">
           <Award className="h-4.5 w-4.5 text-[#C8A45D]" />
-          <span>Kerala Bumper Lotteries</span>
+          <span>{t('home.bumper.title')}</span>
         </h2>
         <p class="mt-0.5 text-xs text-[#5F6B66]">
-          Seasonal bumper draws with jackpots up to ₹25 Crore.
+          {t('home.bumper.intro')}
         </p>
       </div>
     </div>
@@ -155,15 +172,19 @@ const currentDayName = new Intl.DateTimeFormat('en-US', {
       {BUMPERS.map((bumper) => (
         <li class="rounded-lg border border-[#E2E7E3] bg-[#FAFAF7] px-3 py-2.5">
           <a
-            href={`/lottery/${bumper.slug}`}
+            href={href(`/lottery/${bumper.slug}`)}
             class="text-sm font-bold text-[#17201D] hover:text-[#0B5D45]"
           >
             {bumper.name}
           </a>
-          <p class="mt-0.5 text-[11px] text-[#5F6B66]">{bumper.season}</p>
+          <p class="mt-0.5 text-[11px] text-[#5F6B66]">{t(bumper.seasonKey)}</p>
           <p class="mt-1.5 flex items-center justify-between text-[11px]">
-            <span class="font-bold text-[#0B5D45] font-tabular">1st prize {bumper.firstPrize}</span>
-            <span class="font-semibold text-[#5F6B66] font-tabular">Ticket {bumper.price}</span>
+            <span class="font-bold text-[#0B5D45] font-tabular">
+              {t('home.bumper.first_prize')} {bumper.firstPrize}
+            </span>
+            <span class="font-semibold text-[#5F6B66] font-tabular">
+              {t('home.bumper.ticket')} {bumper.price}
+            </span>
           </p>
         </li>
       ))}

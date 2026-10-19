@@ -4,8 +4,22 @@
  * Built with native HTML5 <details> and <summary> tags for 100% SEO indexability
  * and 0 KB JavaScript shipping to the client.
  */
-import { HOMEPAGE_FAQS } from '@/lib/home-faqs';
+import { getHomepageFaqs } from '@/lib/i18n/faq-copy';
+import { createTranslator } from '@/lib/i18n/server';
+import type { Language } from '@/lib/translations';
 import { HelpCircle, ChevronDown } from 'lucide-react';
+
+interface Props {
+  /** Locale of the page being rendered. */
+  locale?: Language;
+}
+
+const { locale = 'en' } = Astro.props;
+const { t, tf } = createTranslator(locale);
+
+// The accordion is content, so it follows the page language; the FAQPage
+// structured data stays on the English list (see `lib/i18n/faq-copy.ts`).
+const faqs = getHomepageFaqs(locale);
 ---
 
 <div id="faqs" class="scroll-mt-24 space-y-4">
@@ -14,22 +28,21 @@ import { HelpCircle, ChevronDown } from 'lucide-react';
     <div>
       <h2 class="flex items-center gap-2 text-lg font-extrabold tracking-tight text-[#17201D] sm:text-xl">
         <HelpCircle className="h-4.5 w-4.5 text-[#0B5D45]" />
-        <span>Kerala Lottery Results &amp; Verification FAQs</span>
+        <span>{t('home.faq.title')}</span>
       </h2>
       <p class="mt-0.5 max-w-2xl text-xs text-[#5F6B66]">
-        Clear, verified answers on daily 3:00 PM draw times, weekly schemes, prize claim protocols,
-        taxes and government gazette verification.
+        {t('home.faq.intro')}
       </p>
     </div>
     <span class="shrink-0 rounded-full bg-[#E9F3EE] px-2.5 py-0.5 text-[11px] font-bold text-[#0B5D45] font-tabular">
-      {HOMEPAGE_FAQS.length} questions answered
+      {tf('home.faq.count', { count: faqs.length })}
     </span>
   </div>
 
   {/* Accordion Container — native <details>, so the answers are in the HTML
       whether or not the browser has JavaScript, and no accordion library ships. */}
   <div class="divide-y divide-[#E2E7E3] rounded-xl border border-[#E2E7E3] bg-white p-4 sm:p-5">
-    {HOMEPAGE_FAQS.map((faq, index) => (
+    {faqs.map((faq, index) => (
       <details class="group cursor-pointer py-3.5 first:pt-0 last:pb-0" open={index === 0}>
         <summary class="list-none flex items-center justify-between gap-4 text-left select-none">
           <div class="flex items-start gap-3">
@@ -48,7 +61,7 @@ import { HelpCircle, ChevronDown } from 'lucide-react';
           <p>{faq.answer}</p>
           {faq.category && (
             <span class="inline-block mt-2.5 text-[10px] font-bold uppercase tracking-wider text-[#0B5D45] bg-[#F4F5F2] px-2 py-0.5 rounded font-tabular">
-              Topic: {faq.category}
+              {tf('home.faq.topic', { topic: faq.category ?? '' })}
             </span>
           )}
         </div>

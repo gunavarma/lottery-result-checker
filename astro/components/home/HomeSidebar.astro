@@ -22,8 +22,13 @@ import {
   formatDdMmYyyy,
   type DrawReference,
 } from './home-format';
+import { createTranslator, localizeWeekdayName } from '@/lib/i18n/server';
+import { withLocale } from '@/lib/i18n/client-path';
+import type { Language } from '@/lib/translations';
 
 interface Props {
+  /** Locale of the page being rendered. */
+  locale?: Language;
   /** Newest published draws, newest first (`data.latestDraws`). */
   recentDraws?: Array<DrawReference>;
   /** Active schemes (`data.popularLotteries`). */
@@ -36,23 +41,27 @@ interface Props {
   }>;
 }
 
-const { recentDraws = [], lotteries = [] } = Astro.props;
+const { locale = 'en', recentDraws = [], lotteries = [] } = Astro.props;
+const { t } = createTranslator(locale);
+const href = (path: string) => withLocale(path, locale);
 
 const schemes = lotteries.filter((lottery) => lottery.slug && lottery.name);
 ---
 
-<aside class="space-y-3" aria-label="Result tools and navigation">
+<aside class="space-y-3" aria-label={t('home.sidebar.tools_aria')}>
   <section class="rounded-xl border border-[#E2E7E3] bg-white p-4">
-    <h2 class="text-sm font-extrabold tracking-tight text-[#17201D]">Check Ticket Number</h2>
-    <form action="/ticket-checker" method="get" class="mt-2.5 flex items-center gap-2">
-      <label for="home-ticket-number" class="sr-only">Kerala lottery ticket number</label>
+    <h2 class="text-sm font-extrabold tracking-tight text-[#17201D]">
+      {t('home.sidebar.check_title')}
+    </h2>
+    <form action={href('/ticket-checker')} method="get" class="mt-2.5 flex items-center gap-2">
+      <label for="home-ticket-number" class="sr-only">{t('home.sidebar.number_aria')}</label>
       <input
         id="home-ticket-number"
         name="number"
         type="text"
         inputmode="numeric"
         autocomplete="off"
-        placeholder="e.g. 1234 or KN"
+        placeholder={t('home.sidebar.placeholder')}
         class="min-w-0 flex-1 rounded-lg border border-[#E2E7E3] bg-[#FAFAF7] px-3 py-2 text-xs font-bold text-[#17201D] placeholder:font-normal placeholder:text-[#95A09B] focus:border-[#0B5D45] focus:bg-white focus:outline-hidden font-tabular"
       />
       <button
@@ -60,42 +69,44 @@ const schemes = lotteries.filter((lottery) => lottery.slug && lottery.name);
         class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#0B5D45] px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-[#084835]"
       >
         <Search className="h-3.5 w-3.5" />
-        <span>Search</span>
+        <span>{t('home.sidebar.search')}</span>
       </button>
     </form>
     <a
-      href="/ticket-checker"
+      href={href('/ticket-checker')}
       class="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#0B5D45] hover:underline"
     >
       <Camera className="h-3.5 w-3.5" />
-      <span>Or scan the ticket with your camera</span>
+      <span>{t('home.sidebar.scan')}</span>
     </a>
   </section>
 
   {
     schemes.length > 0 && (
       <section class="rounded-xl border border-[#E2E7E3] bg-white p-4">
-        <h2 class="text-sm font-extrabold tracking-tight text-[#17201D]">Kerala Lotteries</h2>
+        <h2 class="text-sm font-extrabold tracking-tight text-[#17201D]">
+          {t('home.sidebar.lotteries')}
+        </h2>
         <ul class="mt-2 divide-y divide-[#EEF1EE]">
           {schemes.map((scheme) => (
             <li class="flex items-center justify-between gap-2 py-2 text-xs">
               <a
-                href={`/lottery/${scheme.slug}`}
+                href={href(`/lottery/${scheme.slug}`)}
                 class="font-bold text-[#17201D] hover:text-[#0B5D45]"
               >
                 {scheme.name}
               </a>
               <span class="shrink-0 rounded bg-[#F4F5F2] px-2 py-0.5 text-[10px] font-bold text-[#5F6B66] font-tabular">
-                {scheme.drawDay || scheme.code}
+                {localizeWeekdayName(scheme.drawDay, locale) || scheme.code}
               </span>
             </li>
           ))}
         </ul>
         <a
-          href="/lotteries"
+          href={href('/lotteries')}
           class="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#0B5D45] hover:underline"
         >
-          <span>All schemes, prices &amp; top prizes</span>
+          <span>{t('home.sidebar.all_schemes')}</span>
           <ArrowRight className="h-3 w-3" />
         </a>
       </section>
@@ -105,7 +116,9 @@ const schemes = lotteries.filter((lottery) => lottery.slug && lottery.name);
   {
     recentDraws.length > 0 && (
       <section class="rounded-xl border border-[#E2E7E3] bg-white p-4">
-        <h2 class="text-sm font-extrabold tracking-tight text-[#17201D]">Recent Result Updates</h2>
+        <h2 class="text-sm font-extrabold tracking-tight text-[#17201D]">
+          {t('home.sidebar.recent')}
+        </h2>
         <ul class="mt-1 divide-y divide-[#EEF1EE]">
           {recentDraws.map((draw) => {
             const resultHref = drawResultHref(draw);
@@ -153,10 +166,10 @@ const schemes = lotteries.filter((lottery) => lottery.slug && lottery.name);
           })}
         </ul>
         <a
-          href="/previous-results"
+          href={href('/previous-results')}
           class="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#0B5D45] hover:underline"
         >
-          <span>All previous results</span>
+          <span>{t('home.sidebar.all_previous')}</span>
           <ArrowRight className="h-3 w-3" />
         </a>
       </section>

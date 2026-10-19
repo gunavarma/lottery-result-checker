@@ -15,6 +15,8 @@
  */
 import { Ticket, QrCode, Camera, ShieldCheck, ArrowRight } from 'lucide-react';
 import { TicketCheckerIsland } from '@/components/island/ticket-checker';
+import { createTranslator } from '@/lib/i18n/server';
+import { withLocale } from '@/lib/i18n/client-path';
 
 interface Props {
   locale?: 'en' | 'ml' | 'ta' | 'hi';
@@ -23,6 +25,8 @@ interface Props {
 }
 
 const { locale = 'en', lotteries = [] } = Astro.props;
+const { t } = createTranslator(locale);
+const href = (path: string) => withLocale(path, locale);
 ---
 
 <section id="ticket-checker" class="scroll-mt-24 space-y-3">
@@ -36,21 +40,20 @@ const { locale = 'en', lotteries = [] } = Astro.props;
         </span>
         <div>
           <h2 class="text-base font-extrabold tracking-tight text-[#17201D]">
-            Kerala Lottery Ticket Scanner &amp; Checker
+            {t('home.tools.title')}
           </h2>
           <p class="mt-0.5 text-xs text-[#68736E]">
-            Select the draw and type your ticket number, or scan the ticket with your camera, to
-            check every prize tier against the certified result.
+            {t('home.tools.body')}
           </p>
         </div>
       </div>
 
       <a
-        href="/ticket-checker"
+        href={href('/ticket-checker')}
         class="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg bg-[#E9730C] px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-[#CF6408]"
       >
         <Camera className="h-3.5 w-3.5" />
-        <span>Open Ticket Scanner Page</span>
+        <span>{t('home.tools.open')}</span>
         <ArrowRight className="h-3.5 w-3.5" />
       </a>
     </div>
@@ -70,19 +73,18 @@ const { locale = 'en', lotteries = [] } = Astro.props;
         <ShieldCheck className="h-4 w-4" />
       </span>
       <div class="text-xs">
-        <p class="font-bold text-[#17201D]">Every number on this page comes from the gazette</p>
+        <p class="font-bold text-[#17201D]">{t('home.tools.gazette_title')}</p>
         <p class="mt-0.5 text-[#5F6B66]">
-          Results, prize tiers and winning numbers are stored from the official LOTIS notices and
-          the Kerala Government Gazette PDFs, then published as static HTML.
+          {t('home.tools.gazette_body')}
         </p>
       </div>
     </div>
     <a
-      href="/kerala-lottery-results"
+      href={href('/kerala-lottery-results')}
       class="inline-flex shrink-0 items-center gap-1.5 text-xs font-bold text-[#0B5D45] hover:underline"
     >
       <QrCode className="h-3.5 w-3.5" />
-      <span>Browse the results archive</span>
+      <span>{t('home.tools.browse')}</span>
     </a>
   </div>
 </section>

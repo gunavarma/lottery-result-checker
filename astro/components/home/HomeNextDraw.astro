@@ -14,9 +14,13 @@
  * `/api/results/today` serves), so the strip can never disagree with the API
  * about when the draw is.
  */
-import { formatDdMmYyyy, weekdayName } from './home-format';
+import { formatDdMmYyyy } from './home-format';
+import { createTranslator, localizedWeekday, localizeWeekdayName } from '@/lib/i18n/server';
+import type { Language } from '@/lib/translations';
 
 interface Props {
+  /** Locale of the page being rendered (`/ml`, `/ta`, `/hi` or English). */
+  locale?: Language;
   /** Lottery scheduled for today, as resolved by `loadTodaySnapshot()`. */
   scheduledLottery?: {
     name?: string | null;
@@ -31,6 +35,7 @@ interface Props {
 }
 
 const {
+  locale = 'en',
   scheduledLottery = null,
   todayDate = null,
   liveStatus = null,
@@ -38,9 +43,16 @@ const {
   secondsUntilDraw = 0,
 } = Astro.props;
 
+const { t, tf } = createTranslator(locale);
+
 const drawTime = scheduledLottery?.drawTime || '3:00 PM';
 const lotteryName = scheduledLottery?.name || 'Kerala State Lottery';
-const dayLabel = scheduledLottery?.drawDay || weekdayName(todayDate);
+// Prefer the draw's own date (always present) and localize it; `drawDay` is a
+// stored English weekday name, so it is translated rather than printed raw.
+const dayLabel =
+  localizedWeekday(todayDate, locale) ||
+  localizeWeekdayName(scheduledLottery?.drawDay, locale) ||
+  '';
 const dateLabel = formatDdMmYyyy(todayDate);
 
 // A countdown is only honest while the draw has not started. Once the live
@@ -50,30 +62,30 @@ const deadlineMs = Date.now() + Math.max(0, secondsUntilDraw) * 1000;
 
 const statusText =
   liveStatus === 'PUBLISHED' || isTodayAvailable
-    ? "Today's result is published"
+    ? t('home.next.published')
     : liveStatus === 'CHECKING'
-      ? 'Draw in progress — result is being published'
+      ? t('home.next.checking')
       : liveStatus === 'DELAYED'
-        ? "Today's result has not been published yet"
-        : `Publishes at ${drawTime} IST`;
+        ? t('home.next.delayed')
+        : tf('home.next.publishes_at', { time: drawTime });
 
 const clockUnits = [
-  { id: 'next-draw-hours', label: 'hrs' },
-  { id: 'next-draw-minutes', label: 'min' },
-  { id: 'next-draw-seconds', label: 'sec' },
+  { id: 'next-draw-hours', label: t('home.next.hours') },
+  { id: 'next-draw-minutes', label: t('home.next.minutes') },
+  { id: 'next-draw-seconds', label: t('home.next.seconds') },
 ];
 ---
 
 <section
   id="next-draw"
-  aria-label="Next draw"
+  aria-label={t('home.next.eyebrow')}
   class="flex flex-col gap-3 rounded-xl bg-[#10201D] px-4 py-3 text-white sm:flex-row sm:items-center sm:justify-between"
 >
   <div class="flex flex-wrap items-center gap-2 text-[11px] leading-tight sm:text-xs">
     <span
       class="shrink-0 rounded bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-[#9EE6BE] font-tabular"
     >
-      Next Draw
+      {t('home.next.eyebrow')}
     </span>
     <span class="font-semibold">
       {lotteryName} ({drawTime}) · {dayLabel}{dateLabel ? ` ${dateLabel}` : ''}

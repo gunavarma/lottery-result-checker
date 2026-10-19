@@ -16,6 +16,7 @@ import SeoHead from '../components/SeoHead.astro';
 import type { JsonLd, SeoHead as SeoHeadData } from '@/lib/seo/types';
 import { getOrganizationSchema, getWebSiteSchema } from '@/lib/seo';
 import { LOCALE_HTML_LANG } from '@/lib/i18n/config';
+import { INTL_LOCALE } from '@/lib/i18n/server';
 import type { Language } from '@/lib/translations';
 import { sanitizeAnalyticsParams, type AnalyticsEvent } from '@/lib/analytics';
 import { Footer } from '@/components/Footer';
@@ -65,7 +66,7 @@ const pathname = Astro.url.pathname;
 // Today's date in IST, formatted once on the server and handed to the chrome.
 // The navbar prints it in the source bar; computing it here (rather than on the
 // client) means the rendered date and the hydrated date are the same string.
-const todayLabel = new Intl.DateTimeFormat('en-GB', {
+const todayLabel = new Intl.DateTimeFormat(INTL_LOCALE[locale] ?? 'en-IN', {
   weekday: 'long',
   day: 'numeric',
   month: 'long',
@@ -219,8 +220,10 @@ const gaEvents = analyticsEvents
     </main>
 
     {/* The footer needs no hydration: with no `client:*` directive Astro
-        server-renders it and ships no JavaScript for it at all. */}
-    <Footer />
+        server-renders it and ships no JavaScript for it at all. That is also
+        why its language links are plain <a href> elements rather than the
+        React selector — an un-hydrated button would do nothing. */}
+    <Footer locale={locale} pathname={pathname} />
 
     {/* client:idle ensures neither prompt blocks the critical path or FCP/LCP */}
     <PwaInstallPromptIsland client:idle />

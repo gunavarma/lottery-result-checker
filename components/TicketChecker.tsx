@@ -228,7 +228,7 @@ export function TicketChecker({
       <div className="border-b border-[#E2E7E3] pb-4 space-y-1">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
-            Financial Lookup Tool
+            {t('ticket.eyebrow', 'Financial Lookup Tool')}
           </span>
 
           {/* Quick Trigger Button for Scanner */}
@@ -240,15 +240,18 @@ export function TicketChecker({
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white text-xs font-extrabold shadow-sm transition-all cursor-pointer font-tabular"
           >
             <Camera className="w-4 h-4 text-[#C8A45D]" />
-            <span>Scan Tickets (Multi-Scan)</span>
+            <span>{t('ticket.scan_multi', 'Scan Tickets (Multi-Scan)')}</span>
           </button>
         </div>
 
         <h2 className="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
-          Check Your Tickets
+          {t('ticket.heading', 'Check Your Tickets')}
         </h2>
         <p className="text-xs sm:text-sm text-[#68736E]">
-          Scan barcodes or enter 6-digit series/4-digit slips to verify against official Kerala LOTIS gazette results.
+          {t(
+            'ticket.subheading',
+            'Scan barcodes or enter 6-digit series/4-digit slips to verify against official Kerala LOTIS gazette results.'
+          )}
         </p>
       </div>
 
@@ -258,7 +261,7 @@ export function TicketChecker({
           {/* Scheme Selection */}
           <div className="sm:col-span-4 space-y-1.5">
             <label htmlFor="lottery-scheme-select" className="block text-xs font-bold text-[#17201D] uppercase tracking-wide">
-              Lottery Scheme
+              {t('ticket.scheme_label', 'Lottery Scheme')}
             </label>
             <select
               id="lottery-scheme-select"
@@ -266,7 +269,7 @@ export function TicketChecker({
               onChange={(e) => setSelectedLottery(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-[#E2E7E3] bg-[#F7F7F4] text-xs font-bold text-[#17201D] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B3B32] transition-colors"
             >
-              <option value="all">All Active Schemes</option>
+              <option value="all">{t('ticket.all_schemes', 'All Active Schemes')}</option>
               {lotteries.map((lot) => (
                 <option key={lot.id} value={lot.id}>
                   {lot.name} ({lot.code})
@@ -278,7 +281,7 @@ export function TicketChecker({
           {/* Ticket Number Input */}
           <div className="sm:col-span-8 space-y-1.5">
             <label htmlFor="ticket-number-input" className="block text-xs font-bold text-[#17201D] uppercase tracking-wide">
-              Ticket Number / Manual Entry
+              {t('ticket.number_label', 'Ticket Number / Manual Entry')}
             </label>
             <div className="flex flex-wrap sm:flex-nowrap gap-2">
               <input

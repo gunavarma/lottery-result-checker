@@ -20,12 +20,15 @@ import {
   formatDdMmYyyy,
   formatIstTimestamp,
   seriesCodes,
-  weekdayName,
   type DrawReference,
   type Prize,
 } from './home-format';
+import { createTranslator, localizedWeekday } from '@/lib/i18n/server';
+import type { Language } from '@/lib/translations';
 
 interface Props {
+  /** Locale of the page being rendered. */
+  locale?: Language;
   draw: (DrawReference & {
     id?: string;
     drawTime?: string | null;
@@ -41,7 +44,8 @@ interface Props {
   isToday?: boolean;
 }
 
-const { draw, isToday = false } = Astro.props;
+const { locale = 'en', draw, isToday = false } = Astro.props;
+const { t, tf } = createTranslator(locale);
 
 const resultHref = drawResultHref(draw);
 const archiveHref = dateArchiveHref(draw?.drawDate);
@@ -50,10 +54,16 @@ const isProvisional = (draw?.verificationLevel ?? 'OFFICIAL') === 'PROVISIONAL';
 const updatedAt = formatIstTimestamp(draw?.updatedAt ?? draw?.verifiedAt ?? draw?.publishedAt);
 
 const metaBoxes = [
-  { label: 'Draw Number', value: draw?.drawNumber ?? '—' },
-  { label: 'Draw Date', value: formatDdMmYyyy(draw?.drawDate) },
-  { label: 'Draw Day', value: weekdayName(draw?.drawDate) || draw?.lottery?.code || '—' },
-  { label: 'Update Time', value: draw?.drawTime || updatedAt?.replace(/^.*?,\s*/, '') || '3:00 PM' },
+  { label: t('home.latest.meta_draw_number'), value: draw?.drawNumber ?? '—' },
+  { label: t('home.latest.meta_draw_date'), value: formatDdMmYyyy(draw?.drawDate) },
+  {
+    label: t('home.latest.meta_draw_day'),
+    value: localizedWeekday(draw?.drawDate, locale) || draw?.lottery?.code || '—',
+  },
+  {
+    label: t('home.latest.meta_update_time'),
+    value: draw?.drawTime || updatedAt?.replace(/^.*?,\s*/, '') || '3:00 PM',
+  },
 ];
 ---
 
@@ -66,19 +76,22 @@ const metaBoxes = [
       <div class="space-y-4 px-4 py-4 sm:px-6 sm:py-5">
         <div class="flex flex-wrap items-center gap-2">
           <span class="rounded bg-black/25 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-[#9EE6BE] font-tabular">
-            {isToday ? "Today's Published Result" : 'Latest Published Result'}
+            {isToday ? t('home.latest.badge_today') : t('home.latest.badge_latest')}
           </span>
           <span
             class={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider font-tabular ${
               isProvisional ? 'bg-[#C59B27]/25 text-[#F5DFA0]' : 'bg-white/10 text-white/80'
             }`}
           >
-            {isProvisional ? 'Live Source · Awaiting Gazette' : 'Official Gazette Certified'}
+            {isProvisional ? t('home.latest.provisional') : t('home.latest.official')}
           </span>
         </div>
 
         <h2 class="text-xl font-extrabold tracking-tight sm:text-2xl">
-          {draw.lottery?.name} ({draw.drawNumber}) Result
+          {tf('home.latest.heading', {
+            name: draw.lottery?.name ?? '',
+            draw: draw.drawNumber ?? '',
+          })}
         </h2>
 
         <dl class="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -98,7 +111,7 @@ const metaBoxes = [
               href={resultHref}
               class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[#0B3B32] transition-colors hover:bg-[#E9F3EE]"
             >
-              <span>View Complete Result</span>
+              <span>{t('home.latest.view_full')}</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </a>
           )}
@@ -107,7 +120,7 @@ const metaBoxes = [
               href={archiveHref}
               class="inline-flex items-center gap-1.5 text-white/85 hover:text-white hover:underline"
             >
-              <span>All draws on {formatDdMmYyyy(draw.drawDate)}</span>
+              <span>{tf('home.latest.all_draws', { date: formatDdMmYyyy(draw.drawDate) })}</span>
             </a>
           )}
           {draw.sourceDocumentUrl && (
@@ -118,7 +131,7 @@ const metaBoxes = [
               class="inline-flex items-center gap-1.5 text-white/85 hover:text-white hover:underline"
             >
               <FileText className="h-3.5 w-3.5" />
-              <span>Official Gazette PDF</span>
+              <span>{t('home.latest.gazette_pdf')}</span>
               <ExternalLink className="h-3 w-3" />
             </a>
           )}
@@ -126,16 +139,18 @@ const metaBoxes = [
             <a
               href={`${resultHref}#prize-chart`}
               class="ml-auto inline-flex items-center gap-1.5 text-white/70 hover:text-white hover:underline"
-              title="Permanent link to this result"
+              title={t('home.latest.permalink')}
             >
               <Link2 className="h-3.5 w-3.5" />
-              <span>Permalink</span>
+              <span>{t('home.latest.permalink')}</span>
             </a>
           )}
         </div>
 
         {updatedAt && (
-          <p class="text-[10px] text-white/60">Verified and last updated {updatedAt}.</p>
+          <p class="text-[10px] text-white/60">
+            {tf('home.latest.updated', { timestamp: updatedAt })}
+          </p>
         )}
       </div>
 
@@ -143,7 +158,7 @@ const metaBoxes = [
         codes.length > 0 && (
           <div class="border-t border-white/10 bg-black/15 px-4 py-3 sm:px-6">
             <p class="text-[10px] font-bold uppercase tracking-wider text-white/60 font-tabular">
-              Today&apos;s Lottery Series Codes
+              {t('home.latest.series_codes')}
             </p>
             <ul class="mt-1.5 flex flex-wrap gap-1.5">
               {codes.map((code) => (
@@ -161,9 +176,9 @@ const metaBoxes = [
       id="latest-result"
       class="rounded-xl border border-[#E2E7E3] bg-white px-4 py-6 text-center text-xs text-[#5F6B66] sm:px-6"
     >
-      <p class="font-bold text-[#17201D]">Result synchronising with the official LOTIS gazette.</p>
+      <p class="font-bold text-[#17201D]">{t('home.sync_note')}</p>
       <p class="mt-1">
-        The latest draw is being retrieved. Kerala results are published daily at 3:00 PM IST.
+        {t('home.latest.syncing_body')}
       </p>
     </section>
   )

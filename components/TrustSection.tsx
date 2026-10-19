@@ -1,33 +1,44 @@
 import React from 'react';
 import { Database, RefreshCw, ShieldCheck, Globe, HelpCircle } from 'lucide-react';
+import { getTranslation, type Language } from '@/lib/translations';
 
-export function TrustSection() {
+/**
+ * The four-stage verification block.
+ *
+ * Rendered by Astro with no `client:*` directive, so there is no React context to
+ * read a locale from — the locale arrives as a prop from `HomeContent.astro` and
+ * the copy is looked up in the same dictionary the hydrated islands use.
+ */
+export function TrustSection({ locale = 'en' }: { locale?: Language }) {
+  const t = (key: string, fallback?: string) => getTranslation(locale, key, fallback);
+
   const steps = [
     {
       num: '01',
-      title: 'Official LOTIS Source',
-      desc: 'Draws are conducted under public scrutiny by the Directorate of Kerala State Lotteries at Gorky Bhavan, Thiruvananthapuram.',
+      title: t('trust.step1_title'),
+      desc: t('trust.step1_body'),
       icon: Database,
     },
     {
       num: '02',
-      title: 'Automated Retrieval',
-      desc: 'Our ingestion service connects directly to the official LOTIS publication feed to capture verified draw records. Winning numbers are also shown live from the public source keralalotteries.net the moment they are announced — always labelled unofficial until verified.',
+      title: t('trust.step2_title'),
+      desc: t('trust.step2_body'),
       icon: RefreshCw,
     },
     {
       num: '03',
-      title: 'Data Integrity Audit',
-      desc: 'Winning numbers, series distributions, and prize structures are verified against official Gazette PDF documents. Live (unverified) numbers are replaced by the gazette record and can never overwrite it.',
+      title: t('trust.step3_title'),
+      desc: t('trust.step3_body'),
       icon: ShieldCheck,
     },
     {
       num: '04',
-      title: 'Instant Publication',
-      desc: 'Validated draw results and ticket search indices are published immediately to ensure speed and accuracy.',
+      title: t('trust.step4_title'),
+      desc: t('trust.step4_body'),
       icon: Globe,
     },
   ];
+  const stageLabel = t('home.trust.stage', 'Stage {n} of 4 Complete');
 
   return (
     <section id="verification-workflow" className="bg-white rounded-3xl p-6 sm:p-8 lg:p-10 border border-[#E2E7E3] shadow-xs space-y-8 scroll-mt-24">
@@ -35,22 +46,26 @@ export function TrustSection() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold text-[#0B5D45] uppercase tracking-wider block font-tabular">
-              Government Verification &amp; Architecture
+              {t('home.trust.eyebrow')}
             </span>
             <span className="text-[10px] font-bold bg-[#E9F3EE] text-[#0B5D45] px-2 py-0.5 rounded-full font-tabular border border-[#0B5D45]/20">
-              4-Stage Verification
+              {t('home.trust.badge')}
             </span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17201D] tracking-tight">
-            How Kerala Lottery Results Are Synchronized
+            {t('trust.heading')}
           </h2>
           <p className="text-xs sm:text-sm text-[#5F6B66] max-w-2xl">
-            An automated, four-stage verification architecture ensuring transparent, accurate, and rapid delivery of official lottery results.
+            {t('trust.subheading')}
           </p>
         </div>
         <div className="text-[11px] text-[#5F6B66] font-medium bg-[#F7F7F4] border border-[#E2E7E3] px-3.5 py-2 rounded-xl shrink-0 space-y-0.5">
-          <div className="font-bold text-[#17201D]">Draw Venue: Gorky Bhavan, TVM</div>
-          <div>Audit Source: Official Government Gazette</div>
+          <div className="font-bold text-[#17201D]">
+            {t('home.trust.venue_label')}: {t('home.trust.venue')}
+          </div>
+          <div>
+            {t('home.trust.source_label')}: {t('home.trust.source')}
+          </div>
         </div>
       </div>
 
@@ -82,7 +97,7 @@ export function TrustSection() {
               </div>
 
               <div className="pt-2 text-[10px] font-bold text-[#0B5D45] uppercase tracking-wider font-tabular">
-                Stage {idx + 1} of 4 Complete
+                {stageLabel.replace('{n}', String(idx + 1))}
               </div>
             </div>
           );

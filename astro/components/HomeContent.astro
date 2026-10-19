@@ -47,12 +47,23 @@ import {
   selectDirectoryItems,
   selectSchemeChoices,
 } from '@/lib/home-view-models';
+import { createTranslator } from '@/lib/i18n/server';
+import { withLocale } from '@/lib/i18n/client-path';
 
 interface Props {
   locale?: 'en' | 'ml' | 'ta' | 'hi';
 }
 
 const { locale = 'en' } = Astro.props;
+
+// Every section below renders text, so each one receives the locale and looks
+// its copy up in the shared dictionary. Passing it down (rather than reading it
+// from a context) is what keeps the server render and the hydrated islands in
+// the same language.
+const { t } = createTranslator(locale);
+// Internal links keep the reader in this locale instead of dropping them into
+// the English tree on the next click.
+const href = (path: string) => withLocale(path, locale);
 
 // The single shared homepage loader — the same one the API uses, so the page and
 // `/api/results/today` can never disagree about what today's draw is.
@@ -84,16 +95,15 @@ const secondaryNews = allNews.filter((article) => article.id !== featuredArticle
         <h1
           class="text-xl font-extrabold tracking-tight text-[#17201D] sm:text-2xl lg:text-[28px] lg:leading-tight"
         >
-          Kerala Lottery Result Today LIVE at 3 PM — Check Full Result
+          {t('home.h1.title')}
         </h1>
         <p class="text-xs leading-relaxed text-[#5F6B66] sm:text-[13px]">
-          Kerala lottery result today: the live 3:00 PM draw, the 1st prize and the complete prize
-          list, draw number, date, series codes and previous results — all cross-checked with the
-          official Kerala Government Gazette.
+          {t('home.h1.intro')}
         </p>
       </header>
 
       <HomeNextDraw
+        locale={locale}
         scheduledLottery={data.scheduledLottery}
         todayDate={data.todayDate}
         liveStatus={data.liveStatus}
@@ -101,11 +111,11 @@ const secondaryNews = allNews.filter((article) => article.id !== featuredArticle
         secondsUntilDraw={data.secondsUntilDraw}
       />
 
-      <HomeLatestResult draw={displayDraw} isToday={isToday} />
+      <HomeLatestResult locale={locale} draw={displayDraw} isToday={isToday} />
 
       <HomeCheckTools locale={locale} lotteries={schemeChoices} />
 
-      <HomePrizeChart draw={displayDraw} />
+      <HomePrizeChart locale={locale} draw={displayDraw} />
 
       {/* Historical lookup: the date/scheme finder, unchanged from before but
           now labelled and framed as what it is. */}
@@ -113,25 +123,27 @@ const secondaryNews = allNews.filter((article) => article.id !== featuredArticle
         <div class="flex flex-wrap items-end justify-between gap-2 border-b border-[#E2E7E3] pb-2.5">
           <div>
             <h2 class="text-lg font-extrabold tracking-tight text-[#17201D] sm:text-xl">
-              Search Any Previous Result
+              {t('home.find.title')}
             </h2>
             <p class="mt-0.5 text-xs text-[#5F6B66]">
-              Pick a draw date, or narrow it down to one scheme, to open the archived result.
+              {t('home.find.intro')}
             </p>
           </div>
           <div class="flex items-center gap-3 text-[11px] font-bold">
-            <a href="/previous-results" class="text-[#0B5D45] hover:underline">Previous results</a>
-            <a href="/kerala-lottery-results" class="text-[#0B5D45] hover:underline">
-              Full archive
+            <a href={href('/previous-results')} class="text-[#0B5D45] hover:underline">
+              {t('home.find.previous')}
+            </a>
+            <a href={href('/kerala-lottery-results')} class="text-[#0B5D45] hover:underline">
+              {t('home.find.archive')}
             </a>
           </div>
         </div>
         <ResultFinderIsland client:visible locale={locale} lotteries={schemeOptions} />
       </section>
 
-      <HomeInfoCards />
+      <HomeInfoCards locale={locale} />
 
-      <HomeWeeklySchedule />
+      <HomeWeeklySchedule locale={locale} />
 
       {/* Scheme directory — the same island as before, kept for the ticket price
           and top-prize columns and for its links to every scheme page. */}
@@ -139,32 +151,33 @@ const secondaryNews = allNews.filter((article) => article.id !== featuredArticle
         <div class="flex flex-wrap items-end justify-between gap-2 border-b border-[#E2E7E3] pb-2.5">
           <div>
             <h2 class="text-lg font-extrabold tracking-tight text-[#17201D] sm:text-xl">
-              Active Kerala Lottery Schemes
+              {t('home.active_schemes')}
             </h2>
             <p class="mt-0.5 text-xs text-[#5F6B66]">
-              Weekly and bumper schemes, ticket prices and top prizes.
+              {t('home.schemes.intro')}
             </p>
           </div>
           <a
-            href="/lotteries"
+            href={href('/lotteries')}
             class="inline-flex items-center gap-1 text-[11px] font-bold text-[#0B5D45] hover:underline"
           >
-            <span>All schemes</span>
+            <span>{t('home.schemes.all')}</span>
             <ArrowRight className="h-3 w-3" />
           </a>
         </div>
         <LotteryDirectoryListIsland client:visible locale={locale} lotteries={directoryItems} />
       </section>
 
-      <HomePrizeClaimGuide />
+      <HomePrizeClaimGuide locale={locale} />
 
       <HomeAbout
+        locale={locale}
         lastUpdated={displayDraw?.verifiedAt ?? displayDraw?.updatedAt ?? null}
         drawNumber={displayDraw?.drawNumber ?? null}
         lotteryName={displayDraw?.lottery?.name ?? null}
       />
 
-      <HomeFaqSection />
+      <HomeFaqSection locale={locale} />
 
       {/* Editorial news. Kept where it was in the old page order — it is the
           only block that links into /news, so removing it would orphan that
@@ -173,34 +186,38 @@ const secondaryNews = allNews.filter((article) => article.id !== featuredArticle
         <div class="flex flex-wrap items-end justify-between gap-2 border-b border-[#E2E7E3] pb-2.5">
           <div>
             <h2 class="text-lg font-extrabold tracking-tight text-[#17201D] sm:text-xl">
-              Latest Lottery News &amp; Reports
+              {t('home.latest_news')}
             </h2>
             <p class="mt-0.5 text-xs text-[#5F6B66]">
-              Gazette releases, schedule changes and prize announcements.
+              {t('home.news.intro')}
             </p>
           </div>
           <a
-            href="/news"
+            href={href('/news')}
             class="inline-flex items-center gap-1 text-[11px] font-bold text-[#0B5D45] hover:underline"
           >
-            <span>All news</span>
+            <span>{t('home.news.all')}</span>
             <ArrowRight className="h-3 w-3" />
           </a>
         </div>
-        <FeaturedNewsHero article={featuredArticle} />
+        <FeaturedNewsHero article={featuredArticle} locale={locale} />
         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {secondaryNews.map((article) => <NewsCard article={article} />)}
+          {secondaryNews.map((article) => <NewsCard article={article} locale={locale} />)}
         </div>
       </section>
 
-      <TrustSection />
+      <TrustSection locale={locale} />
 
       <NotificationBannerIsland client:visible locale={locale} />
     </div>
 
     {/* ── Sidebar ───────────────────────────────────────────────────────── */}
     <div class="w-full shrink-0 lg:w-[320px]">
-      <HomeSidebar recentDraws={data.latestDraws || []} lotteries={data.popularLotteries || []} />
+      <HomeSidebar
+        locale={locale}
+        recentDraws={data.latestDraws || []}
+        lotteries={data.popularLotteries || []}
+      />
     </div>
   </div>
 </div>

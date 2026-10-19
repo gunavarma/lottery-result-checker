@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { LanguageSelector } from './LanguageSelector';
 import { useLanguage } from '@/context/LanguageContext';
+import { withLocale } from '@/lib/i18n/client-path';
 
 const SearchModal = lazy(() => import('./SearchModal').then((mod) => mod.SearchModal));
 const NotificationModal = lazy(() =>
@@ -41,7 +42,16 @@ export function Navbar({
 }) {
   const pathnameFromBrowser = usePathname();
   const pathname = pathnameProp ?? pathnameFromBrowser;
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  // Internal links keep the reader in the language they are already in. A bare
+  // `/results` on `/ml/...` would silently switch the site back to English —
+  // which is exactly what made the selector look broken after the first click.
+  const href = (path: string) => withLocale(path, language);
+  // Active state compares the path without its locale prefix, because the path
+  // the server hands the island is `/ml/results` on a localized page.
+  const pathForActive = pathname.replace(/^\/(?:ml|ta|hi)(?=\/|$)/, '') || '/';
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [notificationModalOpen, setNotificationModalOpen] = useState(false);
@@ -90,7 +100,7 @@ export function Navbar({
             {/* Brand — smaller logo, tighter layout. `min-w-0` lets the text
                 truncate on a narrow phone instead of pushing the icon cluster
                 past the viewport edge. */}
-            <Link href="/" className="group flex min-w-0 items-center gap-2.5">
+            <Link href={href('/')} className="group flex min-w-0 items-center gap-2.5">
               <div className="w-9 h-9 flex items-center justify-center p-0.5 rounded-xl bg-[#0B3B32] ring-1 ring-[#C8A45D]/30">
                 <Image
                   src="/logo.svg"
@@ -115,11 +125,12 @@ export function Navbar({
             <nav className="hidden lg:flex items-center gap-0.5">
               {navLinks.map((item) => {
                 const isActive =
-                  pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                  pathForActive === item.href ||
+                  (item.href !== '/' && pathForActive.startsWith(item.href));
                 return (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    href={href(item.href)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                       isActive
                         ? 'bg-[#0B3B32] text-white shadow-xs'
@@ -135,11 +146,11 @@ export function Navbar({
             {/* Right Actions */}
             <div className="hidden lg:flex items-center gap-2">
               <Link
-                href="/ticket-checker"
+                href={href('/ticket-checker')}
                 className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F59E0B] to-[#E9730C] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-opacity hover:opacity-90"
               >
                 <ScanLine className="w-3.5 h-3.5" />
-                <span>Scan Ticket</span>
+                <span>{t('chrome.scan_ticket')}</span>
               </Link>
 
               <button
@@ -208,11 +219,11 @@ export function Navbar({
             </div>
             <div className="space-y-0.5">
               {navLinks.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = pathForActive === item.href;
                 return (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    href={href(item.href)}
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${
                       isActive
@@ -227,16 +238,16 @@ export function Navbar({
               })}
             </div>
             <Link
-              href="/ticket-checker"
+              href={href('/ticket-checker')}
               onClick={() => setMobileMenuOpen(false)}
               className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F59E0B] to-[#E9730C] px-4 py-3 text-sm font-bold text-white"
             >
               <ScanLine className="w-4 h-4" />
-              <span>Scan Ticket</span>
+              <span>{t('chrome.scan_ticket')}</span>
             </Link>
             <div className="pt-3 mt-2 border-t border-[#E2E7E3] flex items-center gap-1.5 text-xs text-[#68736E] px-2">
               <ShieldCheck className="w-4 h-4 text-[#16845B]" />
-              <span>LOTIS Synchronized</span>
+              <span>{t('chrome.lotis_sync_short')}</span>
             </div>
           </div>
         )}
@@ -248,18 +259,18 @@ export function Navbar({
         className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E2E7E3] py-2 px-3 flex items-center justify-around lg:hidden shadow-lg"
       >
         <Link
-          href="/"
+          href={href('/')}
           className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
-            pathname === '/' ? 'text-[#0B5D45]' : 'text-[#5F6B66] hover:text-[#0B5D45]'
+            pathForActive === '/' ? 'text-[#0B5D45]' : 'text-[#5F6B66] hover:text-[#0B5D45]'
           }`}
         >
           <Home className="w-5 h-5" />
           <span>{t('nav.today', 'Today')}</span>
         </Link>
         <Link
-          href="/results"
+          href={href('/results')}
           className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
-            pathname.startsWith('/result')
+            pathForActive.startsWith('/result')
               ? 'text-[#0B5D45]'
               : 'text-[#5F6B66] hover:text-[#0B5D45]'
           }`}
@@ -268,9 +279,9 @@ export function Navbar({
           <span>{t('nav.results', 'Results')}</span>
         </Link>
         <Link
-          href="/ticket-checker"
+          href={href('/ticket-checker')}
           className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
-            pathname === '/ticket-checker' || pathname === '/check-ticket'
+            pathForActive === '/ticket-checker' || pathForActive === '/check-ticket'
               ? 'text-[#0B5D45]'
               : 'text-[#5F6B66] hover:text-[#0B5D45]'
           }`}
@@ -279,9 +290,9 @@ export function Navbar({
           <span>{t('ui.check', 'Check')}</span>
         </Link>
         <Link
-          href="/lottery-calendar"
+          href={href('/lottery-calendar')}
           className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
-            pathname.startsWith('/lottery-calendar')
+            pathForActive.startsWith('/lottery-calendar')
               ? 'text-[#0B5D45]'
               : 'text-[#5F6B66] hover:text-[#0B5D45]'
           }`}
@@ -290,9 +301,9 @@ export function Navbar({
           <span>{t('nav.upcoming', 'Upcoming')}</span>
         </Link>
         <Link
-          href="/news"
+          href={href('/news')}
           className={`flex flex-col items-center gap-0.5 text-[10px] font-bold ${
-            pathname.startsWith('/news')
+            pathForActive.startsWith('/news')
               ? 'text-[#0B5D45]'
               : 'text-[#5F6B66] hover:text-[#0B5D45]'
           }`}

@@ -1,4 +1,7 @@
 import { EXTENDED_TRANSLATIONS } from '@/lib/translations-extended';
+import { HOME_COPY } from '@/lib/i18n/page-copy-home';
+import { RESULTS_COPY } from '@/lib/i18n/page-copy-results';
+import { CHROME_COPY } from '@/lib/i18n/chrome-copy';
 
 export type Language = 'en' | 'ml' | 'ta' | 'hi';
 
@@ -278,8 +281,18 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
 // Extended chrome / homepage / footer keys live in their own module so the two
 // surfaces stay reviewable. Merging here keeps `t()` and `getTranslation()`
 // unaware of the split, and missing extended keys still fall back to English.
+//
+// Page copy (the server-rendered homepage sections) is a third table for the
+// same reason: it is content rather than chrome, so a translator reviewing a
+// page reads one block per language instead of hunting keys across files.
 for (const code of Object.keys(TRANSLATIONS) as Language[]) {
-  Object.assign(TRANSLATIONS[code], EXTENDED_TRANSLATIONS[code]);
+  Object.assign(
+    TRANSLATIONS[code],
+    EXTENDED_TRANSLATIONS[code],
+    HOME_COPY[code],
+    RESULTS_COPY[code],
+    CHROME_COPY[code]
+  );
 }
 
 export function getTranslation(lang: Language, key: string, fallback?: string): string {

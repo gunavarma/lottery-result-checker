@@ -2,13 +2,20 @@ import React from 'react';
 import Link from '@/components/Link';
 import { Clock, ArrowRight, BookOpen, Tag } from 'lucide-react';
 import { NewsArticle } from '@/lib/news';
+import { getTranslation, type Language } from '@/lib/translations';
+import { withLocale } from '@/lib/i18n/client-path';
 
 interface NewsCardProps {
   article: NewsArticle;
   compact?: boolean;
+  /** Locale of the page being rendered; article text itself stays English. */
+  locale?: Language;
 }
 
-export function NewsCard({ article, compact = false }: NewsCardProps) {
+export function NewsCard({ article, compact = false, locale = 'en' }: NewsCardProps) {
+  const t = (key: string, fallback?: string) => getTranslation(locale, key, fallback);
+  const href = withLocale(`/news/${article.slug}`, locale);
+
   return (
     <article
       className={`bg-white rounded-2xl border border-[#E2E7E3] hover:border-[#0B3B32]/40 hover:shadow-md transition-all duration-200 flex flex-col justify-between group ${
@@ -31,7 +38,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
             compact ? 'text-sm' : 'text-base sm:text-lg'
           }`}
         >
-          <Link href={`/news/${article.slug}`}>
+          <Link href={href}>
             {article.title}
           </Link>
         </h3>
@@ -46,11 +53,11 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
       <div className="pt-4 mt-3 border-t border-[#E2E7E3]/60 flex items-center justify-between text-xs text-[#68736E]">
         <span>{article.publishedAt}</span>
         <Link
-          href={`/news/${article.slug}`}
-          aria-label={`Read article: ${article.title}`}
+          href={href}
+          aria-label={article.title}
           className="font-bold text-[#0B3B32] group-hover:text-[#16845B] inline-flex items-center gap-1 transition-colors"
         >
-          <span>Read Article</span>
+          <span>{t('common.read_article', 'Read Article')}</span>
           <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       </div>
@@ -58,13 +65,22 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
   );
 }
 
-export function FeaturedNewsHero({ article }: { article: NewsArticle }) {
+export function FeaturedNewsHero({
+  article,
+  locale = 'en',
+}: {
+  article: NewsArticle;
+  locale?: Language;
+}) {
+  const t = (key: string, fallback?: string) => getTranslation(locale, key, fallback);
+  const href = withLocale(`/news/${article.slug}`, locale);
+
   return (
     <div className="bg-[#10201D] text-white rounded-3xl p-6 sm:p-8 lg:p-10 border border-[#0B3B32]/40 relative overflow-hidden group">
       <div className="relative z-10 space-y-4 max-w-3xl">
         <div className="flex items-center gap-3">
           <span className="text-xs font-bold text-[#C8A45D] bg-[#C8A45D]/15 border border-[#C8A45D]/30 px-3 py-1 rounded-full uppercase tracking-wider">
-            Featured Report
+            {t('chrome.featured_report', 'Featured Report')}
           </span>
           <span className="text-xs text-slate-300 font-medium flex items-center gap-1">
             <Clock className="w-3.5 h-3.5 text-[#C8A45D]" />
@@ -73,7 +89,7 @@ export function FeaturedNewsHero({ article }: { article: NewsArticle }) {
         </div>
 
         <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight group-hover:text-slate-100 transition-colors">
-          <Link href={`/news/${article.slug}`}>
+          <Link href={href}>
             {article.title}
           </Link>
         </h3>
@@ -84,15 +100,17 @@ export function FeaturedNewsHero({ article }: { article: NewsArticle }) {
 
         <div className="pt-2 flex items-center gap-4 text-xs">
           <Link
-            href={`/news/${article.slug}`}
-            aria-label={`Read full report: ${article.title}`}
+            href={href}
+            aria-label={article.title}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white font-bold transition-all shadow-sm"
           >
             <BookOpen className="w-4 h-4 text-[#C8A45D]" />
-            <span>Read Full Report</span>
+            <span>{t('common.read_full_report', 'Read Full Report')}</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
-          <span className="text-slate-400">Published {article.publishedAt}</span>
+          <span className="text-slate-400">
+            {t('chrome.published', 'Published')} {article.publishedAt}
+          </span>
         </div>
       </div>
     </div>

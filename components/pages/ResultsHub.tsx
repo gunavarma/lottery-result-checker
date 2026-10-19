@@ -16,6 +16,8 @@ import {
 import { format, subDays } from 'date-fns';
 import { getOrSetCache } from '@/lib/cache';
 import { drawView, LOTTERY_DIRECTORY } from '@/lib/results/projections';
+import { getTranslation, type Language } from '@/lib/translations';
+import { INTL_LOCALE, localizeWeekdayName } from '@/lib/i18n/server';
 
 
 export const metadata = constructMetadata({
@@ -82,15 +84,38 @@ export async function getResultsHubData() {
 export function ResultsHubPage({
   latestDraws,
   lotteries,
+  locale = 'en',
+  prefix = '',
 }: {
   latestDraws: any[];
   lotteries: any[];
+  /** Locale of the page being rendered. */
+  locale?: Language;
+  /** Locale path prefix (`''` for English, `/ml` etc.), for every internal link. */
+  prefix?: string;
 }) {
+  const t = (key: string, fallback?: string) => getTranslation(locale, key, fallback);
+  const tf = (key: string, params: Record<string, string | number>) =>
+    t(key).replace(/\{(\w+)\}/g, (match, name: string) =>
+      name in params ? String(params[name]) : match
+    );
 
   const breadcrumbs = [
-    { name: 'Home', url: '/' },
-    { name: 'Results', url: '/results' },
+    { name: t('results.home'), url: '/' },
+    { name: t('results.breadcrumb_results'), url: '/results' },
   ];
+
+  // Dates are formatted through `Intl` so the weekday and month names follow the
+  // page language; the numeric day keeps the same digits in every locale.
+  const intlLocale = INTL_LOCALE[locale] ?? 'en-IN';
+  const weekdayFmt = new Intl.DateTimeFormat(intlLocale, {
+    weekday: 'short',
+    timeZone: 'Asia/Kolkata',
+  });
+  const monthFmt = new Intl.DateTimeFormat(intlLocale, {
+    month: 'short',
+    timeZone: 'Asia/Kolkata',
+  });
 
   // Generate date navigator buttons for recent 7 days
   const today = new Date();
@@ -99,8 +124,8 @@ export function ResultsHubPage({
     return {
       dateStr: format(d, 'yyyy-MM-dd'),
       dayNum: format(d, 'dd'),
-      dayName: i === 0 ? 'Today' : format(d, 'EEE'),
-      month: format(d, 'MMM'),
+      dayName: i === 0 ? t('results.nav_today') : weekdayFmt.format(d),
+      month: monthFmt.format(d),
     };
   });
 
@@ -110,8 +135,8 @@ export function ResultsHubPage({
 
       <Breadcrumbs
         items={[
-          { label: 'Home', href: '/' },
-          { label: 'Kerala Lottery Results' },
+          { label: t('results.home'), href: '/' },
+          { label: t('results.breadcrumb_results') },
         ]}
       />
 
@@ -119,7 +144,7 @@ export function ResultsHubPage({
       <div className="border-b border-[#E2E7E3] pb-6 space-y-2">
 
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[#17201D] tracking-tight">
-          Kerala State Lottery Results
+          {t('results.h1')}
         </h1>
 
       </div>
@@ -130,14 +155,14 @@ export function ResultsHubPage({
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-[#0B3B32]" />
             <h2 className="text-sm sm:text-base font-extrabold text-[#17201D]">
-              Quick Date Navigator (Last 7 Days)
+              {t('results.nav_title')}
             </h2>
           </div>
           <Link
-            href="/calendar"
+            href={`${prefix}/calendar`}
             className="text-xs font-bold text-[#0B3B32] hover:underline flex items-center gap-1"
           >
-            <span>View Full Calendar Timetable</span>
+            <span>{t('results.nav_calendar')}</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -146,7 +171,7 @@ export function ResultsHubPage({
           {dateNavItems.map((item) => (
             <Link
               key={item.dateStr}
-              href={`/results/date/${item.dateStr}`}
+              href={`${prefix}/results/date/${item.dateStr}`}
               className="p-3 bg-[#F7F7F4] hover:bg-[#0B3B32] hover:text-white border border-[#E2E7E3] hover:border-[#0B3B32] rounded-2xl text-center transition-all group cursor-pointer shadow-2xs"
             >
               <span className="text-[10px] font-bold text-[#68736E] group-hover:text-[#C69A3A] uppercase tracking-wider block font-tabular">
@@ -164,21 +189,21 @@ export function ResultsHubPage({
       <div className="space-y-3">
         <div>
           <span className="text-xs font-bold text-[#17201D] uppercase tracking-wide">
-            Filter by Lottery Scheme
+            {t('results.filter_label')}
           </span>
         </div>
 
         <div className="flex flex-wrap gap-2">
           <Link
-            href="/results"
+            href={`${prefix}/results`}
             className="px-4 py-2 rounded-xl bg-[#0B3B32] text-white text-xs font-bold transition-all shadow-xs"
           >
-            All Active Schemes
+            {t('results.filter_all')}
           </Link>
           {lotteries.map((l: any) => (
             <Link
               key={l.id}
-              href={`/lotteries/${l.slug}`}
+              href={`${prefix}/lotteries/${l.slug}`}
               className="px-4 py-2 rounded-xl bg-white hover:bg-[#F7F7F4] text-[#17201D] border border-[#E2E7E3] hover:border-[#0B3B32]/30 text-xs font-bold transition-colors shadow-2xs"
             >
               {l.name}
@@ -193,29 +218,29 @@ export function ResultsHubPage({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E2E7E3] pb-4">
           <div>
             <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
-              Published Gazette Stream
+              {t('results.stream_eyebrow')}
             </span>
             <h2 className="text-xl sm:text-2xl font-extrabold text-[#17201D] tracking-tight">
-              Latest Certified Results
+              {t('results.stream_title')}
             </h2>
           </div>
           <span className="text-xs font-bold text-[#0B3B32] bg-[#F1F4F2] px-3 py-1 rounded-full font-tabular border border-[#0B3B32]/10 self-start sm:self-auto">
-            Showing {latestDraws.length} Certified Records
+            {tf('results.stream_count', { count: latestDraws.length })}
           </span>
         </div>
 
         {latestDraws.length === 0 ? (
           <div className="bg-[#F7F7F4] rounded-2xl p-10 text-center text-[#68736E] text-xs border border-[#E2E7E3] space-y-2">
-            <p className="font-bold text-[#17201D]">No lottery results found.</p>
-            <p>Certified results are synchronizing with the official LOTIS database.</p>
+            <p className="font-bold text-[#17201D]">{t('results.empty_title')}</p>
+            <p>{t('results.empty_body')}</p>
           </div>
         ) : (
           <div className="divide-y divide-[#E2E7E3] -mx-6 sm:-mx-8 lg:-mx-10">
             {latestDraws.map((draw: any) => {
               const drawDate = draw.drawDate ? new Date(draw.drawDate) : new Date();
               const dayStr = format(drawDate, 'dd');
-              const monthStr = format(drawDate, 'MMM');
-              const dayName = format(drawDate, 'EEE');
+              const monthStr = monthFmt.format(drawDate);
+              const dayName = weekdayFmt.format(drawDate);
 
               const firstPrize = draw.prizes?.find(
                 (p: any) => p.tierNumber === 1 || p.orderIndex === 0
@@ -227,7 +252,7 @@ export function ResultsHubPage({
               const drawNumberSlug = draw.drawNumber
                 ? draw.drawNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')
                 : '';
-              const resultUrl = `/results/${lotterySlug}/${drawNumberSlug}`;
+              const resultUrl = `${prefix}/results/${lotterySlug}/${drawNumberSlug}`;
 
               return (
                 <div
@@ -252,7 +277,8 @@ export function ResultsHubPage({
                           {draw.drawNumber}
                         </span>
                         <span className="text-[11px] text-[#68736E] font-medium">
-                          {draw.lottery?.drawDay || 'Weekly Draw'}
+                          {localizeWeekdayName(draw.lottery?.drawDay, locale) ||
+                            t('results.weekly_draw')}
                         </span>
                       </div>
                       <h3 className="font-extrabold text-base sm:text-lg text-[#17201D] group-hover:text-[#0B3B32] transition-colors mt-0.5">
@@ -267,10 +293,10 @@ export function ResultsHubPage({
                   <div className="flex items-center justify-between md:justify-end gap-6 pt-2 md:pt-0 border-t md:border-t-0 border-[#E2E7E3]/60">
                     <div className="text-left md:text-right">
                       <span className="text-[10px] text-[#68736E] uppercase font-bold tracking-wide block font-tabular">
-                        1st Prize ({topPrizeAmount})
+                        {t('results.first_prize')} ({topPrizeAmount})
                       </span>
                       <span className="text-lg sm:text-xl font-black font-mono tracking-wider text-[#16845B] font-tabular block mt-0.5">
-                        {firstWinner ? firstWinner.displayNumber : 'Certified'}
+                        {firstWinner ? firstWinner.displayNumber : t('results.certified')}
                       </span>
                     </div>
 
@@ -278,10 +304,13 @@ export function ResultsHubPage({
                     <div className="flex items-center gap-2 shrink-0">
                       <Link
                         href={resultUrl}
-                        aria-label={`View full ${draw.lottery?.name} ${draw.drawNumber} results`}
+                        aria-label={tf('results.full_aria', {
+                          name: draw.lottery?.name ?? '',
+                          draw: draw.drawNumber ?? '',
+                        })}
                         className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#0B3B32] hover:bg-[#16845B] text-white text-xs font-bold transition-colors shadow-2xs shrink-0"
                       >
-                        <span>Full Result</span>
+                        <span>{t('results.full_result')}</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                     </div>
@@ -296,15 +325,15 @@ export function ResultsHubPage({
         <div className="pt-4 border-t border-[#E2E7E3] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#68736E]">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-[#16845B]" />
-            <span>All results verified against Kerala Government LOTIS Directorate gazettes.</span>
+            <span>{t('results.verified_note')}</span>
           </div>
 
           <Link
-            href="/kerala-lottery-results"
+            href={`${prefix}/kerala-lottery-results`}
             className="font-bold text-[#0B3B32] hover:underline inline-flex items-center gap-1"
           >
             <ArrowRight className="w-3.5 h-3.5" />
-            <span>Browse the complete results archive</span>
+            <span>{t('results.browse_archive')}</span>
           </Link>
         </div>
       </div>

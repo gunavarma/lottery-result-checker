@@ -9,6 +9,12 @@ import {
   LOCALE_COOKIE,
 } from '../lib/i18n/config';
 import { EXTENDED_TRANSLATIONS } from '../lib/translations-extended';
+import { HOME_COPY } from '../lib/i18n/page-copy-home';
+import { RESULTS_COPY } from '../lib/i18n/page-copy-results';
+import { CHROME_COPY } from '../lib/i18n/chrome-copy';
+import { HOMEPAGE_FAQS_I18N, getHomepageFaqs } from '../lib/i18n/faq-copy';
+import { HOMEPAGE_FAQS } from '../lib/home-faqs';
+import { withLocale } from '../lib/i18n/client-path';
 
 describe('Multilingual Support & Language Selector', () => {
   it('supports English, Malayalam, Tamil, and Hindi with authentic native names', () => {
@@ -113,6 +119,69 @@ describe('Locale switching (LanguageSelector navigation)', () => {
     expect(Object.keys(alts).sort()).toEqual(['en', 'en-IN', 'hi', 'ml', 'ta', 'x-default']);
     expect(alts['x-default']).toMatch(/\/results$/);
     expect(alts.ml).toMatch(/\/ml\/results$/);
+  });
+});
+
+describe('Server-rendered page copy is actually translated', () => {
+  // The selector always navigated to `/ml`; what made it look broken was that
+  // the Astro page body was hardcoded English. These dictionaries are the fix,
+  // so a missing translation has to fail the build rather than ship as English
+  // text under a Malayalam heading.
+  const tables = { HOME_COPY, RESULTS_COPY, CHROME_COPY } as const;
+
+  it('defines every page-copy key in all four languages', () => {
+    for (const [name, table] of Object.entries(tables)) {
+      const keys = Object.keys(table.en);
+      expect(keys.length, `${name} is empty`).toBeGreaterThanOrEqual(10);
+
+      for (const lang of ['ml', 'ta', 'hi'] as Language[]) {
+        const missing = keys.filter((key) => !table[lang][key]?.trim());
+        expect(missing, `${name}.${lang} is missing: ${missing.join(', ')}`).toEqual([]);
+      }
+    }
+  });
+
+  it('serves localized homepage copy, not the English string', () => {
+    expect(getTranslation('ml', 'home.h1.title')).not.toBe(
+      getTranslation('en', 'home.h1.title')
+    );
+    expect(getTranslation('ta', 'home.schedule.title')).not.toBe(
+      getTranslation('en', 'home.schedule.title')
+    );
+    expect(getTranslation('hi', 'home.claim.title')).not.toBe(
+      getTranslation('en', 'home.claim.title')
+    );
+    // The results hub is the other page the selector was silently leaving in English.
+    expect(getTranslation('ml', 'results.h1')).not.toBe(getTranslation('en', 'results.h1'));
+  });
+
+  it('translates every homepage FAQ and keeps the English set for structured data', () => {
+    for (const lang of ['ml', 'ta', 'hi'] as Language[]) {
+      const faqs = HOMEPAGE_FAQS_I18N[lang as Exclude<Language, 'en'>];
+      expect(faqs.length).toBe(HOMEPAGE_FAQS.length);
+      for (const [index, faq] of faqs.entries()) {
+        expect(faq.question.trim().length).toBeGreaterThan(10);
+        expect(faq.answer.trim().length).toBeGreaterThan(40);
+        expect(faq.question).not.toBe(HOMEPAGE_FAQS[index].question);
+      }
+    }
+    expect(getHomepageFaqs('en')).toBe(HOMEPAGE_FAQS);
+  });
+
+  it('keeps internal links inside the locale tree', () => {
+    // Navbar/footer links: a bare `/results` on a Malayalam page used to drop the
+    // reader back into English on the very next click.
+    expect(withLocale('/results', 'ml')).toBe('/ml/results');
+    expect(withLocale('/', 'ta')).toBe('/ta');
+    expect(withLocale('/results/karunya/kr-766', 'hi')).toBe('/hi/results/karunya/kr-766');
+    expect(withLocale('/ml/results', 'ml')).toBe('/ml/results');
+    expect(withLocale('/results', 'en')).toBe('/results');
+    // Endpoints, assets and external links are never prefixed.
+    expect(withLocale('/api/results/today', 'ml')).toBe('/api/results/today');
+    expect(withLocale('/sitemap.xml', 'ml')).toBe('/sitemap.xml');
+    expect(withLocale('/logo.svg', 'ml')).toBe('/logo.svg');
+    expect(withLocale('https://example.com', 'ml')).toBe('https://example.com');
+    expect(withLocale('#faqs', 'ml')).toBe('#faqs');
   });
 });
 
