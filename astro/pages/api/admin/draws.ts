@@ -1,8 +1,13 @@
 import type { APIRoute } from 'astro';
 import { prisma, serializeData } from '@/lib/prisma';
 import { DRAW_FULL } from '@/lib/results/projections';
+import { requireAdminApi } from '@/lib/admin/session';
 
 export const GET: APIRoute = async ({ request }: { request: Request }) => {
+  // Session cookie or machine bearer secret; unpublished draws are not public.
+  const denied = await requireAdminApi(request);
+  if (denied) return denied;
+
   try {
     const url = new URL(request.url);
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100);

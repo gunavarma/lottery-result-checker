@@ -20,6 +20,18 @@ import {
 
 export const AdminPageIsland = withProviders(AdminPage);
 
+/**
+ * Sends the operator back to the login page when the session has lapsed.
+ *
+ * The server is the authority here: the cookie can expire between page load and
+ * a save, and a stale tab would otherwise show "Unauthorized" as a generic error
+ * with no way forward. `next` returns them to the panel afterwards.
+ */
+function sendToLogin(): void {
+  const next = window.location.pathname + window.location.search;
+  window.location.assign(`/admin/login?error=session&next=${encodeURIComponent(next)}`);
+}
+
 export default function AdminPage() {
   const [lotteries, setLotteries] = useState<any[]>([]);
   const [draws, setDraws] = useState<any[]>([]);
@@ -46,9 +58,24 @@ export default function AdminPage() {
     setLoading(true);
     try {
       const [lotRes, drawsRes] = await Promise.all([
-        fetch('/api/admin/lotteries'),
-        fetch('/api/admin/draws'),
+        fetch('/api/admin/lotteries', { credentials: 'same-origin', cache: 'no-store' }),
+        fetch('/api/admin/draws', { credentials: 'same-origin', cache: 'no-store' }),
       ]);
+
+      if (lotRes.status === 401 || drawsRes.status === 401) {
+        sendToLogin();
+        return;
+      }
+
+      if (!lotRes.ok || !drawsRes.ok) {
+        // A silent failure here left the operator staring at an empty scheme
+        // dropdown with no explanation (which is exactly what a database
+        // outage looks like). Surface it instead.
+        setMessage({
+          type: 'error',
+          text: 'Could not load admin data. Check the database connection and retry.',
+        });
+      }
 
       if (lotRes.ok) {
         const lotData = await lotRes.json();
@@ -184,9 +211,15 @@ export default function AdminPage() {
 
       const res = await fetch('/api/admin/results', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
+
+      if (res.status === 401) {
+        sendToLogin();
+        return;
+      }
 
       const data = await res.json();
 
@@ -214,12 +247,9 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8">
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Admin Panel' },
-        ]}
-      />
+      {/* `Breadcrumbs` already renders the Home crumb, so the panel adds only
+          its own tail; passing Home here produced "Home / Home / Admin Panel". */}
+      <Breadcrumbs items={[{ label: 'Admin Panel' }]} />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2E7E3] pb-6">

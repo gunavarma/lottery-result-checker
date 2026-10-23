@@ -1,0 +1,881 @@
+[32m✔[0m [33mConsole Ninja[0m extension is connected to [33mVite[0m, see [36mhttps://tinyurl.com/2vt8jxzw[0m
+17:13:33 [@astrojs/node] Enabling sessions with filesystem storage
+17:13:33 [vite] connected.
+17:13:33 [types] Generated 0ms
+17:13:33 [vite] connected.
+17:13:33 [vite] Re-optimizing dependencies because vite config has changed
+ astro  v7.3.5 ready in 393 ms
+┃ Local    http://127.0.0.1:4321/
+17:13:33 watching for file changes...
+[Scheduler] KeralaDraws background synchronization worker initialized.
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:76:19
+
+  73 
+  74 const [todayDraw, latestDraw, scheduledLottery] = await withDbRetry(() =>
+  75   Promise.all([
+→ 76     prisma.draw.findFirst(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:80:19
+
+  77   where: { drawDate: todayDate, status: 'PUBLISHED' },
+  78   select: TODAY_DRAW_SELECT,
+  79 }),
+→ 80 prisma.draw.findFirst(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+prisma:error 
+Invalid `prisma.lottery.findFirst()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:85:22
+
+  82   orderBy: { drawDate: 'desc' },
+  83   select: LATEST_DRAW_SELECT,
+  84 }),
+→ 85 prisma.lottery.findFirst(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Error fetching homepage data: PrismaClientInitializationError: 
+Invalid `prisma.draw.findFirst()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:76:19
+
+  73 
+  74 const [todayDraw, latestDraw, scheduledLottery] = await withDbRetry(() =>
+  75   Promise.all([
+→ 76     prisma.draw.findFirst(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async Promise.all (index 0)
+    at async withDbRetry (/Users/guna/Documents/lottery-result-checker/lib/db-retry.ts:83:14)
+    at async loadTodaySnapshot (/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:74:53)
+    at async ttlMs (/Users/guna/Documents/lottery-result-checker/lib/home-data.ts:45:23) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+Error fetching homepage data: PrismaClientInitializationError: 
+Invalid `prisma.draw.findFirst()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:76:19
+
+  73 
+  74 const [todayDraw, latestDraw, scheduledLottery] = await withDbRetry(() =>
+  75   Promise.all([
+→ 76     prisma.draw.findFirst(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async Promise.all (index 0)
+    at async withDbRetry (/Users/guna/Documents/lottery-result-checker/lib/db-retry.ts:83:14)
+    at async loadTodaySnapshot (/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:74:53)
+    at async ttlMs (/Users/guna/Documents/lottery-result-checker/lib/home-data.ts:45:23) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+17:13:36 [200] / 168ms
+17:13:36 [200] /ml 168ms
+17:13:40 [200] /admin/login 23ms
+17:13:40 [302] /admin 0ms
+[Scheduler] Running initial automated results sync...
+prisma:error 
+Invalid `prisma.syncLog.create()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:193:22
+
+  190 let syncRunId: string | null = null;
+  191 try {
+  192   const [log, run] = await Promise.all([
+→ 193     prisma.syncLog.create(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+prisma:error 
+Invalid `prisma.syncRun.create()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:200:22
+
+  197     status: 'RUNNING',
+  198   },
+  199 }),
+→ 200 prisma.syncRun.create(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Unable to create initial audit entries: PrismaClientInitializationError: 
+Invalid `prisma.syncLog.create()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:193:22
+
+  190 let syncRunId: string | null = null;
+  191 try {
+  192   const [log, run] = await Promise.all([
+→ 193     prisma.syncLog.create(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async Promise.all (index 0)
+    at async syncOfficialResults (/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:192:24)
+    at async Timeout.eval (/Users/guna/Documents/lottery-result-checker/lib/scheduler.ts:40:7) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:55
+
+  259 // bare drawNumber match across schemes could wrongly skip a legitimate
+  260 // new draw. Scope the match to the scheme that owns this item.
+  261 const candidateSlug = getLotterySlug(item.lotteryName, item.drawCode);
+→ 262 const candidateLottery = await prisma.lottery.findUnique(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Error processing LOTIS item ad0d5258-2b4b-ce64-4ab5-c55d90de3bab (BHAGYATHARA-10/11/2025 (BT-76)): PrismaClientInitializationError: 
+Invalid `prisma.lottery.findUnique()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:55
+
+  259 // bare drawNumber match across schemes could wrongly skip a legitimate
+  260 // new draw. Scope the match to the scheme that owns this item.
+  261 const candidateSlug = getLotterySlug(item.lotteryName, item.drawCode);
+→ 262 const candidateLottery = await prisma.lottery.findUnique(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async syncOfficialResults (/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:34)
+    at async Timeout.eval (/Users/guna/Documents/lottery-result-checker/lib/scheduler.ts:40:7) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+prisma:error 
+Invalid `prisma.importError.create()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:36
+
+  332 
+  333 // Record in ImportError table
+  334 try {
+→ 335   await prisma.importError.create(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Could not record ImportError: PrismaClientInitializationError: 
+Invalid `prisma.importError.create()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:36
+
+  332 
+  333 // Record in ImportError table
+  334 try {
+→ 335   await prisma.importError.create(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async syncOfficialResults (/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:11)
+    at async Timeout.eval (/Users/guna/Documents/lottery-result-checker/lib/scheduler.ts:40:7) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:55
+
+  259 // bare drawNumber match across schemes could wrongly skip a legitimate
+  260 // new draw. Scope the match to the scheme that owns this item.
+  261 const candidateSlug = getLotterySlug(item.lotteryName, item.drawCode);
+→ 262 const candidateLottery = await prisma.lottery.findUnique(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Error processing LOTIS item f56d6199-a088-a85f-3592-c5d8f1bd4c30 (SAMRUDHI-10/11/2025 (SM-77)): PrismaClientInitializationError: 
+Invalid `prisma.lottery.findUnique()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:55
+
+  259 // bare drawNumber match across schemes could wrongly skip a legitimate
+  260 // new draw. Scope the match to the scheme that owns this item.
+  261 const candidateSlug = getLotterySlug(item.lotteryName, item.drawCode);
+→ 262 const candidateLottery = await prisma.lottery.findUnique(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async syncOfficialResults (/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:34)
+    at async Timeout.eval (/Users/guna/Documents/lottery-result-checker/lib/scheduler.ts:40:7) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+prisma:error 
+Invalid `prisma.importError.create()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:36
+
+  332 
+  333 // Record in ImportError table
+  334 try {
+→ 335   await prisma.importError.create(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Could not record ImportError: PrismaClientInitializationError: 
+Invalid `prisma.importError.create()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:36
+
+  332 
+  333 // Record in ImportError table
+  334 try {
+→ 335   await prisma.importError.create(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async syncOfficialResults (/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:11)
+    at async Timeout.eval (/Users/guna/Documents/lottery-result-checker/lib/scheduler.ts:40:7) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:55
+
+  259 // bare drawNumber match across schemes could wrongly skip a legitimate
+  260 // new draw. Scope the match to the scheme that owns this item.
+  261 const candidateSlug = getLotterySlug(item.lotteryName, item.drawCode);
+→ 262 const candidateLottery = await prisma.lottery.findUnique(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Error processing LOTIS item 8a985162-ae14-c3cd-9b55-e1ffbe554b5a (KARUNYA-10/11/2025 (KR-772)): PrismaClientInitializationError: 
+Invalid `prisma.lottery.findUnique()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:55
+
+  259 // bare drawNumber match across schemes could wrongly skip a legitimate
+  260 // new draw. Scope the match to the scheme that owns this item.
+  261 const candidateSlug = getLotterySlug(item.lotteryName, item.drawCode);
+→ 262 const candidateLottery = await prisma.lottery.findUnique(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async syncOfficialResults (/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:34)
+    at async Timeout.eval (/Users/guna/Documents/lottery-result-checker/lib/scheduler.ts:40:7) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+prisma:error 
+Invalid `prisma.importError.create()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:36
+
+  332 
+  333 // Record in ImportError table
+  334 try {
+→ 335   await prisma.importError.create(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Could not record ImportError: PrismaClientInitializationError: 
+Invalid `prisma.importError.create()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:36
+
+  332 
+  333 // Record in ImportError table
+  334 try {
+→ 335   await prisma.importError.create(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async syncOfficialResults (/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:11)
+    at async Timeout.eval (/Users/guna/Documents/lottery-result-checker/lib/scheduler.ts:40:7) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:55
+
+  259 // bare drawNumber match across schemes could wrongly skip a legitimate
+  260 // new draw. Scope the match to the scheme that owns this item.
+  261 const candidateSlug = getLotterySlug(item.lotteryName, item.drawCode);
+→ 262 const candidateLottery = await prisma.lottery.findUnique(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Error processing LOTIS item c65f08ae-fe05-b6e9-10c3-30b5c65af944 (SUVARNA KERALAM-10/11/2025 (SK-73)): PrismaClientInitializationError: 
+Invalid `prisma.lottery.findUnique()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:55
+
+  259 // bare drawNumber match across schemes could wrongly skip a legitimate
+  260 // new draw. Scope the match to the scheme that owns this item.
+  261 const candidateSlug = getLotterySlug(item.lotteryName, item.drawCode);
+→ 262 const candidateLottery = await prisma.lottery.findUnique(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async syncOfficialResults (/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:34)
+    at async Timeout.eval (/Users/guna/Documents/lottery-result-checker/lib/scheduler.ts:40:7) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+prisma:error 
+Invalid `prisma.importError.create()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:36
+
+  332 
+  333 // Record in ImportError table
+  334 try {
+→ 335   await prisma.importError.create(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Could not record ImportError: PrismaClientInitializationError: 
+Invalid `prisma.importError.create()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:36
+
+  332 
+  333 // Record in ImportError table
+  334 try {
+→ 335   await prisma.importError.create(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async syncOfficialResults (/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:11)
+    at async Timeout.eval (/Users/guna/Documents/lottery-result-checker/lib/scheduler.ts:40:7) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+prisma:error 
+Invalid `prisma.lottery.findUnique()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:55
+
+  259 // bare drawNumber match across schemes could wrongly skip a legitimate
+  260 // new draw. Scope the match to the scheme that owns this item.
+  261 const candidateSlug = getLotterySlug(item.lotteryName, item.drawCode);
+→ 262 const candidateLottery = await prisma.lottery.findUnique(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Error processing LOTIS item d8d406bf-ba27-96b6-4be7-de0c1f10710d (KARUNYA PLUS-10/11/2025 (KN-645)): PrismaClientInitializationError: 
+Invalid `prisma.lottery.findUnique()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:55
+
+  259 // bare drawNumber match across schemes could wrongly skip a legitimate
+  260 // new draw. Scope the match to the scheme that owns this item.
+  261 const candidateSlug = getLotterySlug(item.lotteryName, item.drawCode);
+→ 262 const candidateLottery = await prisma.lottery.findUnique(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async syncOfficialResults (/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:262:34)
+    at async Timeout.eval (/Users/guna/Documents/lottery-result-checker/lib/scheduler.ts:40:7) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+prisma:error 
+Invalid `prisma.importError.create()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:36
+
+  332 
+  333 // Record in ImportError table
+  334 try {
+→ 335   await prisma.importError.create(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Could not record ImportError: PrismaClientInitializationError: 
+Invalid `prisma.importError.create()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:36
+
+  332 
+  333 // Record in ImportError table
+  334 try {
+→ 335   await prisma.importError.create(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async syncOfficialResults (/Users/guna/Documents/lottery-result-checker/lib/lotis/sync.ts:335:11)
+    at async Timeout.eval (/Users/guna/Documents/lottery-result-checker/lib/scheduler.ts:40:7) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+17:14:20 [vite] dependencies optimized: @tanstack/react-query, firebase/app, firebase/messaging, lucide-react
+17:14:20 [vite] optimized dependencies changed. reloading
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:76:19
+
+  73 
+  74 const [todayDraw, latestDraw, scheduledLottery] = await withDbRetry(() =>
+  75   Promise.all([
+→ 76     prisma.draw.findFirst(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:80:19
+
+  77   where: { drawDate: todayDate, status: 'PUBLISHED' },
+  78   select: TODAY_DRAW_SELECT,
+  79 }),
+→ 80 prisma.draw.findFirst(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+prisma:error 
+Invalid `prisma.lottery.findFirst()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:85:22
+
+  82   orderBy: { drawDate: 'desc' },
+  83   select: LATEST_DRAW_SELECT,
+  84 }),
+→ 85 prisma.lottery.findFirst(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Error fetching homepage data: PrismaClientInitializationError: 
+Invalid `prisma.draw.findFirst()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:76:19
+
+  73 
+  74 const [todayDraw, latestDraw, scheduledLottery] = await withDbRetry(() =>
+  75   Promise.all([
+→ 76     prisma.draw.findFirst(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async Promise.all (index 0)
+    at async withDbRetry (/Users/guna/Documents/lottery-result-checker/lib/db-retry.ts:83:14)
+    at async loadTodaySnapshot (/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:74:53)
+    at async ttlMs (/Users/guna/Documents/lottery-result-checker/lib/home-data.ts:45:23)
+    at async getOrSetCache (/Users/guna/Documents/lottery-result-checker/lib/cache.ts:114:12)
+    at async getHomepageData (/Users/guna/Documents/lottery-result-checker/lib/home-data.ts:42:12) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:76:19
+
+  73 
+  74 const [todayDraw, latestDraw, scheduledLottery] = await withDbRetry(() =>
+  75   Promise.all([
+→ 76     prisma.draw.findFirst(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:80:19
+
+  77   where: { drawDate: todayDate, status: 'PUBLISHED' },
+  78   select: TODAY_DRAW_SELECT,
+  79 }),
+→ 80 prisma.draw.findFirst(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+prisma:error 
+Invalid `prisma.lottery.findFirst()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:85:22
+
+  82   orderBy: { drawDate: 'desc' },
+  83   select: LATEST_DRAW_SELECT,
+  84 }),
+→ 85 prisma.lottery.findFirst(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Error fetching homepage data: PrismaClientInitializationError: 
+Invalid `prisma.draw.findFirst()` invocation in
+/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:76:19
+
+  73 
+  74 const [todayDraw, latestDraw, scheduledLottery] = await withDbRetry(() =>
+  75   Promise.all([
+→ 76     prisma.draw.findFirst(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async Promise.all (index 0)
+    at async withDbRetry (/Users/guna/Documents/lottery-result-checker/lib/db-retry.ts:83:14)
+    at async loadTodaySnapshot (/Users/guna/Documents/lottery-result-checker/lib/results/today-snapshot.ts:74:53)
+    at async ttlMs (/Users/guna/Documents/lottery-result-checker/lib/home-data.ts:45:23)
+    at async getOrSetCache (/Users/guna/Documents/lottery-result-checker/lib/cache.ts:114:12)
+    at async getHomepageData (/Users/guna/Documents/lottery-result-checker/lib/home-data.ts:42:12) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+17:14:20 [200] / 100ms
+17:14:20 [200] /ml 46ms
+prisma:error 
+Invalid `prisma.lottery.findMany()` invocation in
+/Users/guna/Documents/lottery-result-checker/astro/pages/api/lotteries.ts:14:24
+
+  11 const lotteries = await getOrSetCache(
+  12   'api_lotteries_directory',
+  13   () =>
+→ 14     prisma.lottery.findMany(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+API /lotteries error: PrismaClientInitializationError: 
+Invalid `prisma.lottery.findMany()` invocation in
+/Users/guna/Documents/lottery-result-checker/astro/pages/api/lotteries.ts:14:24
+
+  11 const lotteries = await getOrSetCache(
+  12   'api_lotteries_directory',
+  13   () =>
+→ 14     prisma.lottery.findMany(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async Module.GET (/Users/guna/Documents/lottery-result-checker/astro/pages/api/lotteries.ts:11:23)
+    at async renderEndpoint (/Users/guna/Documents/lottery-result-checker/node_modules/astro/dist/runtime/server/endpoint.js:37:18)
+    at async handlePages (/Users/guna/Documents/lottery-result-checker/node_modules/astro/dist/core/pages/handler.js:18:18)
+    at async eval (/Users/guna/Documents/lottery-result-checker/astro/middleware.ts:62:20)
+    at async callMiddleware (/Users/guna/Documents/lottery-result-checker/node_modules/astro/dist/core/middleware/callMiddleware.js:11:10)
+    at async handleMiddleware (/Users/guna/Documents/lottery-result-checker/node_modules/astro/dist/core/middleware/astro-middleware.js:40:16) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+17:14:20 [500] /api/lotteries 3ms
+prisma:error 
+Invalid `prisma.lottery.findMany()` invocation in
+/Users/guna/Documents/lottery-result-checker/astro/pages/api/lotteries.ts:14:24
+
+  11 const lotteries = await getOrSetCache(
+  12   'api_lotteries_directory',
+  13   () =>
+→ 14     prisma.lottery.findMany(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+API /lotteries error: PrismaClientInitializationError: 
+Invalid `prisma.lottery.findMany()` invocation in
+/Users/guna/Documents/lottery-result-checker/astro/pages/api/lotteries.ts:14:24
+
+  11 const lotteries = await getOrSetCache(
+  12   'api_lotteries_directory',
+  13   () =>
+→ 14     prisma.lottery.findMany(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async Module.GET (/Users/guna/Documents/lottery-result-checker/astro/pages/api/lotteries.ts:11:23)
+    at async renderEndpoint (/Users/guna/Documents/lottery-result-checker/node_modules/astro/dist/runtime/server/endpoint.js:37:18)
+    at async handlePages (/Users/guna/Documents/lottery-result-checker/node_modules/astro/dist/core/pages/handler.js:18:18)
+    at async eval (/Users/guna/Documents/lottery-result-checker/astro/middleware.ts:62:20)
+    at async callMiddleware (/Users/guna/Documents/lottery-result-checker/node_modules/astro/dist/core/middleware/callMiddleware.js:11:10)
+    at async handleMiddleware (/Users/guna/Documents/lottery-result-checker/node_modules/astro/dist/core/middleware/astro-middleware.js:40:16) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+17:14:20 [500] /api/lotteries 2ms
+prisma:error 
+Invalid `prisma.lottery.findMany()` invocation in
+/Users/guna/Documents/lottery-result-checker/astro/pages/api/lotteries.ts:14:24
+
+  11 const lotteries = await getOrSetCache(
+  12   'api_lotteries_directory',
+  13   () =>
+→ 14     prisma.lottery.findMany(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+API /lotteries error: PrismaClientInitializationError: 
+Invalid `prisma.lottery.findMany()` invocation in
+/Users/guna/Documents/lottery-result-checker/astro/pages/api/lotteries.ts:14:24
+
+  11 const lotteries = await getOrSetCache(
+  12   'api_lotteries_directory',
+  13   () =>
+→ 14     prisma.lottery.findMany(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async Module.GET (/Users/guna/Documents/lottery-result-checker/astro/pages/api/lotteries.ts:11:23)
+    at async renderEndpoint (/Users/guna/Documents/lottery-result-checker/node_modules/astro/dist/runtime/server/endpoint.js:37:18)
+    at async handlePages (/Users/guna/Documents/lottery-result-checker/node_modules/astro/dist/core/pages/handler.js:18:18)
+    at async eval (/Users/guna/Documents/lottery-result-checker/astro/middleware.ts:62:20)
+    at async callMiddleware (/Users/guna/Documents/lottery-result-checker/node_modules/astro/dist/core/middleware/callMiddleware.js:11:10)
+    at async handleMiddleware (/Users/guna/Documents/lottery-result-checker/node_modules/astro/dist/core/middleware/astro-middleware.js:40:16) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}
+17:14:22 [500] /api/lotteries 3ms

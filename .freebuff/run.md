@@ -23,9 +23,10 @@ Astro 7 (`output: "server"`) + React islands + Prisma + Supabase Postgres. Node 
 Production preview (what the Preview tab uses):
 
 ```
-nohup env VERCEL=1 PORT=3401 node server.mjs > .freebuff/preview.log 2>&1 < /dev/null &
+nohup env VERCEL=1 PORT=3401 node --env-file=.env server.mjs > .freebuff/preview.log 2>&1 < /dev/null &
 ```
 
+- **`--env-file=.env` is required.** The standalone server (`node server.mjs`) does *not* read `.env` itself — only `astro dev` does. Without the flag the process starts with an empty environment: `DATABASE_URL` is missing, and the admin panel reports "login is not configured" even though `ADMIN_PASSWORD` sits in `.env`. Values already present in the shell environment win over the file, so `env VERCEL=1 PORT=…` still applies.
 - `VERCEL=1` disables the in-process result scheduler in `lib/scheduler.ts` (otherwise the standalone server syncs against the PRODUCTION database every 15 minutes — keep this flag unless you intend that). Production scheduling itself runs on Vercel Cron + Supabase `pg_cron`, not on this worker.
 - Port 3401 because 3000/3001 are occupied by other servers on this machine. Any free port works: change `PORT`.
 - `server.mjs` is the production entry: it adds gzip/brotli and long-lived cache headers for `/_astro/*` on top of the generated `dist/server/entry.mjs`. `npm run preview:node` runs the raw adapter entry instead.

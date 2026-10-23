@@ -1,23 +1,38 @@
 ---
 /**
- * Admin panel for manually entering lottery results.
- * This is a private operator tool: noIndex, no CDN caching, and no store.
+ * Operator panel for manually entering lottery results.
+ *
+ * Private tool: it lives in `AdminLayout` (no public navigation, no analytics),
+ * sends `no-store`, and is reached only through the session gate in
+ * `astro/middleware.ts`. The page itself never decides whether the caller is
+ * allowed in — it reads the configured username purely to label the header.
  */
-import BaseLayout from '../layouts/BaseLayout.astro';
+import AdminLayout from '../layouts/AdminLayout.astro';
 import { AdminPageIsland } from '@/components/island/admin-page';
-import { constructMetadata } from '@/lib/seo';
 import { setNoStoreHeaders } from '../lib/cache-headers';
+import { getAdminConfig } from '@/lib/admin/session';
 
 setNoStoreHeaders(Astro);
 
-const head = constructMetadata({
-  title: 'Admin Panel — Manual Result Entry | KeralaDraws',
-  description:
-    'Manually publish Kerala lottery results when automated ingestion fails. Enter draw numbers, prize tiers, and winning numbers.',
-  path: '/admin',
-  noIndex: true,
-});
+const config = getAdminConfig();
 ---
-<BaseLayout head={head} locale="en">
+
+<AdminLayout title="Admin panel — KeralaDraws" subtitle="Result publishing">
+  <Fragment slot="actions">
+    <div class="flex items-center gap-3 text-[11px]">
+      <span class="hidden text-white/60 sm:inline">
+        Signed in as <strong class="font-bold text-white">{config.username}</strong>
+      </span>
+      <form method="POST" action="/api/admin/logout">
+        <button
+          type="submit"
+          class="rounded-lg border border-white/20 px-2.5 py-1.5 font-bold text-white transition-colors hover:bg-white/10"
+        >
+          Sign out
+        </button>
+      </form>
+    </div>
+  </Fragment>
+
   <AdminPageIsland client:load locale="en" />
-</BaseLayout>
+</AdminLayout>

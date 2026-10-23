@@ -1,0 +1,243 @@
+---
+/**
+ * Admin login.
+ *
+ * Server-rendered form: no JavaScript is required to sign in, and the password
+ * never touches the client bundle. The page is inside the protected `/admin`
+ * path prefix, so the middleware explicitly allows this one route through.
+ *
+ * Error codes are deliberately coarse (`invalid` covers wrong user, wrong
+ * password and unknown user) so the page cannot be used to enumerate accounts.
+ */
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { setNoStoreHeaders } from '../../lib/cache-headers';
+import {
+  getAdminConfig,
+  isAdminSession,
+  MIN_ADMIN_PASSWORD_LENGTH,
+} from '@/lib/admin/session';
+import { IS_PRODUCTION_BUILD } from '@/lib/runtime-env';
+
+setNoStoreHeaders(Astro);
+
+const config = getAdminConfig();
+const isProduction = IS_PRODUCTION_BUILD;
+const loginAvailable = config.configured || config.devFallback;
+
+if (!loginAvailable) {
+  Astro.response.status = 503;
+}
+
+const errorCode = Astro.url.searchParams.get('error');
+const loggedOut = Astro.url.searchParams.get('loggedout') === '1';
+const rawNext = Astro.url.searchParams.get('next') || '';
+
+// Only same-site admin paths, and never back to the login page.
+const next =
+  rawNext.startsWith('/admin') && !rawNext.startsWith('//') && !rawNext.startsWith('/admin/login')
+    ? rawNext
+    : '/admin';
+
+if (loginAvailable && isAdminSession(Astro.request)) {
+  return Astro.redirect(next, 302);
+}
+
+const errors: Record<string, string> = {
+  invalid: 'Incorrect username or password.',
+  rate: 'Too many sign-in attempts. Wait a few minutes and try again.',
+  config:
+    'Admin login is not configured on this deployment. Set ADMIN_PASSWORD (or ADMIN_PASSWORD_SHA256) and redeploy.',
+  weak: `The configured admin password is shorter than ${MIN_ADMIN_PASSWORD_LENGTH} characters. Set a longer one and restart the server.`,
+  hash: 'ADMIN_PASSWORD_SHA256 is not a valid 64-character hex SHA-256 digest. Fix it and restart the server.',
+  required: 'Sign in to continue.',
+  session: 'Your session has expired. Sign in again.',
+};
+---
+
+<AdminLayout title="Admin sign-in — KeralaDraws" subtitle="Operator console">
+  <div class="mx-auto flex max-w-md flex-col justify-center px-4 py-10 sm:py-16">
+    <div class="rounded-2xl border border-[#E2E7E3] bg-white p-6 shadow-sm sm:p-8">
+      <h1 class="text-xl font-extrabold tracking-tight text-[#17201D]">Admin sign-in</h1>
+      <p class="mt-1 text-xs text-[#5F6B66]">
+        Restricted area for result publishing. Every request needs a valid session.
+      </p>
+
+      {
+        errorCode && errors[errorCode] && (
+          <div
+            role="alert"
+            class="mt-4 rounded-xl border border-[#F2CE8A] bg-[#FFF8E8] px-3 py-2.5 text-xs font-semibold text-[#7C3F06]"
+          >
+            {errors[errorCode]}
+          </div>
+        )
+      }
+
+      {
+        loggedOut && !errorCode && (
+          <div
+            role="status"
+            class="mt-4 rounded-xl border border-[#BFE3CC] bg-[#EFF8F1] px-3 py-2.5 text-xs font-semibold text-[#0B3B32]"
+          >
+            You have been signed out.
+          </div>
+        )
+      }
+
+      {
+        !loginAvailable ? (
+          <div class="mt-4 rounded-xl border border-[#E2E7E3] bg-[#FAFAF7] px-3 py-3 text-xs leading-relaxed text-[#5F6B66]">
+            {
+              config.problem === 'weak-password' ? (
+                <>
+                  The configured <code class="mx-1 rounded bg-[#F1F4F2] px-1 py-0.5 font-mono text-[11px]">ADMIN_PASSWORD</code>
+                  is shorter than {MIN_ADMIN_PASSWORD_LENGTH} characters, so it was rejected. Set a longer
+                  password and restart the server. A short password is not accepted even in development.
+                </>
+              ) : config.problem === 'malformed-hash' ? (
+                <>
+                  The configured <code class="mx-1 rounded bg-[#F1F4F2] px-1 py-0.5 font-mono text-[11px]">ADMIN_PASSWORD_SHA256</code>
+                  is not a 64-character hex SHA-256 digest, so it could never match. Fix the value and
+                  restart the server.
+                </>
+              ) : (
+                <>
+                  This deployment has no admin credential. Set
+                  <code class="mx-1 rounded bg-[#F1F4F2] px-1 py-0.5 font-mono text-[11px]">ADMIN_PASSWORD</code>
+                  (at least {MIN_ADMIN_PASSWORD_LENGTH} characters) or
+                  <code class="mx-1 rounded bg-[#F1F4F2] px-1 py-0.5 font-mono text-[11px]">ADMIN_PASSWORD_SHA256</code>
+                  in the environment, then redeploy. Login stays disabled until then &mdash; it never falls
+                  back to a default in production.
+                </>
+              )
+            }
+          </div>
+        ) : (
+          <form id="admin-login-form" method="POST" action="/api/admin/login" class="mt-5 space-y-4">
+            <input type="hidden" name="next" value={next} />
+
+            <div>
+              <label
+                for="admin-username"
+                class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#5F6B66]"
+              >
+                Username
+              </label>
+              <input
+                id="admin-username"
+                name="username"
+                type="text"
+                autocomplete="username"
+                autocapitalize="none"
+                spellcheck="false"
+                required
+                value="admin"
+                class="w-full rounded-xl border border-[#E2E7E3] bg-[#FAFAF7] px-3 py-2.5 text-sm font-semibold text-[#17201D] focus:border-[#0B3B32] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B3B32]/20"
+              />
+            </div>
+
+            <div>
+              <label
+                for="admin-password"
+                class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#5F6B66]"
+              >
+                Password
+              </label>
+              <input
+                id="admin-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                required
+                autofocus
+                class="w-full rounded-xl border border-[#E2E7E3] bg-[#FAFAF7] px-3 py-2.5 text-sm font-semibold text-[#17201D] focus:border-[#0B3B32] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B3B32]/20"
+              />
+            </div>
+
+            <button
+              type="submit"
+              class="w-full rounded-xl bg-[#0B3B32] px-4 py-2.5 text-sm font-extrabold text-white transition-colors hover:bg-[#084835]"
+            >
+              Sign in
+            </button>
+          </form>
+        )
+      }
+
+      {
+        config.devFallback && (
+          <p class="mt-4 rounded-xl border border-dashed border-[#E2E7E3] bg-[#FAFAF7] px-3 py-2 text-[11px] leading-relaxed text-[#5F6B66]">
+            <strong class="font-bold text-[#17201D]">Development only:</strong> no admin credential is
+            configured, so the local fallback is username <code class="font-mono">admin</code>,
+            password <code class="font-mono">admin</code>. Set
+            <code class="mx-1 font-mono">ADMIN_PASSWORD</code> to replace it. This fallback only exists
+            in a development build (<code class="font-mono">astro dev</code>) — a production build refuses
+            it, whatever <code class="font-mono">NODE_ENV</code> says.
+          </p>
+        )
+      }
+
+      {
+        isProduction && loginAvailable && (
+          <p class="mt-4 text-[11px] leading-relaxed text-[#95A09B]">
+            Sessions last eight hours and are signed server-side. Signing in from a shared machine?
+            Sign out from the panel when you finish.
+          </p>
+        )
+      }
+    </div>
+
+    <p class="mt-4 text-center text-[11px] text-[#95A09B]">
+      <a href="/" class="font-semibold text-[#0B5D45] hover:underline">Back to the public site</a>
+    </p>
+  </div>
+</AdminLayout>
+
+<script>
+  /**
+   * Progressive enhancement for the sign-in form.
+   *
+   * The form works without JavaScript: the endpoint answers with a 303 and the
+   * browser follows it. This handler exists because the credential must not be
+   * left in a navigable POST body and because it gives immediate feedback while
+   * the password is checked. It posts the same `FormData`, so the server sees an
+   * identical request; on any network failure the native submission takes over.
+   */
+  const form = document.querySelector<HTMLFormElement>('#admin-login-form');
+  if (form) {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      const label = button?.textContent;
+      if (button) {
+        button.disabled = true;
+        button.textContent = 'Signing in\u2026';
+      }
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          credentials: 'same-origin',
+          cache: 'no-store',
+          redirect: 'follow',
+        });
+        // The server redirects to the panel on success and back to this page
+        // with an `error` code on failure; either way `response.url` is where
+        // the operator should land. A non-redirect (403/500) is left to the
+        // native form so the browser shows the server's own response.
+        if (response.redirected && response.url) {
+          window.location.assign(response.url);
+          return;
+        }
+        form.submit();
+      } catch {
+        if (button) {
+          button.disabled = false;
+          button.textContent = label ?? 'Sign in';
+        }
+        form.submit();
+      }
+    });
+  }
+</script>

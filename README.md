@@ -194,6 +194,14 @@ DATABASE_URL="postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supab
 DIRECT_URL="postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres"
 CRON_SECRET="<generated-32-byte-random-secret>"
 ADMIN_SECRET="<generated-32-byte-random-secret>"
+# Browser login for /admin. Set one of these; without either, /admin/login is
+# disabled in production (it never falls back to a default password).
+ADMIN_PASSWORD="<at-least-16-characters>"
+# ADMIN_PASSWORD_SHA256="<sha256-of-the-password>"   # use instead of the above
+# Optional. Defaults to the username and password, so a 32-byte random value is
+# recommended: rotating the password then invalidates sessions only if unset.
+# ADMIN_SESSION_SECRET="<generated-32-byte-random-secret>"
+# ADMIN_USERNAME="admin"
 PUBLIC_SITE_URL="http://localhost:3000"
 
 # ==========================================
@@ -243,6 +251,43 @@ FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxxx@kerala-lottery-results.iam.gservi
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC...\n-----END PRIVATE KEY-----\n"
 ```
 
+### 3.1 Admin credential: setting it, and when it takes effect
+
+`ADMIN_PASSWORD` (or `ADMIN_PASSWORD_SHA256`) is read from **the process
+environment**, never from a file the app parses itself. Where that value comes
+from therefore depends on how the server was started — this is the part that
+trips people up:
+
+| How the server starts | Where the value comes from | What to do after editing `.env` |
+| --- | --- | --- |
+| `npm run dev` (`astro dev`) | Astro loads `.env` automatically | restart the dev server |
+| `npm start` / `npm run preview` (`node server.mjs`) | the shell environment **only** — `.env` is *not* read | start it as `node --env-file=.env server.mjs` (or export the variable) |
+| Vercel | the project's environment variables | redeploy |
+
+A placeholder such as `ADMIN_PASSWORD=` (empty) is safe: it means "not
+configured", never "an empty password". In production the login page then
+answers **503** and nobody can sign in; in development it falls back to the
+documented local `admin` / `admin` credential.
+
+To set the real credential later:
+
+1. Put the value in `.env` (or in the host's environment):
+   `ADMIN_PASSWORD="<at least 16 characters>"`. A shorter password is rejected
+   outright — login stays disabled and the login page says why, rather than
+   accepting a weak secret.
+2. **Restart the process** (or redeploy). The value is read from the
+   environment at request time, so editing the file alone changes nothing.
+3. Sign in at `/admin/login`. The username is `ADMIN_USERNAME` (default
+   `admin`, matched case-insensitively); the password is matched
+   case-sensitively.
+
+Changing the password invalidates every session signed with the old one (the
+session key is derived from it), so nobody is left holding an open panel.
+`ADMIN_SESSION_SECRET` overrides that derivation: when it is set, rotating the
+password no longer signs operators out — rotate the secret as well if you want
+that. `POST /api/admin/logout` ends the current session server-side; the
+session is also refused after it expires (8 hours).
+
 ---
 
 ## 4. Key Endpoints & Routes
@@ -252,13 +297,17 @@ FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFA
 | `/api/cron/sync-results` | `GET` | Official gazette synchronization (15-minute scheduler / Vercel Cron) |
 | `/api/cron/sync-live` | `GET` | Provisional live poller (`?force=true`, `?date=YYYY-MM-DD`); runs every minute in-window |
 | `/api/cron/keralalotteries-backfill` | `GET` | Resumable gap backfill from the live source (`?from`, `?to`, `?batch`, `?restart`) |
+| `/api/admin/login` | `POST` | Admin sign-in (form or JSON); issues the signed session cookie |
+| `/api/admin/logout` | `POST` | Clears the admin session cookie |
+| `/api/admin/draws`, `/api/admin/lotteries`, `/api/admin/results` | `GET`/`POST` | Session- or `ADMIN_SECRET`-protected result management |
 | `/api/admin/sync` | `POST` | Protected manual sync trigger for administrative users |
 | `/api/notifications/register` | `POST` | Register FCM registration token & selected lotteries |
 | `/api/notifications/register` | `PUT` | Update selected lottery preferences for an FCM token |
 | `/api/notifications/register` | `DELETE` | Unsubscribe/deactivate FCM token |
 | `/api/notifications/test` | `POST` | Protected admin test notification dispatcher |
 | `/notification-settings` | `GET` | User notification preferences & lottery selector page |
-| `/admin` | `GET` | Operational dashboard with live synchronization & FCM telemetry |
+| `/admin` | `GET` | Session-protected operator panel for manual result entry (redirects to `/admin/login`) |
+| `/admin/login` | `GET` | Admin sign-in page; disabled (503) in production when no credential is configured |
 
 ---
 

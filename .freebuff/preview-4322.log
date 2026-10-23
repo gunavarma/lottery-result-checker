@@ -1,0 +1,62 @@
+⚡ Production server with gzip/brotli listening on http://localhost:4322
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+prisma:error 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+prisma:error 
+Invalid `prisma.lottery.findFirst()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+Error fetching homepage data: PrismaClientInitializationError: 
+Invalid `prisma.draw.findFirst()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at Un.handleRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:7748)
+    at Un.handleAndLogRequestError (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6771)
+    at Un.request (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:121:6478)
+    at async l (/Users/guna/Documents/lottery-result-checker/node_modules/@prisma/client/runtime/library.js:130:9644)
+    at async Promise.all (index 0)
+    at async withDbRetry (file:///Users/guna/Documents/lottery-result-checker/dist/server/chunks/db-retry_daMOJaVM.mjs:51:10)
+    at async loadTodaySnapshot (file:///Users/guna/Documents/lottery-result-checker/dist/server/chunks/today-snapshot_ounAIsv-.mjs:83:52)
+    at async getOrSetCache.ttlMs (file:///Users/guna/Documents/lottery-result-checker/dist/server/chunks/HomeContent_r_KmUlol.mjs:1087:18)
+    at async getOrSetCache (file:///Users/guna/Documents/lottery-result-checker/dist/server/chunks/cache_CzxVIkvu.mjs:52:10)
+    at async getHomepageData (file:///Users/guna/Documents/lottery-result-checker/dist/server/chunks/HomeContent_r_KmUlol.mjs:1086:10) {
+  clientVersion: '6.4.1',
+  errorCode: undefined
+}

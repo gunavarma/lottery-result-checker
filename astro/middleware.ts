@@ -2,6 +2,7 @@ import { defineMiddleware } from 'astro:middleware';
 import { promisify } from 'node:util';
 import { gzip as gzipCb, brotliCompress as brotliCb, constants } from 'node:zlib';
 import { startBackgroundScheduler } from '@/lib/scheduler';
+import { isAdminSession } from '@/lib/admin/session';
 
 const gzip = promisify(gzipCb);
 const brotli = promisify(brotliCb);
@@ -21,7 +22,37 @@ const brotli = promisify(brotliCb);
 const COMPRESSIBLE = /^(text\/|application\/(json|javascript|xml|xhtml|x-javascript)|image\/svg)/;
 const MIN_SIZE = 1024; // bytes — below this, compression overhead exceeds savings
 
+/**
+ * Admin page gate.
+ *
+ * The login page itself must stay reachable, and `/admin/logout` is a POST-only
+ * endpoint that clears the cookie. Everything else under `/admin` requires a
+ * valid signed session cookie, otherwise the request is redirected to the login
+ * page with the original path so the operator lands where they intended.
+ *
+ * API routes under `/api/admin/*` are guarded individually with
+ * `requireAdminApi()`: that guard also accepts the machine bearer secret, which
+ * a URL-path check here cannot see.
+ */
+const PUBLIC_ADMIN_PAGES = new Set(['/admin/login', '/admin/logout']);
+
+function needsAdminSession(pathname: string): boolean {
+  if (PUBLIC_ADMIN_PAGES.has(pathname)) return false;
+  return pathname === '/admin' || pathname.startsWith('/admin/');
+}
+
 export const onRequest = defineMiddleware(async (_ctx, next) => {
+  if (needsAdminSession(_ctx.url.pathname) && !isAdminSession(_ctx.request)) {
+    const next = `${_ctx.url.pathname}${_ctx.url.search}`;
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: `/admin/login?error=required&next=${encodeURIComponent(next)}`,
+        'Cache-Control': 'no-store',
+      },
+    });
+  }
+
   // Idempotent (guarded by a global flag) and a no-op on serverless hosts, so
   // the only cost per request is one property read. See `lib/scheduler.ts` for
   // why this hook and not a boot hook: middleware is the one place that runs in

@@ -1,7 +1,11 @@
 import type { APIRoute } from 'astro';
 import { prisma } from '@/lib/prisma';
+import { requireAdminApi } from '@/lib/admin/session';
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ request }) => {
+  const denied = await requireAdminApi(request);
+  if (denied) return denied;
+
   try {
     const lotteries = await prisma.lottery.findMany({
       where: { active: true },

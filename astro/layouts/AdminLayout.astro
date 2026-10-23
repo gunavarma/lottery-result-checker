@@ -1,0 +1,86 @@
+---
+/**
+ * Standalone shell for the operator area.
+ *
+ * Deliberately *not* `BaseLayout`: the admin panel must not ship the public
+ * chrome (navbar, footer, push-notification prompts) or the GA tag, and it must
+ * never be indexed. Keeping it in a separate layout means a change to the public
+ * header cannot accidentally add a marketing surface — or a measurement script —
+ * to a page that renders unpublished draw data.
+ */
+import '@/styles/globals.css';
+
+interface Props {
+  title: string;
+  /** Shown under the wordmark. */
+  subtitle?: string;
+}
+
+const { title, subtitle = 'Operator console' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="theme-color" content="#10201D" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="googlebot" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" href="/logo.svg" />
+    <link rel="apple-touch-icon" href="/logo.svg" />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen bg-[#F7F7F4] text-[#17201D] font-sans antialiased">
+    <header class="bg-[#10201D] text-white">
+      <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+        <a href="/admin" class="flex items-center gap-2.5">
+          <img src="/logo.svg" alt="KeralaDraws" width="32" height="32" class="h-8 w-8 rounded-lg bg-white/10 p-0.5" />
+          <span class="leading-tight">
+            <span class="block text-sm font-extrabold tracking-tight">KeralaDraws</span>
+            <span class="block text-[10px] font-bold uppercase tracking-widest text-[#C8A45D]">
+              {subtitle}
+            </span>
+          </span>
+        </a>
+        <slot name="actions" />
+      </div>
+    </header>
+
+    <main class="min-h-[calc(100vh-4rem)]">
+      <slot />
+    </main>
+
+    <script>
+      /**
+       * Sign out through `fetch` so it works even when a webview or proxy does
+       * not forward a navigational POST's `Origin` header (Astro's built-in
+       * cross-site form guard rejects those with 403). The endpoint is POST-only
+       * and clears the cookie server-side; the native form remains the fallback
+       * for a failed request.
+       */
+      const form = document.querySelector<HTMLFormElement>('form[action="/api/admin/logout"]');
+      if (form) {
+        form.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          try {
+            const response = await fetch(form.action, {
+              method: 'POST',
+              credentials: 'same-origin',
+              cache: 'no-store',
+              redirect: 'follow',
+            });
+            if (response.redirected || response.ok) {
+              window.location.assign('/admin/login?loggedout=1');
+              return;
+            }
+            form.submit();
+          } catch {
+            form.submit();
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

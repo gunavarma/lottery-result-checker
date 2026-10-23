@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { IS_PRODUCTION_BUILD } from '@/lib/runtime-env';
 
 /**
  * Centralized authentication for privileged server endpoints (cron + admin).
@@ -10,8 +11,10 @@ import crypto from 'crypto';
  *  - Comparisons are constant-time to avoid leaking the secret via timing.
  *  - Requests are authenticated by `Authorization: Bearer <secret>` (the exact
  *    header Vercel Cron sends) or, for manual operator use, `?secret=`.
- *  - Fail closed: if the secret is not configured in production, the endpoint
- *    returns 503 instead of running unauthenticated or with a public default.
+ *  - Fail closed: if the secret is not configured in a production build, the
+ *    endpoint returns 503 instead of running unauthenticated or with a public
+ *    default. "Production build" follows the artifact, not `NODE_ENV` — see
+ *    `lib/runtime-env.ts`.
  *  - Never log or return the secret value itself.
  */
 
@@ -83,7 +86,7 @@ export interface AuthResult {
  */
 export function evaluateAuth(request: Request, scope: AuthScope): AuthResult {
   const configured = readConfiguredSecret(scope);
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = IS_PRODUCTION_BUILD;
 
   if (!configured) {
     if (isProduction) {

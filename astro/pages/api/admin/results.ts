@@ -1,7 +1,13 @@
 import type { APIRoute } from 'astro';
 import { prisma } from '@/lib/prisma';
+import { requireAdminApi } from '@/lib/admin/session';
 
 export const POST: APIRoute = async ({ request }: { request: Request }) => {
+  // Publishing a draw is the most consequential write on the site: it needs a
+  // signed-in operator (or the machine admin secret), not an anonymous POST.
+  const denied = await requireAdminApi(request);
+  if (denied) return denied;
+
   try {
     const body = await request.json();
     const { lotteryId, drawNumber, drawDate, drawTime, status, sourceUrl, verificationLevel, prizes } = body;
