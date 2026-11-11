@@ -1,7 +1,7 @@
 import React from 'react';
+import { formatINR } from '@/lib/format';
 import Link from "@/components/Link";
-import { prisma } from '@/lib/prisma';
-import { serializeData, formatINR } from '@/lib/format';
+
 import { PrizeTable } from '@/components/PrizeTable';
 import { OfficialSourceBadge } from '@/components/OfficialSourceBadge';
 import { ProvisionalResultBanner } from '@/components/ProvisionalResultBanner';
@@ -10,88 +10,14 @@ import { ResultShareBar } from '@/components/ResultShareBar';
 import { NotificationBanner } from '@/components/NotificationBanner';
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema, getFAQSchema } from '@/lib/seo';
-import { startOfDay, endOfDay, format } from 'date-fns';
+
+import { format } from 'date-fns';
 import { Award, Clock, CheckCircle2, Search, MapPin, Ticket, ShieldCheck, FileText, ExternalLink, ArrowRight, HelpCircle, Radio } from 'lucide-react';
 
 // Cached at the CDN and refreshed in the background rather than re-querying the
 // database for every visitor. 30s keeps the drawn page fresh while the client
 // (TanStack Query) revalidates the winning numbers live. Uncached rendering here
 // was the main cause of the multi-second server response in SEO audits.
-
-export async function generateMetadata() {
-  const now = new Date();
-  const dateFormatted = format(now, 'dd MMMM yyyy');
-
-  // A live-but-unverified result must not be indexed: search engines should
-  // only ever rank gazette-confirmed numbers.
-  const { draw } = await getTodayResultData();
-  const isProvisional = draw?.verificationLevel === 'PROVISIONAL';
-
-  return constructMetadata({
-    title: `Kerala Lottery Result Today (${dateFormatted}) | Winning Numbers`,
-    noIndex: isProvisional,
-    description: `Check official Kerala lottery result today (${dateFormatted}). 1st prize winning ticket, consolation numbers, prize structure and LOTIS gazette verification on KeralaDraws.`,
-    path: '/kerala-lottery-result-today',
-    keywords: [
-      'Kerala Lottery Result Today',
-      'Kerala Lottery Result',
-      'Kerala Lottery Result Today Live',
-      'Kerala Lottery Winning Numbers',
-      'Kerala Lottery Result Yesterday',
-      'KeralaDraws',
-    ],
-  });
-}
-
-import { getOrSetCache } from '@/lib/cache';
-import { DRAW_FULL } from '@/lib/results/projections';
-
-export async function getTodayResultData() {
-  return getOrSetCache(
-    'today_result_data',
-    async () => {
-      try {
-        const now = new Date();
-        const todayStart = startOfDay(now);
-        const todayEnd = endOfDay(now);
-
-        let draw = await prisma.draw.findFirst({
-          where: {
-            drawDate: {
-              gte: todayStart,
-              lte: todayEnd,
-            },
-          },
-          select: DRAW_FULL,
-        });
-
-        let isFromToday = true;
-        if (!draw) {
-          isFromToday = false;
-          draw = await prisma.draw.findFirst({
-            where: { status: 'PUBLISHED' },
-            orderBy: { drawDate: 'desc' },
-            select: DRAW_FULL,
-          });
-        }
-
-        return {
-          isFromToday,
-          draw: draw ? serializeData(draw) : null,
-          dateFormatted: format(now, 'dd MMMM yyyy (EEEE)'),
-        };
-      } catch (error) {
-        console.error('Error in getTodayResultData:', error);
-        return {
-          isFromToday: false,
-          draw: null,
-          dateFormatted: format(new Date(), 'dd MMMM yyyy (EEEE)'),
-        };
-      }
-    },
-    { ttlMs: 30_000, swrMs: 300_000 }
-  );
-}
 
 export default function TodayResultPage({
   isFromToday,

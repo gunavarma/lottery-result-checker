@@ -70,7 +70,9 @@ export const SERVERLESS_POOL_TIMEOUT_SECONDS = 20;
 export function isServerlessRuntime(
   env: Record<string, string | undefined> = process.env
 ): boolean {
-  return Boolean(env.VERCEL || env.AWS_LAMBDA_FUNCTION_NAME || env.NETLIFY);
+  return Boolean(
+    env.VERCEL || env.AWS_LAMBDA_FUNCTION_NAME || env.NETLIFY || env.CLOUDFLARE_WORKERS
+  );
 }
 
 /**

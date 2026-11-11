@@ -139,7 +139,7 @@ describe('admin session token', () => {
     const extended = String(Number(expiresAt) + 86_400_000);
 
     expect(verifySessionToken(`${extended}.${sessionId}.${signature}`)).toBe(false);
-    expect(verifySessionToken(`${expiresAt}.${sessionId}.${signature.slice(0, -1)}A`)).toBe(false);
+    expect(verifySessionToken(`${expiresAt}.${sessionId}.${signature.slice(0, -1)}${signature.endsWith('A') ? 'B' : 'A'}`)).toBe(false);
     // A different session id invalidates the signature binding.
     expect(verifySessionToken(`${expiresAt}.${'A'.repeat(sessionId.length)}.${signature}`)).toBe(false);
     expect(verifySessionToken('not-a-token')).toBe(false);

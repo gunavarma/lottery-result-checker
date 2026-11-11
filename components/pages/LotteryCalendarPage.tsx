@@ -1,11 +1,10 @@
 import React from 'react';
 import Link from "@/components/Link";
-import { prisma } from '@/lib/prisma';
-import { serializeData, formatINR } from '@/lib/format';
+import { formatINR } from '@/lib/format';
 import { DrawScheduleTable, WEEKLY_SCHEDULE, BUMPER_SCHEDULE } from '@/components/DrawScheduleTable';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Calendar, Clock, Award, ShieldCheck, ChevronRight, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { format, addDays, startOfDay, endOfDay } from 'date-fns';
+import { format, addDays } from 'date-fns';
 
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
@@ -24,33 +23,6 @@ export const metadata = constructMetadata({
     'KeralaDraws',
   ],
 });
-
-export async function getCalendarDraws() {
-  try {
-    const today = new Date();
-    const startDate = addDays(today, -3);
-    const endDate = addDays(today, 14);
-
-    const draws = await prisma.draw.findMany({
-      where: {
-        drawDate: {
-          gte: startOfDay(startDate),
-          lte: endOfDay(endDate),
-        },
-        status: 'PUBLISHED',
-      },
-      include: {
-        lottery: true,
-      },
-      orderBy: { drawDate: 'desc' },
-    });
-
-    return serializeData(draws);
-  } catch (e) {
-    console.error('Error fetching calendar draws:', e);
-    return [];
-  }
-}
 
 export default function LotteryCalendarPage({ publishedDraws }: { publishedDraws: any[] }) {
   const today = new Date();

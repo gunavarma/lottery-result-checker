@@ -1,7 +1,7 @@
 import React from 'react';
+import { formatINR } from '@/lib/format';
 import Link from "@/components/Link";
-import { prisma } from '@/lib/prisma';
-import { serializeData, formatINR } from '@/lib/format';
+
 import { PrizeTable } from '@/components/PrizeTable';
 import { ResultCard } from '@/components/ResultCard';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
@@ -13,96 +13,9 @@ import { getRelatedNewsForLottery } from '@/lib/news';
 import { NewsCard } from '@/components/NewsComponents';
 import { Award, Calendar, Clock, Ticket, ShieldCheck, ChevronRight, FileText, ArrowRight, CheckCircle2, HelpCircle } from 'lucide-react';
 import { formatDateOnly, formatIstDate } from '@/lib/date';
-import { getOrSetCache } from '@/lib/cache';
-import { DRAW_FULL, drawCardView, LOTTERY_DIRECTORY } from '@/lib/results/projections';
 
 // Scheme pages change at most once a day (a new draw), so a cached render with
 // background revalidation is both safe and much faster than re-querying.
-
-interface PageProps {
-  params: Promise<{ slug: string }>;
-}
-
-export async function getLotterySchemeData(slug: string) {
-  const cacheKey = `lottery_scheme_hub_v2_${slug.toLowerCase()}`;
-
-  return getOrSetCache(
-    cacheKey,
-    async () => {
-      try {
-        // The page renders exactly one full prize table — the latest draw — and
-        // 14 small result cards below it. It used to fetch the complete prize
-        // tree for all fifteen draws, which is why this single page could move
-        // close to a megabyte per render. The full tree is now fetched once and
-        // the cards get only their headline winner.
-        const [lottery, latestDraw] = await Promise.all([
-          prisma.lottery.findUnique({
-            where: { slug },
-            select: {
-              ...LOTTERY_DIRECTORY,
-              draws: {
-                where: { status: 'PUBLISHED' },
-                orderBy: { drawDate: 'desc' },
-                skip: 1,
-                take: 14,
-                select: drawCardView(1, 1, true),
-              },
-            },
-          }),
-          prisma.draw.findFirst({
-            where: { status: 'PUBLISHED', lottery: { slug } },
-            orderBy: { drawDate: 'desc' },
-            select: DRAW_FULL,
-          }),
-        ]);
-
-        if (!lottery) return null;
-
-        const draws = [
-          ...(latestDraw ? [latestDraw] : []),
-          ...(lottery.draws ?? []),
-        ];
-
-        return serializeData({ ...lottery, draws });
-      } catch (error) {
-        console.error('Error in getLotterySchemeData:', error);
-        return null;
-      }
-    },
-    { ttlMs: 60_000, swrMs: 600_000 }
-  );
-}
-
-export async function generateMetadata({ params }: PageProps) {
-  const { slug } = await params;
-  const lottery = await getLotterySchemeData(slug);
-
-  if (!lottery) {
-    return constructMetadata({
-      title: 'Kerala Lottery Scheme Not Found',
-      path: `/lottery/${slug}`,
-      noIndex: true,
-    });
-  }
-
-  const title = `${lottery.name} Result Today, Winning Numbers & Schedule | KeralaDraws`;
-  const description = `Check official ${lottery.name} (${lottery.code}) Kerala lottery results, draw timetable (${lottery.drawDay} 3:00 PM), 1st prize winning numbers, complete prize tier breakdown and LOTIS gazette archives.`;
-
-  return constructMetadata({
-    title,
-    description,
-    path: `/lottery/${slug}`,
-    keywords: [
-      `${lottery.name} result`,
-      `${lottery.name} lottery result today`,
-      `${lottery.name} winning numbers`,
-      `${lottery.name} prize structure`,
-      `${lottery.code} lottery result`,
-      'Kerala lottery timetable',
-      'KeralaDraws',
-    ],
-  });
-}
 
 export default function LotterySchemePage({ lottery }: { lottery: any }) {
   // The Astro route returns an authentic 404 when the scheme is unknown.

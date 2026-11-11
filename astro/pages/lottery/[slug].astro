@@ -4,7 +4,7 @@
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { LotterySchemePageIsland } from '@/components/island/lottery-scheme-page';
-import { generateMetadata, getLotterySchemeData } from '@/components/pages/LotterySchemePage';
+import { generateSchemeMetadata, getLotterySchemeData } from '@/lib/page-data/lottery';
 import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
 
 const slug = Astro.params.slug as string;
@@ -17,7 +17,7 @@ if (!lottery) {
 
 setRevalidateHeaders(Astro, REVALIDATE.CONTENT, { tags: [CACHE_TAG.lottery(slug), CACHE_TAG.RESULTS] });
 
-const head = await generateMetadata({ params: Promise.resolve({ slug }) });
+const head = await generateSchemeMetadata({ params: Promise.resolve({ slug }) });
 ---
 
 <BaseLayout head={head} locale="en">

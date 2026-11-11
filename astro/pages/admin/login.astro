@@ -16,12 +16,12 @@ import {
   isAdminSession,
   MIN_ADMIN_PASSWORD_LENGTH,
 } from '@/lib/admin/session';
-import { IS_PRODUCTION_BUILD } from '@/lib/runtime-env';
+import { isProductionBuild } from '@/lib/runtime-env';
 
 setNoStoreHeaders(Astro);
 
 const config = getAdminConfig();
-const isProduction = IS_PRODUCTION_BUILD;
+const isProduction = isProductionBuild();
 const loginAvailable = config.configured || config.devFallback;
 
 if (!loginAvailable) {

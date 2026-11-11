@@ -1,7 +1,7 @@
 import React from 'react';
+import { formatINR } from '@/lib/format';
 import Link from "@/components/Link";
-import { prisma } from '@/lib/prisma';
-import { serializeData, formatINR } from '@/lib/format';
+
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { StructuredData } from '@/components/StructuredData';
 import { PrizeTable } from '@/components/PrizeTable';
@@ -9,14 +9,11 @@ import { OfficialSourceBadge } from '@/components/OfficialSourceBadge';
 import { ProvisionalResultBanner } from '@/components/ProvisionalResultBanner';
 import { ResultShareBar } from '@/components/ResultShareBar';
 import { constructMetadata, getBreadcrumbSchema, getFAQSchema, SITE_URL } from '@/lib/seo';
-import { getOrSetCache } from '@/lib/cache';
-import { DRAW_FULL } from '@/lib/results/projections';
 import {
   isValidDateFormat,
   parseDateOnlyUtc,
   formatDateOnly,
   getIstDateRange,
-  getAdjacentAvailableDates,
   getTodayIstStr,
 } from '@/lib/date';
 import {
@@ -36,112 +33,6 @@ import {
 // Historical results are effectively immutable once gazette-verified, so this
 // renders on demand and is then served from cache. Only today's date can still
 // change, and the client revalidates that case (TanStack Query).
-
-interface PageProps {
-  params: Promise<{ date: string }>;
-}
-
-export async function getHistoricalDrawData(dateStr: string) {
-  if (!isValidDateFormat(dateStr)) return null;
-
-  const cacheKey = `kerala_lottery_result_page_${dateStr}`;
-  const isToday = dateStr === getTodayIstStr();
-
-  return getOrSetCache(
-    cacheKey,
-    async () => {
-      const targetDate = parseDateOnlyUtc(dateStr);
-      const { formattedDisplay } = getIstDateRange(dateStr);
-
-      const [adjacent, draws] = await Promise.all([
-        getAdjacentAvailableDates(dateStr),
-        prisma.draw.findMany({
-          where: {
-            drawDate: targetDate,
-            status: 'PUBLISHED',
-          },
-          select: DRAW_FULL,
-          orderBy: { createdAt: 'desc' },
-        }),
-      ]);
-
-      if (!draws || draws.length === 0) return null;
-
-      const [year, month] = dateStr.split('-');
-
-      return serializeData({
-        dateStr,
-        year,
-        month,
-        dateFormatted: formattedDisplay,
-        prevDate: adjacent.prevAvailableDate,
-        nextDate: adjacent.nextAvailableDate,
-        draws,
-      });
-    },
-    // Gazette-verified historical pages are immutable. Cache them aggressively;
-    // today's in-progress draw stays on the short live window.
-    { ttlMs: isToday ? 10_000 : 3_600_000, swrMs: isToday ? 30_000 : 86_400_000 }
-  );
-}
-
-export function buildMetadataFromData(data: any, dateStr: string) {
-  if (!data || !data.draws || data.draws.length === 0) {
-    return constructMetadata({
-      title: 'Kerala Lottery Result Not Found',
-      description: `No verified official Kerala State Lottery results exist for ${dateStr}. Check the official weekly timetable or previous draw dates.`,
-      path: `/kerala-lottery-result/${dateStr}`,
-      noIndex: true,
-    });
-  }
-
-  // Provisional (unofficial live) results are not indexed until the official
-  // gazette confirms them, so search engines never rank unverified numbers.
-  // A published draw is indexable regardless of its trust tier. The key
-  // signal for indexability is that a draw happened and was stored, not the
-  // trust tier. PROVISIONAL draws are still real results awaiting gazette.
-  const hasPublishedDraw = data.draws.some(
-    (d: any) => d.status === 'PUBLISHED'
-  );
-
-  // Keep hasOfficialDraw for UI badge rendering (CERTIFIED vs LIVE UNOFFICIAL)
-  const hasOfficialDraw = data.draws.some(
-    (d: any) => (d.verificationLevel ?? 'OFFICIAL') === 'OFFICIAL'
-  );
-
-  const primaryDraw = data.draws[0];
-  const firstPrize = primaryDraw.prizes?.find(
-    (p: any) => p.orderIndex === 0 || p.tierNumber === 1 || p.category?.toLowerCase().includes('1st')
-  );
-  const firstPrizeText = firstPrize ? formatINR(firstPrize.amount) : '₹1 Crore';
-  const firstWinner = firstPrize?.winningNumbers?.[0]?.displayNumber;
-  const winnerSnippet = firstWinner ? ` 1st Prize ticket: ${firstWinner}.` : '';
-
-  const title = `${primaryDraw.lottery.name} (${primaryDraw.drawNumber}) Result ${data.dateFormatted} – Winning Numbers | KeralaDraws`;
-  const description = `Check official Kerala lottery result for ${data.dateFormatted}. ${primaryDraw.lottery.name} ${primaryDraw.drawNumber} 1st prize ${firstPrizeText}.${winnerSnippet} Complete prize structure, 1st to 9th winning numbers and official LOTIS gazette verification.`;
-
-  return constructMetadata({
-    title,
-    description,
-    path: `/kerala-lottery-result/${dateStr}`,
-    noIndex: !hasPublishedDraw,
-    keywords: [
-      `${primaryDraw.lottery.name} result`,
-      `${primaryDraw.lottery.name} ${primaryDraw.drawNumber}`,
-      `Kerala lottery result ${data.dateFormatted}`,
-      `Kerala lottery result ${dateStr}`,
-      `${primaryDraw.lottery.code} winning numbers`,
-      'Kerala State Lotteries official result',
-      'KeralaDraws',
-    ],
-  });
-}
-
-export async function generateMetadata({ params }: PageProps) {
-  const { date: dateStr } = await params;
-  const data = await getHistoricalDrawData(dateStr);
-  return buildMetadataFromData(data, dateStr);
-}
 
 export default function KeralaLotteryResultDatePage({
   dateStr,

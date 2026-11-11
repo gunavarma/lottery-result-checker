@@ -43,6 +43,10 @@ interface ImportMetaEnv {
   readonly NEXT_PUBLIC_FIREBASE_APP_ID?: string;
   readonly NEXT_PUBLIC_FIREBASE_VAPID_KEY?: string;
   readonly NEXT_PUBLIC_VAPID_PUBLIC_KEY?: string;
+
+  // --- Razorpay Standard Checkout -----------------------------------------
+  readonly PUBLIC_RAZORPAY_KEY_ID?: string;
+  readonly NEXT_PUBLIC_RAZORPAY_KEY_ID?: string;
 }
 
 interface ImportMeta {

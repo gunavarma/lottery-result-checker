@@ -21,7 +21,7 @@ const lotterySlug = Astro.url.searchParams.get('lottery') || undefined;
 const currentPage = Math.max(1, parseInt(Astro.url.searchParams.get('page') || '1', 10) || 1);
 
 const data = await getArchiveData(lotterySlug, currentPage);
-const head = await generateMetadata();
+const head = await generateTodayMetadata();
 ---
 
 <BaseLayout head={head} locale="en">

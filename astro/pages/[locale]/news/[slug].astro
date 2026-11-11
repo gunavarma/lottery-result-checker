@@ -42,7 +42,7 @@ setRevalidateHeaders(Astro, REVALIDATE.CONTENT);
 // `generateMetadata` is typed against Next's awaiting `params` object. Wrapping
 // the slug in a resolved promise satisfies that type exactly while keeping the
 // metadata builder byte-identical to the original.
-const enHead = await generateMetadata({ params: Promise.resolve({ slug }) });
+const enHead = await generateSchemeMetadata({ params: Promise.resolve({ slug }) });
 
 // Locale wiring. `[locale]` matches any single segment, so an unsupported or
 // default-locale prefix has to be refused here rather than by the router.

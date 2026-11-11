@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { withConnectTimeout, withServerlessPoolLimits } from './db-url';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { isServerlessRuntime, withConnectTimeout, withServerlessPoolLimits } from './db-url';
 
 // Two adjustments to the connection string, both applied from code so the
 // deployment environment does not have to be edited for the client to behave:
@@ -20,13 +21,35 @@ const datasourceUrl = withServerlessPoolLimits(withConnectTimeout(process.env.DA
     : {}),
 });
 
+// Prisma's JavaScript engine delegates SQL transport to node-postgres. Keep a
+// single connection per serverless isolate (including Cloudflare Workers), but
+// honor an explicit connection_limit for the long-lived local Node server.
+const urlPoolLimit = Number(/[?&]connection_limit=(\d+)/.exec(datasourceUrl ?? '')?.[1]);
+const poolMax =
+  Number.isFinite(connectionLimitOverride) && connectionLimitOverride > 0
+    ? connectionLimitOverride
+    : isServerlessRuntime()
+      ? 1
+      : Number.isFinite(urlPoolLimit) && urlPoolLimit > 0
+        ? urlPoolLimit
+        : 10;
+
+const prismaAdapter = new PrismaPg({
+  // The empty fallback lets non-database unit tests import the module without
+  // eagerly opening a connection. Actual queries still require DATABASE_URL.
+  connectionString: datasourceUrl || 'postgresql://localhost/postgres',
+  max: poolMax,
+  connectionTimeoutMillis: 15_000,
+  idleTimeoutMillis: 300_000,
+});
+
 // Prevent multiple instances of Prisma Client in development. The client is
 // built through a factory so the global's type is the *inferred* client type
 // (with its omit configuration) instead of the bare `PrismaClient`, which the
 // configured client is not assignable to.
 const createPrismaClient = () =>
   new PrismaClient({
-    ...(datasourceUrl ? { datasourceUrl } : {}),
+    adapter: prismaAdapter,
     omit: omitAuditColumns,
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });

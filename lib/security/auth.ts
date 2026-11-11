@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { IS_PRODUCTION_BUILD } from '@/lib/runtime-env';
+import { isProductionBuild } from '@/lib/runtime-env';
 
 /**
  * Centralized authentication for privileged server endpoints (cron + admin).
@@ -86,7 +86,7 @@ export interface AuthResult {
  */
 export function evaluateAuth(request: Request, scope: AuthScope): AuthResult {
   const configured = readConfiguredSecret(scope);
-  const isProduction = IS_PRODUCTION_BUILD;
+  const isProduction = isProductionBuild();
 
   if (!configured) {
     if (isProduction) {

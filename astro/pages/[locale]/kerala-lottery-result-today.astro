@@ -13,7 +13,8 @@
  * Was `export const revalidate = 30` under Next.js ISR.
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import TodayResultPage, { generateMetadata, getTodayResultData } from '@/components/pages/TodayResultPage';
+import TodayResultPage from '@/components/pages/TodayResultPage';
+import { generateTodayMetadata, getTodayResultData } from '@/lib/page-data/lottery';
 import { REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
 import { resultViewEvent } from '@/lib/analytics';
 import { isLocale } from '@/lib/i18n/config';
@@ -22,7 +23,7 @@ import type { Language } from '@/lib/translations';
 
 setRevalidateHeaders(Astro, REVALIDATE.LIVE);
 
-const enHead = await generateMetadata();
+const enHead = await generateTodayMetadata();
 const { isFromToday, draw } = await getTodayResultData();
 
 // `verification_status` is the whole point of this event on the live page: a

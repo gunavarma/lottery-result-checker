@@ -3,6 +3,9 @@
 
 generator client {
   provider = "prisma-client-js"
+  // Cloudflare Workers cannot ship Prisma's native Rust query engine. The
+  // PostgreSQL driver adapter keeps this generated client JavaScript-only.
+  engineType = "client"
 }
 
 datasource db {

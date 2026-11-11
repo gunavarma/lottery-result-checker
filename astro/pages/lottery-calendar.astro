@@ -5,7 +5,8 @@
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { LotteryCalendarPageIsland } from '@/components/island/lottery-calendar-page';
-import { metadata, getCalendarDraws } from '@/components/pages/LotteryCalendarPage';
+import { metadata } from '@/components/pages/LotteryCalendarPage';
+import { getCalendarDraws } from '@/lib/page-data/lottery';
 import { REVALIDATE, setRevalidateHeaders } from '../lib/cache-headers';
 
 setRevalidateHeaders(Astro, REVALIDATE.CONTENT);

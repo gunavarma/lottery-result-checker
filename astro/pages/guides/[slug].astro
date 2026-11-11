@@ -19,7 +19,7 @@ if (!guide) {
 
 setRevalidateHeaders(Astro, REVALIDATE.CONTENT);
 
-const head = await generateMetadata({ params: Promise.resolve({ slug }) });
+const head = await generateSchemeMetadata({ params: Promise.resolve({ slug }) });
 ---
 
 <BaseLayout head={head} locale="en">

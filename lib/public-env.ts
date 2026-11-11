@@ -62,3 +62,10 @@ export const VAPID_PUBLIC_KEY = pick(
   import.meta.env.PUBLIC_VAPID_PUBLIC_KEY,
   import.meta.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
 );
+
+/** Razorpay Key ID for client-side checkout */
+export const RAZORPAY_KEY_ID = pick(
+  import.meta.env.PUBLIC_RAZORPAY_KEY_ID,
+  import.meta.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
+);
+

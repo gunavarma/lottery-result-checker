@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import cloudflare from '@astrojs/cloudflare';
 import vercel from '@astrojs/vercel';
 import node from '@astrojs/node';
 import react from '@astrojs/react';
@@ -11,6 +12,9 @@ import tailwindcss from '@tailwindcss/vite';
 import { resolveSiteUrl } from './lib/site-url';
 
 const SITE_URL = resolveSiteUrl();
+const isCloudflareWorkersBuild = process.env.CLOUDFLARE_WORKERS === '1';
+
+const nodeOnlySsrExternals = ['@prisma/client', 'prisma', 'pdf-parse', 'tesseract.js'];
 
 export default defineConfig({
   site: SITE_URL,
@@ -19,14 +23,16 @@ export default defineConfig({
 
   output: 'server',
 
-  adapter: process.env.VERCEL
-    ? vercel({
-        maxDuration: 60,
-        webAnalytics: { enabled: false },
-      })
-    : node({
-        mode: 'standalone',
-      }),
+  adapter: isCloudflareWorkersBuild
+    ? cloudflare()
+    : process.env.VERCEL
+      ? vercel({
+          maxDuration: 60,
+          webAnalytics: { enabled: false },
+        })
+      : node({
+          mode: 'standalone',
+        }),
 
   // NOTE: @astrojs/sitemap is deliberately NOT used. The sitemap is generated
   // from the database (only gazette-verified draws, per-URL hreflang alternates,
@@ -77,10 +83,13 @@ export default defineConfig({
     // mechanism that works in the browser. Reading `process.env` there did not
     // fail loudly; it silently fell back to placeholder credentials.
     envPrefix: ['PUBLIC_', 'NEXT_PUBLIC_'],
-    // Prisma and the PDF/Tesseract scrapers must stay external in the server
-    // bundle; bundling them breaks their native binaries and dynamic requires.
+    // Keep Node-only packages external for the Vercel and standalone Node
+    // outputs. Cloudflare uses its JavaScript-only database driver instead.
     ssr: {
-      external: ['@prisma/client', 'prisma', 'pdf-parse', 'tesseract.js'],
+      // Native Prisma engines and dynamically-loaded PDF/OCR packages cannot
+      // be left as Node-only externals in a Worker bundle. Cloudflare uses the
+      // engine-less Prisma driver adapter and bundles its server dependencies.
+      external: isCloudflareWorkersBuild ? [] : nodeOnlySsrExternals,
     },
     build: {
       // Target modern browsers for smaller output (matches package.json browserslist)

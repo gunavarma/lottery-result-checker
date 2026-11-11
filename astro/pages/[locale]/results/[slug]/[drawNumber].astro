@@ -14,7 +14,8 @@
  * indexed surface, and their content cannot change once gazetted.
  */
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
-import PermanentResultPage, { generateMetadata, getDrawResultData } from '@/components/pages/PermanentResultPage';
+import PermanentResultPage from '@/components/pages/PermanentResultPage';
+import { generatePermanentMetadata, getDrawResultData } from '@/lib/page-data/lottery';
 import { CACHE_TAG, REVALIDATE, setRevalidateHeaders } from '../../../../lib/cache-headers';
 import { resultViewEvent } from '@/lib/analytics';
 import { isLocale } from '@/lib/i18n/config';
@@ -40,7 +41,7 @@ setRevalidateHeaders(Astro, isOfficial ? REVALIDATE.HISTORICAL : REVALIDATE.RESU
   ...(isOfficial ? { staleWhileRevalidate: REVALIDATE.HISTORICAL_SWR } : {}),
 });
 
-const enHead = await generateMetadata({ params: Promise.resolve({ slug, drawNumber }) });
+const enHead = await generatePermanentMetadata({ params: Promise.resolve({ slug, drawNumber }) });
 
 // `result_view` for the draw this document actually rendered. Declared here
 // rather than emitted from React because this route ships no island at all —

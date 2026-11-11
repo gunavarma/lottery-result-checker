@@ -57,6 +57,7 @@ export function Footer({
     { path: '/kerala-lottery-results', label: t('footer.results_archive') },
     { path: '/previous-results', label: t('chrome.footer_previous_results') },
     { path: '/ticket-checker', label: t('footer.ticket_checker') },
+    { path: '/checkout', label: 'Razorpay Checkout' },
     { path: '/guides', label: t('footer.guides') },
     { path: '/lottery-calendar', label: t('chrome.footer_timetable') },
     { path: '/prize-structure', label: t('chrome.footer_prize_breakdown') },

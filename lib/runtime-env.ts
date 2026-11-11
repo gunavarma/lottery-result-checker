@@ -18,5 +18,9 @@
  * the *artifact* rather than the way it happened to be started. `astro dev`
  * builds with `PROD === false`, so local development keeps its conveniences.
  */
+export function isProductionBuild(): boolean {
+  return process.env.NODE_ENV === 'production' || Boolean(import.meta.env?.PROD);
+}
+
 export const IS_PRODUCTION_BUILD =
-  process.env.NODE_ENV === 'production' || import.meta.env.PROD;
+  process.env.NODE_ENV === 'production' || Boolean(import.meta.env?.PROD);

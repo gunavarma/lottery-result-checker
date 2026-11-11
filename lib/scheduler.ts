@@ -2,9 +2,10 @@
  * Background synchronization worker for long-lived Node runtimes.
  *
  * Production scheduling does not depend on this: on Vercel the sync legs are
- * driven by Vercel Cron (`vercel.json`) plus Supabase pg_cron, which is why the
- * function returns immediately when it detects a deployed environment. This
- * worker exists so that a self-hosted / local `node server.mjs` — and `astro
+ * driven by Vercel Cron (`vercel.json`) plus Supabase pg_cron, and on Cloudflare
+ * they remain driven by Supabase pg_cron. This function returns immediately on
+ * serverless hosts. The worker exists so that a self-hosted / local
+ * `node server.mjs` — and `astro
  * dev` — keeps the results and news pipelines warm between cron ticks, which is
  * what the Next.js `instrumentation.ts` hook used to do.
  *
@@ -25,7 +26,14 @@ interface SchedulerGlobal {
 export function startBackgroundScheduler(): void {
   // Serverless hosts have no long-lived process to hold these timers, and their
   // cron entries already cover the same work.
-  if (process.env.VERCEL) return;
+  if (
+    process.env.VERCEL ||
+    process.env.AWS_LAMBDA_FUNCTION_NAME ||
+    process.env.NETLIFY ||
+    process.env.CLOUDFLARE_WORKERS
+  ) {
+    return;
+  }
 
   const globalScheduler = globalThis as unknown as SchedulerGlobal;
   if (globalScheduler.__keralaLotterySchedulerInitialized) return;

@@ -47,7 +47,12 @@ function normalizeOrigin(raw: string | undefined | null): string | null {
 }
 
 function isDeployed(): boolean {
-  return Boolean(process.env.VERCEL || process.env.VERCEL_ENV || process.env.VERCEL_URL);
+  return Boolean(
+    process.env.VERCEL ||
+      process.env.VERCEL_ENV ||
+      process.env.VERCEL_URL ||
+      process.env.CLOUDFLARE_WORKERS
+  );
 }
 
 // Replaced with the resolved origin at build time by `vite.define` in

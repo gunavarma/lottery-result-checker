@@ -1,5 +1,4 @@
 import { format } from 'date-fns';
-import { prisma } from './prisma';
 
 export const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000; // +05:30 in milliseconds
 
@@ -111,52 +110,4 @@ export function formatIstDate(date: Date, formatPattern: string = 'dd MMMM yyyy 
   const [y, m, d] = dateStr.split('-').map(Number);
   const dateObj = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
   return format(dateObj, formatPattern);
-}
-
-/**
- * Finds adjacent available draw dates from the database relative to a given date string.
- */
-export async function getAdjacentAvailableDates(currentDateStr: string): Promise<{
-  prevAvailableDate: string | null;
-  nextAvailableDate: string | null;
-  allAvailableDates: string[];
-}> {
-  try {
-    const targetDate = parseDateOnlyUtc(currentDateStr);
-
-    const [prevDraw, nextDraw] = await Promise.all([
-      prisma.draw.findFirst({
-        where: {
-          drawDate: { lt: targetDate },
-          status: 'PUBLISHED',
-        },
-        orderBy: { drawDate: 'desc' },
-        select: { drawDate: true },
-      }),
-      prisma.draw.findFirst({
-        where: {
-          drawDate: { gt: targetDate },
-          status: 'PUBLISHED',
-        },
-        orderBy: { drawDate: 'asc' },
-        select: { drawDate: true },
-      }),
-    ]);
-
-    const prevAvailableDate = prevDraw ? formatDateOnly(prevDraw.drawDate) : null;
-    const nextAvailableDate = nextDraw ? formatDateOnly(nextDraw.drawDate) : null;
-
-    return {
-      prevAvailableDate,
-      nextAvailableDate,
-      allAvailableDates: [],
-    };
-  } catch (error) {
-    console.error('Error in getAdjacentAvailableDates:', error);
-    return {
-      prevAvailableDate: null,
-      nextAvailableDate: null,
-      allAvailableDates: [],
-    };
-  }
 }

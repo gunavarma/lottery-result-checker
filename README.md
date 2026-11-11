@@ -162,6 +162,24 @@ npm run generate-secrets
 
 ---
 
+### Cloudflare Workers build
+
+The Cloudflare deployment uses Astro's Cloudflare adapter and Prisma's
+JavaScript PostgreSQL driver. In the Cloudflare Git build settings, use
+`npm run build:cloudflare` as the build command and `npx wrangler deploy` as the
+deploy command. `wrangler.jsonc` contains only non-secret Worker configuration
+and the existing `IMAGES` and `SESSION` bindings.
+
+Configure production credentials as encrypted Worker secrets in Cloudflare
+Settings → Variables and Secrets; do not put secret values in `wrangler.jsonc`
+or commit them. Use the names and purposes in the environment-variable list
+below. In particular, the site needs `DATABASE_URL` for its PostgreSQL reads
+and `CRON_SECRET` for authenticated scheduled requests.
+
+Result scheduling remains on Supabase `pg_cron`; no Worker Cron trigger is
+needed. The existing Vercel deployment can stay available until the Cloudflare
+Worker and both custom domains have been verified.
+
 ## 3. Environment Variables
 
 Create `.env` based on `.env.example`:

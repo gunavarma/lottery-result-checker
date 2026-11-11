@@ -34,7 +34,7 @@ const lotterySlug = Astro.url.searchParams.get('lottery') || undefined;
 const currentPage = Math.max(1, parseInt(Astro.url.searchParams.get('page') || '1', 10) || 1);
 
 const data = await getArchiveData(lotterySlug, currentPage);
-const enHead = await generateMetadata();
+const enHead = await generateTodayMetadata();
 
 // Locale wiring. `[locale]` matches any single segment, so an unsupported or
 // default-locale prefix has to be refused here rather than by the router.

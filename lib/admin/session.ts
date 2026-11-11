@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { requirePrivileged, timingSafeEqualStr } from '@/lib/security/auth';
-import { IS_PRODUCTION_BUILD } from '@/lib/runtime-env';
+import { isProductionBuild } from '@/lib/runtime-env';
 
 /**
  * Password + signed-session authentication for the operator panel.
@@ -79,7 +79,7 @@ export function getAdminConfig(): AdminConfig {
   const username = (process.env.ADMIN_USERNAME?.trim() || 'admin').toLowerCase();
   const plain = process.env.ADMIN_PASSWORD?.trim() || '';
   const hashed = (process.env.ADMIN_PASSWORD_SHA256?.trim() || '').toLowerCase();
-  const isProduction = IS_PRODUCTION_BUILD;
+  const isProduction = isProductionBuild();
 
   if (hashed) {
     if (!SHA256_HEX.test(hashed)) {
