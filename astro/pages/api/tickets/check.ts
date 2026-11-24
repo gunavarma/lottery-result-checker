@@ -8,6 +8,7 @@ const TicketCheckSchema = z.object({
   lotteryId: z.string().optional(),
   drawId: z.string().optional(),
   drawNumber: z.string().optional(),
+  date: z.string().optional(),
   tickets: z.array(z.string().min(3).max(25)).min(1).max(100),
 });
 
@@ -109,9 +110,10 @@ export async function checkTicketsHandler(params: {
   lotteryId?: string;
   drawId?: string;
   drawNumber?: string;
+  date?: string;
   tickets: string[];
 }) {
-  const { lotteryId, drawId, drawNumber, tickets } = params;
+  const { lotteryId, drawId, drawNumber, date, tickets } = params;
 
   // 1. Locate Target Draw or Recent Published Draws (identity only — no prizes)
   const drawQuery: any = { status: 'PUBLISHED', verificationLevel: 'OFFICIAL' };
@@ -119,14 +121,25 @@ export async function checkTicketsHandler(params: {
     drawQuery.id = drawId;
   } else if (drawNumber) {
     drawQuery.drawNumber = drawNumber.toUpperCase();
-  } else if (lotteryId) {
-    drawQuery.lotteryId = lotteryId;
+  } else {
+    if (date) {
+      const cleanDate = date.slice(0, 10);
+      const [y, m, d] = cleanDate.split('-').map(Number);
+      if (y && m && d) {
+        const dayStart = new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0));
+        const dayEnd = new Date(Date.UTC(y, m - 1, d + 1, 0, 0, 0, 0));
+        drawQuery.drawDate = { gte: dayStart, lt: dayEnd };
+      }
+    }
+    if (lotteryId && lotteryId !== 'all') {
+      drawQuery.lotteryId = lotteryId;
+    }
   }
 
   const draws = await prisma.draw.findMany({
     where: drawQuery,
     orderBy: { drawDate: 'desc' },
-    take: drawId || drawNumber ? 1 : 10,
+    take: drawId || drawNumber || date ? 5 : 10,
     select: DRAW_REFERENCE_SELECT,
   });
 

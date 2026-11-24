@@ -1,17 +1,15 @@
 ---
 /**
- * (+ `check-ticket/layout.tsx`
- * for the head copy).
+ * Ticket Checker page (`/ticket-checker`).
  *
- * The original was a server component that did no data fetching of its own — it
- * only wrapped `<TicketChecker />`. In Astro that means the route markup is real
- * here and the interactive part is a single island, which is what `client:load`
- * expresses.
+ * Provides instant ticket verification and camera barcode/ticket scanning
+ * against certified Kerala State Lottery (LOTIS) official results.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { TicketCheckerIsland } from '@/components/island/ticket-checker';
 import { constructMetadata, getBreadcrumbSchema, getFAQSchema } from '@/lib/seo';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { getPreviousResultsInitialData } from '@/astro/lib/previous-results-data';
 
 const breadcrumbs = [
   { name: 'Home', url: '/' },
@@ -39,19 +37,23 @@ const faqs = [
   {
     question: 'How do I check if my Kerala lottery ticket has won?',
     answer:
-      'Enter your ticket number above and KeralaDraws compares it against every prize tier of the official LOTIS certified draw result automatically.',
+      'Select the draw date and enter your ticket number above. KeralaDraws compares it against every prize tier of the official LOTIS certified draw result automatically.',
   },
   {
     question: 'Does KeralaDraws store the ticket numbers I check?',
     answer:
-      'Tickets you save are stored only in your own browser. Un-saved numbers are used to run the comparison and are not retained as your personal data.',
+      'Tickets you check are evaluated in memory and not retained as your personal data. Saved tickets remain in your browser storage only.',
   },
   {
     question: 'Can I scan more than one Kerala lottery ticket at once?',
     answer:
-      'Yes. Choose Scan Tickets to scan with your camera or select ticket images. Review the detected numbers, then check them together against published results.',
+      'Yes. Choose Scan with Camera to scan multiple tickets or upload photos. Review the detected numbers and verify them together.',
   },
 ];
+
+// Pre-load available verified draw dates server-side so the date selector is instant
+const initialData = await getPreviousResultsInitialData();
+const availableDates = initialData?.availableDates ?? [];
 ---
 
 <BaseLayout
@@ -64,28 +66,20 @@ const faqs = [
       items={[{ label: 'Home', href: '/' }, { label: 'Ticket Checker' }]}
     />
 
-    <div class="border-b border-[#E2E7E3] pb-6 space-y-2">
-      <span
-        class="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular"
-      >
-        Instant Verification
-      </span>
+    <div class="border-b border-[#E2E7E3] pb-6 space-y-3">
+      <div class="flex items-center gap-2">
+        <span
+          class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#E9F3EE] text-[#0B3B32] font-tabular border border-[#CDE3D8]"
+        >
+          <span class="w-2 h-2 rounded-full bg-[#16845B]"></span>
+          Official LOTIS Verification
+        </span>
+      </div>
       <h1 class="text-3xl sm:text-4xl font-extrabold text-[#17201D] tracking-tight">
         Kerala Lottery Scanner &amp; Ticket Checker
       </h1>
-      <p class="text-xs sm:text-sm text-[#68736E] max-w-3xl">
-        Scan a ticket with your camera, upload a ticket photo, or enter its
-        number manually. Check one ticket or scan several against published
-        Kerala lottery results.
-      </p>
-      <p class="text-sm text-[#52605A]">
-        Looking for today's winning numbers?
-        <a
-          class="font-semibold text-[#0B3B32] underline underline-offset-2"
-          href="/"
-        >
-          View the latest Kerala lottery result.
-        </a>
+      <p class="text-sm sm:text-base text-[#52605A] max-w-2xl leading-relaxed">
+        Verify your ticket numbers directly against official Kerala State Lottery results. Select the draw date or check across all recent published draws.
       </p>
     </div>
 
@@ -96,27 +90,53 @@ const faqs = [
       client:load
       locale="en"
       initialNumber={Astro.url.searchParams.get('number')?.slice(0, 20) ?? undefined}
+      availableDates={availableDates}
     />
 
-    <section class="max-w-3xl space-y-3" aria-labelledby="scanner-guide-title">
-      <h2 id="scanner-guide-title" class="text-xl font-extrabold text-[#17201D]">
-        How to scan and check a Kerala lottery ticket
-      </h2>
-      <ol class="list-decimal pl-5 space-y-2 text-sm text-[#52605A]">
-        <li>Select the lottery scheme for your ticket.</li>
-        <li>Enter its number, or choose <strong>Scan Tickets</strong> to use your camera or select ticket photos. Review the numbers the scanner reads.</li>
-        <li>Check the ticket to compare its number with the published prize results.</li>
-      </ol>
-      <p class="text-sm text-[#68736E]">
-        The scanner helps read ticket numbers; check the printed number and draw details against the result before making a claim.
-      </p>
-      <p class="text-sm">
-        <a
-          class="font-semibold text-[#0B3B32] underline underline-offset-2"
-          href="/guides/how-to-check-kerala-lottery-ticket"
-        >
-          Read the step-by-step Kerala lottery ticket scanning guide.
-        </a>
+    <section class="max-w-4xl space-y-4 pt-4 border-t border-[#E2E7E3]" aria-labelledby="scanner-guide-title">
+      <div class="space-y-1">
+        <h2 id="scanner-guide-title" class="text-lg sm:text-xl font-extrabold text-[#17201D]">
+          How to verify your Kerala lottery ticket
+        </h2>
+        <p class="text-xs sm:text-sm text-[#68736E]">
+          Follow these quick steps to check if your ticket matches any published winning numbers:
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-1">
+        <div class="bg-white border border-[#E2E7E3] rounded-2xl p-4 sm:p-5 space-y-2">
+          <div class="w-7 h-7 rounded-lg bg-[#E9F3EE] text-[#0B3B32] font-bold text-xs flex items-center justify-center font-tabular">
+            1
+          </div>
+          <h3 class="font-extrabold text-sm text-[#17201D]">Select Draw Date</h3>
+          <p class="text-xs text-[#52605A] leading-relaxed">
+            Choose the draw date printed on your ticket, or keep All Recent Draws to check across all published results.
+          </p>
+        </div>
+
+        <div class="bg-white border border-[#E2E7E3] rounded-2xl p-4 sm:p-5 space-y-2">
+          <div class="w-7 h-7 rounded-lg bg-[#E9F3EE] text-[#0B3B32] font-bold text-xs flex items-center justify-center font-tabular">
+            2
+          </div>
+          <h3 class="font-extrabold text-sm text-[#17201D]">Enter or Scan Number</h3>
+          <p class="text-xs text-[#52605A] leading-relaxed">
+            Enter the 6-digit number or 4-digit ending, or use <strong>Scan with Camera</strong> to detect ticket numbers automatically.
+          </p>
+        </div>
+
+        <div class="bg-white border border-[#E2E7E3] rounded-2xl p-4 sm:p-5 space-y-2">
+          <div class="w-7 h-7 rounded-lg bg-[#E9F3EE] text-[#0B3B32] font-bold text-xs flex items-center justify-center font-tabular">
+            3
+          </div>
+          <h3 class="font-extrabold text-sm text-[#17201D]">Instant Verification</h3>
+          <p class="text-xs text-[#52605A] leading-relaxed">
+            Click Check Ticket to compare your number against official gazette results and see prize categories and amounts.
+          </p>
+        </div>
+      </div>
+
+      <p class="text-xs text-[#68736E] pt-1">
+        Always verify your physical ticket and draw details against the official Kerala State Government gazette result before claiming any prize.
       </p>
     </section>
   </div>

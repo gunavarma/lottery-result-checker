@@ -29,6 +29,7 @@ export interface CheckTicketsPayload {
   drawId?: string;
   drawNumber?: string;
   lotteryId?: string;
+  date?: string;
 }
 
 export interface CheckTicketsResponse {
