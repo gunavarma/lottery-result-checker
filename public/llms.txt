@@ -8,7 +8,7 @@ KeralaDraws publishes one canonical result page per calendar date at /kerala-lot
 
 - [Kerala Lottery Result Today](https://keraladraws.com/kerala-lottery-result-today): Today's official result with live PROVISIONAL updates during the 3:00 PM IST draw window.
 - [Live Results](https://keraladraws.com/live): Real-time winning-number feed with verification status for each scheme.
-- [Results Archive](https://keraladraws.com/kerala-lottery-results): Complete date archive; any published date resolves as /kerala-lottery-result/YYYY-MM-DD.
+- [Previous Results](https://keraladraws.com/previous-results): Browse previous results by scheme and date; each published draw has a canonical date page.
 
 ## Tools
 

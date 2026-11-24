@@ -74,6 +74,12 @@ export const ANALYTICS_EVENTS = {
   RESULT_SHARE: 'result_share',
   /** A WhatsApp alerts CTA was clicked. */
   WHATSAPP_SUBSCRIPTION_CLICK: 'whatsapp_subscription_click',
+  /** The global WhatsApp subscription offer was shown or dismissed. */
+  WHATSAPP_OFFER_IMPRESSION: 'whatsapp_offer_impression',
+  WHATSAPP_OFFER_DISMISSAL: 'whatsapp_offer_dismissal',
+  /** A checkout was started or the payment mandate was verified. */
+  WHATSAPP_CHECKOUT_START: 'whatsapp_checkout_start',
+  WHATSAPP_SUBSCRIPTION_AUTHORIZED: 'whatsapp_subscription_authorized',
 } as const;
 
 export type AnalyticsEventName =
@@ -350,9 +356,10 @@ export function trackResultShare(input: { method: ShareMethod }): void {
 export function trackWhatsAppSubscriptionClick(input: {
   plan: string;
   lotteryName?: string | null;
-}): void {
-  trackEvent(ANALYTICS_EVENTS.WHATSAPP_SUBSCRIPTION_CLICK, {
-    plan: input.plan,
-    lottery_name: input.lotteryName?.trim() || 'all',
-  });
+}, after?: () => void): void {
+  dispatch(
+    ANALYTICS_EVENTS.WHATSAPP_SUBSCRIPTION_CLICK,
+    { plan: input.plan, lottery_name: input.lotteryName?.trim() || 'all' },
+    after
+  );
 }

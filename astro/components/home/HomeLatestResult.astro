@@ -13,7 +13,7 @@
  * draw is today's; before it, this card is yesterday's, and saying so is more
  * honest than showing an empty shell for a draw that has not happened yet.
  */
-import { ExternalLink, FileText, ArrowRight, Link2 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import {
   drawResultHref,
   dateArchiveHref,
@@ -121,28 +121,6 @@ const metaBoxes = [
               class="inline-flex items-center gap-1.5 text-white/85 hover:text-white hover:underline"
             >
               <span>{tf('home.latest.all_draws', { date: formatDdMmYyyy(draw.drawDate) })}</span>
-            </a>
-          )}
-          {draw.sourceDocumentUrl && (
-            <a
-              href={draw.sourceDocumentUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-1.5 text-white/85 hover:text-white hover:underline"
-            >
-              <FileText className="h-3.5 w-3.5" />
-              <span>{t('home.latest.gazette_pdf')}</span>
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          )}
-          {resultHref && (
-            <a
-              href={`${resultHref}#prize-chart`}
-              class="ml-auto inline-flex items-center gap-1.5 text-white/70 hover:text-white hover:underline"
-              title={t('home.latest.permalink')}
-            >
-              <Link2 className="h-3.5 w-3.5" />
-              <span>{t('home.latest.permalink')}</span>
             </a>
           )}
         </div>

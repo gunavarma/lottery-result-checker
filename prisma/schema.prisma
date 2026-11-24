@@ -70,6 +70,7 @@ model Draw {
 
   lottery           Lottery        @relation(fields: [lotteryId], references: [id], onDelete: Cascade)
   prizes            Prize[]
+  whatsappResultDeliveries WhatsappResultDelivery[]
 
   @@unique([lotteryId, drawNumber])
   @@unique([lotteryId, drawDate])
@@ -293,6 +294,80 @@ model NotificationDelivery {
   @@unique([resultId, pushSubscriptionId])
   @@index([status])
   @@index([createdAt])
+}
+
+// WhatsApp numbers are encrypted at the application layer. `phoneHash` is a
+// keyed digest used only for lookup and opt-out suppression.
+model WhatsappSubscription {
+  id             String    @id @default(cuid())
+  phoneHash      String    @unique
+  phoneEncrypted String?
+  status         String    @default("ACTIVE") // ACTIVE, INACTIVE
+  consentSource  String?   // WEBSITE_CHECKBOX, WHATSAPP_KEYWORD
+  consentedAt    DateTime?
+  optedOutAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([status])
+}
+
+// Paid plan metadata for Razorpay recurring memberships. Phone numbers are
+// encrypted at rest; the keyed hash links a purchase to WhatsApp consent
+// without storing a plain phone number.
+model RazorpayMembership {
+  id                    String    @id @default(cuid())
+  phoneHash             String
+  phoneEncrypted        String
+  watchlistUserId       String?
+  planCode              String
+  planId                String
+  razorpaySubscriptionId String   @unique
+  status                String    @default("CREATED") // CREATED, AUTHENTICATED, ACTIVE, PENDING, HALTED, PAUSED, CANCELLED, COMPLETED
+  latestPaymentId       String?
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  consentedAt           DateTime
+  whatsappOptedOutAt    DateTime?
+  lastWebhookAt         DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  resultDeliveries      WhatsappResultDelivery[]
+
+  @@index([phoneHash, status])
+  @@index([status, currentPeriodEnd])
+}
+
+model WhatsappResultDelivery {
+  id                String    @id @default(cuid())
+  drawId            String
+  membershipId      String
+  status            String    @default("QUEUED") // QUEUED, SENDING, SENT, FAILED, SKIPPED
+  attemptCount      Int       @default(0)
+  nextAttemptAt     DateTime  @default(now())
+  claimedAt         DateTime?
+  sentAt            DateTime?
+  providerMessageId String?
+  errorCode         String?
+  errorMessage      String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  draw       Draw               @relation(fields: [drawId], references: [id], onDelete: Cascade)
+  membership RazorpayMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@unique([drawId, membershipId])
+  @@index([status, nextAttemptAt])
+  @@index([membershipId, status])
+}
+
+model RazorpayWebhookEvent {
+  id        String   @id @default(cuid())
+  eventId   String   @unique
+  eventType String
+  createdAt DateTime @default(now())
+
+  @@index([eventType, createdAt])
 }
 
 model FavoriteLottery {

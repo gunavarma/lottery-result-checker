@@ -14,7 +14,10 @@ export function OfficialSourceBadge({
   drawDate,
   className = '',
 }: OfficialSourceBadgeProps) {
-  const officialUrl = sourceUrl || 'https://www.lotteryagent.kerala.gov.in/result/public';
+  const officialUrl =
+    sourceUrl && !sourceUrl.includes('keralalotteries.net')
+      ? sourceUrl
+      : 'https://www.lotteryagent.kerala.gov.in/result/public';
 
   return (
     <div

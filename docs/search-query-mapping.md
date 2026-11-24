@@ -8,12 +8,12 @@ This guide specifies the definitive search-intent-to-URL architecture for **Kera
 
 | Search Intent Category | Sample User Search Queries | Canonical Target URL | Schema.org Structured Data |
 | :--- | :--- | :--- | :--- |
-| **Today's Results** | `kerala lottery result today`, `kerala lottery result today live`, `today kerala lottery winning numbers` | `/kerala-lottery-result-today` | `Article`, `BreadcrumbList`, `FAQPage` |
-| **Ticket Verification** | `kerala lottery ticket checker`, `check kerala lottery ticket`, `verify kerala lottery number` | `/check-ticket` | `BreadcrumbList`, `FAQPage` |
+| **Today's Results** | `kerala lottery result today`, `kerala lottery result today live`, `today kerala lottery winning numbers` | `/kerala-lottery-result-today` (when indexable; provisional results remain `noindex`) | `BreadcrumbList`, `FAQPage` |
+| **Ticket Verification** | `kerala lottery ticket checker`, `check kerala lottery ticket`, `verify kerala lottery number` | `/ticket-checker` | `BreadcrumbList`, `FAQPage` |
 | **Draw Timetable** | `kerala lottery calendar 2026`, `kerala lottery draw schedule`, `kerala lottery draw days` | `/lottery-calendar` | `BreadcrumbList` |
-| **Historical Archive** | `kerala lottery results history`, `previous kerala lottery results`, `kerala lottery old results 2026` | `/results/archive` | `BreadcrumbList` |
-| **Lottery Schemes Directory** | `kerala lottery schemes`, `kerala state lotteries list`, `kerala lottery ticket prices` | `/lotteries` | `BreadcrumbList` |
-| **Scheme Specific Hub** | `karunya plus lottery result`, `suvarna keralam result`, `fifty fifty lottery draw` | `/lotteries/[slug]` (e.g. `/lotteries/karunya-plus`) | `BreadcrumbList`, `FAQPage` |
+| **Historical Archive** | `kerala lottery results history`, `previous kerala lottery results`, `kerala lottery old results 2026` | `/previous-results` and `/kerala-lottery-results/[year]` | `BreadcrumbList` |
+| **Lottery Results Hub** | `kerala lottery results`, `latest kerala lottery results`, `kerala state lotteries list` | `/results` | `BreadcrumbList` |
+| **Scheme Specific Hub** | `karunya plus lottery result`, `suvarna keralam result`, `fifty fifty lottery draw` | `/lottery/[slug]` (e.g. `/lottery/karunya-plus`) | `BreadcrumbList`, `FAQPage` |
 | **Specific Draw Result** | `karunya plus kn 638 result`, `suvarna keralam sk 67 result` | `/results/[slug]/[drawNumber]` (e.g. `/results/suvarna-keralam/sk-67`) | `BreadcrumbList`, `FAQPage` |
 | **Prize Structure** | `kerala lottery prize structure`, `kerala lottery 1st prize amount`, `kerala lottery consolation prize` | `/prize-structure` | `BreadcrumbList` |
 | **Ticket Checking Guide** | `how to check kerala lottery ticket`, `how to read kerala lottery number` | `/guides/how-to-check-kerala-lottery-ticket` | `NewsArticle`, `BreadcrumbList`, `FAQPage` |
@@ -30,12 +30,18 @@ This guide specifies the definitive search-intent-to-URL architecture for **Kera
 1. **One Primary Intent, One Primary URL**:
    * Do NOT create separate pages for minor keyword synonyms (e.g. `kerala-lottery-results-today` vs `kerala-lottery-result-today-live` vs `kerala-lottery-today-result`). All today-oriented intent is consolidated into `/kerala-lottery-result-today`.
 2. **Permanent Draw URLs**:
-   * Every certified draw has exactly one canonical URL: `/results/[slug]/[drawNumber]`.
-   * Any legacy date/slug queries (`/result/[date]/[slug]`) automatically 301-redirect to the permanent draw URL.
+   * Every certified draw has exactly one canonical date URL: `/kerala-lottery-result/[date]`.
+   * Legacy `/check-ticket` redirects to `/ticket-checker`; `/lotteries` redirects to `/results`. Do not list redirecting URLs as canonical targets.
+   * The structured per-draw route `/results/[slug]/[drawNumber]` is used only where that draw-number page resolves to the same certified draw record.
 3. **No Thin Location Doorway Pages**:
    * Never create artificial city landing pages (e.g. `/kerala-lottery-result-ernakulam`, `/kerala-lottery-result-kozhikode`). The results are statewide and centralized at Thiruvananthapuram.
 4. **Internal Search & Admin Directives**:
    * All internal search queries (`/search`) and administrative tools are strictly set to `noindex, nofollow` to prevent crawler trap bloat.
+
+5. **Provisional Result Handling**:
+   * Keep live but unverified draw pages visibly marked provisional and `noindex` while they are not yet officially confirmed.
+   * Exclude noindex result URLs from the XML sitemap. After verification, restore indexability and publish the canonical URL in the sitemap.
+   * The homepage remains the indexable live-results fallback while `/kerala-lottery-result-today` is noindex.
 
 ---
 

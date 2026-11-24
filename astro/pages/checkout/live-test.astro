@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { RazorpayLiveTestCheckout } from '@/components/RazorpayLiveTestCheckout';
+import { constructMetadata } from '@/lib/seo';
+
+export const prerender = false;
+
+const head = constructMetadata({
+  title: 'Private Live Payment Test | KeralaDraws',
+  description: 'Private live test checkout for Razorpay recurring UPI authorization.',
+  path: '/checkout/live-test',
+  noIndex: true,
+});
+---
+
+<BaseLayout head={head} locale="en">
+  <main class="mx-auto max-w-4xl space-y-6 px-4 py-10 sm:px-6">
+    <a href="/checkout" class="text-sm font-medium text-[#0B5D45] hover:underline">← Back to public plans</a>
+    <RazorpayLiveTestCheckout client:load />
+  </main>
+</BaseLayout>

@@ -5,6 +5,7 @@ import { getLotterySlug, type ParsedDrawResult, type ParsedPrize } from '../pars
 import { sendResultPublishedPushNotification } from '../firebase/fcm';
 import { SITE_URL } from '@/lib/site-url';
 import { invalidatePublishedDrawCaches } from '../cache-purge';
+import { enqueueOfficialDrawWhatsappResults } from '@/lib/whatsapp/result-template';
 
 /**
  * The single writer for parsed lottery results.
@@ -339,6 +340,16 @@ export async function persistParsedDraw(
 
   // 6. Notify only for a genuinely new OR newly promoted OFFICIAL result.
   if (verificationLevel === 'OFFICIAL' && input.notify !== false && (isNew || upgraded)) {
+    try {
+      await enqueueOfficialDrawWhatsappResults({
+        drawId: persisted.id,
+        official: true,
+        hasPdf: Boolean(input.sourceDocumentUrl),
+      });
+    } catch (dispatchErr) {
+      console.warn('Failed to queue WhatsApp draw result templates:', dispatchErr);
+    }
+
     try {
       const firstPrize = prizesToWrite.find((p) => p.orderIndex === 0 || p.tierNumber === 1);
       const firstWinner = firstPrize?.winningNumbers?.[0];

@@ -1,6 +1,6 @@
 {
-  "name": "Kerala Lottery Results",
-  "short_name": "Kerala Lottery",
+  "name": "KeralaDraws",
+  "short_name": "KeralaDraws",
   "description": "Official Kerala State Lotteries live results, daily winning numbers and verified LOTIS draw archive.",
   "start_url": "/",
   "display": "standalone",

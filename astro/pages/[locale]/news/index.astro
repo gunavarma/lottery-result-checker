@@ -9,17 +9,14 @@
  * hreflang alternates and `og:locale` describe the localized page rather than
  * the English one.
  */
-/**
- * Presentational, ships no JS.
- *
- * `getAllNews()` is an in-memory read, so the component stays synchronous and
- * Astro can server-render it directly.
- */
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import NewsIndexPage, { metadata } from '@/components/pages/NewsIndexPage';
+import { metadata } from '@/components/pages/NewsIndexPage';
+import { NewsIndexPageIsland } from '@/components/island/news-index-page';
 import { isLocale } from '@/lib/i18n/config';
 import { mirrorMetadata } from '@/lib/i18n/mirror';
 import type { Language } from '@/lib/translations';
+import { getDailyKeralaLotteryVideos } from '@/lib/news/youtube-news';
+import { REVALIDATE, setRevalidateHeaders } from '../../../lib/cache-headers';
 
 // Locale wiring. `[locale]` matches any single segment, so an unsupported or
 // default-locale prefix has to be refused here rather than by the router.
@@ -29,10 +26,12 @@ if (!isLocale(locale) || locale === 'en') {
   return Astro.rewrite('/404');
 }
 
-const head = mirrorMetadata(locale, '/news', metadata);
+setRevalidateHeaders(Astro, REVALIDATE.STATIC_PAGE);
 
+const head = mirrorMetadata(locale, '/news', metadata);
+const videos = await getDailyKeralaLotteryVideos();
 ---
 
 <BaseLayout head={head} locale={locale}>
-  <NewsIndexPage />
+  <NewsIndexPageIsland client:load videos={videos} locale={locale} />
 </BaseLayout>

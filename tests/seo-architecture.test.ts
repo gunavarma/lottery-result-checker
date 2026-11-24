@@ -65,7 +65,7 @@ describe('Advanced Technical SEO & Programmatic Indexing', () => {
 
     // Verify core canonical URLs exist
     const urls = sitemapEntries.map((e) => e.url);
-    expect(urls).toContain(`${SITE_URL}/kerala-lottery-results`);
+    expect(urls).not.toContain(`${SITE_URL}/kerala-lottery-results`);
     expect(urls).toContain(`${SITE_URL}/ticket-checker`);
     expect(urls).toContain(`${SITE_URL}/kerala-lottery-results/2026`);
     expect(urls).toContain(`${SITE_URL}/lottery/karunya`);

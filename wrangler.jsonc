@@ -1,9 +1,9 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "keraladraws-production",
+  "name": "lottery-result-checker",
   "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2026-11-01",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": ["nodejs_compat", "brotli_content_encoding"],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS"
@@ -20,6 +20,12 @@
   "vars": {
     "CLOUDFLARE_WORKERS": "1"
   },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "488950d0c37a4a48983449dca4b266d6"
+    }
+  ],
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1

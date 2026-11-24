@@ -89,6 +89,76 @@
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Looping WhatsApp-style message preview in the subscription offer. */
+@keyframes whatsappPreviewBubbleOne {
+  0%, 5% { opacity: 0; transform: translateY(5px); }
+  12%, 58% { opacity: 1; transform: translateY(0); }
+  84%, 100% { opacity: 0; transform: translateY(-3px); }
+}
+
+@keyframes whatsappPreviewBubbleTwo {
+  0%, 20% { opacity: 0; transform: translateY(5px); }
+  28%, 66% { opacity: 1; transform: translateY(0); }
+  84%, 100% { opacity: 0; transform: translateY(-3px); }
+}
+
+@keyframes whatsappPreviewBubbleThree {
+  0%, 38% { opacity: 0; transform: translateY(5px); }
+  46%, 74% { opacity: 1; transform: translateY(0); }
+  88%, 100% { opacity: 0; transform: translateY(-3px); }
+}
+
+.kd-wa-bubble {
+  opacity: 0;
+  animation-duration: 8s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.kd-wa-bubble-one { animation-name: whatsappPreviewBubbleOne; }
+.kd-wa-bubble-two { animation-name: whatsappPreviewBubbleTwo; }
+.kd-wa-bubble-three { animation-name: whatsappPreviewBubbleThree; }
+
+/* WhatsApp alerts ticker in the site-wide top banner. */
+@keyframes kdAlertMarquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.kd-alert-marquee-window {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.kd-alert-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 2rem;
+  animation: kdAlertMarquee 24s linear infinite;
+}
+
+.kd-alert-marquee-track > span {
+  flex: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kd-wa-bubble {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  .kd-alert-marquee-track {
+    width: auto;
+    animation: none;
+  }
+
+  .kd-alert-marquee-track > span[aria-hidden="true"] {
+    display: none;
+  }
+}
+
 /* Subtle vertical scanning line animation */
 @keyframes scannerMove {
   0% {

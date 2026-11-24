@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { syncRealLotteryNews } from '@/lib/news/news-engine';
+import { refreshYouTubeLotteryVideos } from '@/lib/news/youtube-news';
 import { requirePrivileged } from '@/lib/security/auth';
 
 export const GET: APIRoute = async ({ request }) => {
@@ -7,9 +8,16 @@ export const GET: APIRoute = async ({ request }) => {
     const denied = await requirePrivileged(request, 'cron');
     if (denied) return denied;
 
-    const result = await syncRealLotteryNews();
+    const [newsResult, videos] = await Promise.all([
+      syncRealLotteryNews(),
+      refreshYouTubeLotteryVideos(),
+    ]);
 
-    return Response.json(result);
+    return Response.json({
+      ...newsResult,
+      videoCount: videos.length,
+      latestVideo: videos[0]?.title ?? null,
+    });
   } catch (error: any) {
     console.error('Error in /api/cron/sync-news:', error);
     return Response.json(

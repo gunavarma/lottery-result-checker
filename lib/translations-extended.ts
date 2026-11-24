@@ -35,6 +35,10 @@ export const EXTENDED_TRANSLATIONS: Record<Language, Record<string, string>> = {
     'home.latest_news': 'Latest Lottery News & Reports',
     'home.view_all_news': 'View All News',
     'home.sync_note': 'Results are synchronizing with the official LOTIS gazette database.',
+    'news.video_eyebrow': 'Daily Live Stream & Result Bulletins',
+    'news.video_title': 'Kerala Lottery Results Video News',
+    'news.video_subtitle': 'Watch official live draw telecasts from Gorky Bhavan and daily video bulletins updated everyday at 3:00 PM IST.',
+    'news.watch_on_youtube': 'Watch on YouTube',
 
     'hero.eyebrow': "Today's Scheduled Draw",
     'hero.title': 'Kerala State Lottery Result',
@@ -83,7 +87,7 @@ export const EXTENDED_TRANSLATIONS: Record<Language, Record<string, string>> = {
       'Draws are conducted under public scrutiny by the Directorate of Kerala State Lotteries at Gorky Bhavan, Thiruvananthapuram.',
     'trust.step2_title': 'Automated Retrieval',
     'trust.step2_body':
-      'Our ingestion service connects directly to the official LOTIS publication feed to capture verified draw records. Winning numbers are also shown live from the public source keralalotteries.net the moment they are announced — always labelled unofficial until verified.',
+      'Our ingestion service connects directly to the official LOTIS publication feed to capture verified draw records. Winning numbers are also shown live from public announcements the moment they are drawn — always labelled unofficial until verified.',
     'trust.step3_title': 'Data Integrity Audit',
     'trust.step3_body':
       'Winning numbers, series distributions, and prize structures are verified against official Gazette PDF documents. Live (unverified) numbers are replaced by the gazette record and can never overwrite it.',
@@ -150,6 +154,10 @@ export const EXTENDED_TRANSLATIONS: Record<Language, Record<string, string>> = {
     'home.latest_news': 'ഏറ്റവും പുതിയ ഭാഗ്യക്കുറി വാർത്തകളും റിപ്പോർട്ടുകളും',
     'home.view_all_news': 'എല്ലാ വാർത്തകളും കാണുക',
     'home.sync_note': 'ഔദ്യോഗിക ലോട്ടിസ് ഗസറ്റ് ഡാറ്റാബേസുമായി ഫലങ്ങൾ സമന്വയിക്കുന്നു.',
+    'news.video_eyebrow': 'തത്സമയ സംപ്രേക്ഷണവും വീഡിയോ വാർത്തകളും',
+    'news.video_title': 'കേരള ലോട്ടറി ഫലങ്ങൾ വീഡിയോ വാർത്തകൾ',
+    'news.video_subtitle': 'ഗോർക്കി ഭവനിൽ നിന്നുള്ള തത്സമയ നറുക്കെടുപ്പും ദിവസേന ഉച്ചയ്ക്ക് 3:00 മണിക്ക് അപ്‌ഡേറ്റ് ചെയ്യുന്ന വീഡിയോ ബുള്ളറ്റിനുകളും കാണുക.',
+    'news.watch_on_youtube': 'യൂട്യൂബിൽ കാണുക',
 
     'hero.eyebrow': 'ഇന്നത്തെ ഷെഡ്യൂൾ ചെയ്ത നറുക്കെടുപ്പ്',
     'hero.title': 'കേരള സംസ്ഥാന ഭാഗ്യക്കുറി ഫലം',
@@ -198,7 +206,7 @@ export const EXTENDED_TRANSLATIONS: Record<Language, Record<string, string>> = {
       'തിരുവനന്തപുരം ഗോർക്കി ഭവനിൽ കേരള സംസ്ഥാന ഭാഗ്യക്കുറി ഡയറക്ടറേറ്റ് പൊതുജന മേൽനോട്ടത്തിൽ നറുക്കെടുപ്പുകൾ നടത്തുന്നു.',
     'trust.step2_title': 'സ്വയംചാലിത ശേഖരണം',
     'trust.step2_body':
-      'ഞങ്ങളുടെ ഇൻജെഷൻ സേവനം ഔദ്യോഗിക ലോട്ടിസ് പ്രസിദ്ധീകരണ ഫീഡുമായി നേരിട്ട് ബന്ധിപ്പിച്ച് സ്ഥിരീകരിച്ച നറുക്കെടുപ്പ് രേഖകൾ ശേഖരിക്കുന്നു. പ്രഖ്യാപിക്കുന്ന നിമിഷം തന്നെ കേരള ലോട്ടറീസ്.നെറ്റ് എന്ന പൊതു സ്രോതസ്സിൽ നിന്ന് വിജയ സംഖ്യകൾ തത്സമയം കാണിക്കുന്നു — സ്ഥിരീകരിക്കുന്നതുവരെ അവ അനൗദ്യോഗികമെന്ന് അടയാളപ്പെടുത്തിയിരിക്കും.',
+      'ഞങ്ങളുടെ ഇൻജെഷൻ സേവനം ഔദ്യോഗിക ലോട്ടിസ് പ്രസിദ്ധീകരണ ഫീഡുമായി നേരിട്ട് ബന്ധിപ്പിച്ച് സ്ഥിരീകരിച്ച നറുക്കെടുപ്പ് രേഖകൾ ശേഖരിക്കുന്നു. പ്രഖ്യാപിക്കുന്ന നിമിഷം തന്നെ പൊതു സ്രോതസ്സുകളിൽ നിന്ന് വിജയ സംഖ്യകൾ തത്സമയം കാണിക്കുന്നു — സ്ഥിരീകരിക്കുന്നതുവരെ അവ അനൗദ്യോഗികമെന്ന് അടയാളപ്പെടുത്തിയിരിക്കും.',
     'trust.step3_title': 'ഡാറ്റ സത്യാവസ്ഥാ ഓഡിറ്റ്',
     'trust.step3_body':
       'വിജയ സംഖ്യകളും സീരീസ് വിതരണവും സമ്മാന ഘടനയും ഔദ്യോഗിക ഗസറ്റ് പിഡിഎഫ് രേഖകളുമായി ഒത്തുനോക്കി പരിശോധിക്കുന്നു. തത്സമയ (സ്ഥിരീകരിക്കാത്ത) സംഖ്യകൾ ഗസറ്റ് രേഖ ഉപയോഗിച്ച് മാറ്റപ്പെടും; അവയ്ക്ക് ഗസറ്റ് രേഖയെ ഒരിക്കലും മറികടക്കാനാവില്ല.',
@@ -265,6 +273,10 @@ export const EXTENDED_TRANSLATIONS: Record<Language, Record<string, string>> = {
     'home.latest_news': 'சமீபத்திய லாட்டரி செய்திகள் & அறிக்கைகள்',
     'home.view_all_news': 'அனைத்து செய்திகளையும் காண்க',
     'home.sync_note': 'அதிகாரப்பூர்வ லோட்டிஸ் கெசட் தரவுத்தளத்துடன் முடிவுகள் ஒத்திசைக்கப்படுகின்றன.',
+    'news.video_eyebrow': 'தினசரி நேரலை & வீடியோ செய்திகள்',
+    'news.video_title': 'கேரளா லாட்டரி முடிவுகள் வீடியோ செய்திகள்',
+    'news.video_subtitle': 'கோர்க்கி பவனில் இருந்து அதிகாரப்பூர்வ நேரலை குலுக்கல் மற்றும் தினசரி மாலை 3:00 மணிக்கு புதுப்பிக்கப்படும் வீடியோக்களைக் காண்க.',
+    'news.watch_on_youtube': 'யூடியூபில் பார்க்கவும்',
 
     'hero.eyebrow': 'இன்றைய திட்டமிடப்பட்ட குலுக்கல்',
     'hero.title': 'கேரளா மாநில லாட்டரி முடிவு',
@@ -313,7 +325,7 @@ export const EXTENDED_TRANSLATIONS: Record<Language, Record<string, string>> = {
       'திருவனந்தபுரம் கோர்க்கி பவனில் கேரளா மாநில லாட்டரி இயக்ககத்தால் பொது மேற்பார்வையில் குலுக்கல்கள் நடத்தப்படுகின்றன.',
     'trust.step2_title': 'தானியங்கி சேகரிப்பு',
     'trust.step2_body':
-      'எங்கள் உள்ளீட்டுச் சேவை அதிகாரப்பூர்வ லோட்டிஸ் வெளியீட்டு ஊட்டத்துடன் நேரடியாக இணைந்து சரிபார்க்கப்பட்ட குலுக்கல் பதிவுகளைச் சேகரிக்கிறது. அறிவிக்கப்படும் அந்த நொடியே பொது ஆதாரமான keralalotteries.net இல் இருந்து வெற்றி எண்கள் நேரலையாகக் காட்டப்படும் — சரிபார்க்கப்படும் வரை அவை அதிகாரப்பூர்வமற்றவை எனக் குறிக்கப்படும்.',
+      'எங்கள் உள்ளீட்டுச் சேவை அதிகாரப்பூர்வ லோட்டிஸ் வெளியீட்டு ஊட்டத்துடன் நேரடியாக இணைந்து சரிபார்க்கப்பட்ட குலுக்கல் பதிவுகளைச் சேகரிக்கிறது. அறிவிக்கப்படும் அந்த நொடியே பொது நேரலை ஆதாரங்களில் இருந்து வெற்றி எண்கள் நேரலையாகக் காட்டப்படும் — சரிபார்க்கப்படும் வரை அவை அதிகாரப்பூர்வமற்றவை எனக் குறிக்கப்படும்.',
     'trust.step3_title': 'தரவு நம்பகத்தன்மை தணிக்கை',
     'trust.step3_body':
       'வெற்றி எண்கள், தொடர் பங்கீடு மற்றும் பரிசு அமைப்பு ஆகியவை அதிகாரப்பூர்வ கெசட் PDF ஆவணங்களுடன் ஒப்பிட்டு சரிபார்க்கப்படுகின்றன. நேரலை (சரிபார்க்கப்படாத) எண்கள் கெசட் பதிவால் மாற்றப்படும்; அவற்றால் கெசட் பதிவை ஒருபோதும் மீற முடியாது.',
@@ -380,6 +392,10 @@ export const EXTENDED_TRANSLATIONS: Record<Language, Record<string, string>> = {
     'home.latest_news': 'नवीनतम लॉटरी समाचार और रिपोर्ट',
     'home.view_all_news': 'सभी समाचार देखें',
     'home.sync_note': 'परिणाम आधिकारिक लोटिस राजपत्र डेटाबेस के साथ सिंक हो रहे हैं।',
+    'news.video_eyebrow': 'दैनिक लाइव स्ट्रीम और वीडियो बुलेटिन',
+    'news.video_title': 'केरल लॉटरी परिणाम वीडियो समाचार',
+    'news.video_subtitle': 'गोरकी भवन से आधिकारिक लाइव ड्रा प्रसारण और हर दिन दोपहर 3:00 बजे अपडेट होने वाले वीडियो बुलेटिन देखें।',
+    'news.watch_on_youtube': 'यूट्यूब पर देखें',
 
     'hero.eyebrow': 'आज का निर्धारित ड्रॉ',
     'hero.title': 'केरल राज्य लॉटरी परिणाम',
@@ -427,7 +443,7 @@ export const EXTENDED_TRANSLATIONS: Record<Language, Record<string, string>> = {
       'तिरुवनंतपुरम के गोर्की भवन में केरल राज्य लॉटरी निदेशालय द्वारा सार्वजनिक निगरानी में ड्रॉ आयोजित किए जाते हैं।',
     'trust.step2_title': 'स्वचालित संग्रहण',
     'trust.step2_body':
-      'हमारी इनजेशन सेवा आधिकारिक लोटिस प्रकाशन फ़ीड से सीधे जुड़कर सत्यापित ड्रॉ रिकॉर्ड एकत्र करती है। घोषणा होते ही सार्वजनिक स्रोत keralalotteries.net से विजेता अंक लाइव भी दिखाए जाते हैं — सत्यापन तक वे अनधिकृत के रूप में चिह्नित रहते हैं।',
+      'हमारी इनजेशन सेवा आधिकारिक लोटिस प्रकाशन फ़ीड से सीधे जुड़कर सत्यापित ड्रॉ रिकॉर्ड एकत्र करती है। घोषणा होते ही सार्वजनिक लाइव स्रोतों से विजेता अंक लाइव भी दिखाए जाते हैं — सत्यापन तक वे अनधिकृत के रूप में चिह्नित रहते हैं।',
     'trust.step3_title': 'डेटा अखंडता ऑडिट',
     'trust.step3_body':
       'विजेता अंक, श्रृंखला वितरण और पुरस्कार संरचना की आधिकारिक राजपत्र PDF दस्तावेजों से मिलान कर सत्यापन किया जाता है। लाइव (असत्यापित) अंक राजपत्र रिकॉर्ड से बदल दिए जाते हैं; वे राजपत्र रिकॉर्ड को कभी ओवरराइड नहीं कर सकते।',

@@ -171,7 +171,7 @@ export function ResultsHubPage({
           {dateNavItems.map((item) => (
             <Link
               key={item.dateStr}
-              href={`${prefix}/results/date/${item.dateStr}`}
+              href={`${prefix}/kerala-lottery-result/${item.dateStr}`}
               className="p-3 bg-[#F7F7F4] hover:bg-[#0B3B32] hover:text-white border border-[#E2E7E3] hover:border-[#0B3B32] rounded-2xl text-center transition-all group cursor-pointer shadow-2xs"
             >
               <span className="text-[10px] font-bold text-[#68736E] group-hover:text-[#C69A3A] uppercase tracking-wider block font-tabular">
@@ -329,7 +329,7 @@ export function ResultsHubPage({
           </div>
 
           <Link
-            href={`${prefix}/kerala-lottery-results`}
+            href={`${prefix}/previous-results`}
             className="font-bold text-[#0B3B32] hover:underline inline-flex items-center gap-1"
           >
             <ArrowRight className="w-3.5 h-3.5" />

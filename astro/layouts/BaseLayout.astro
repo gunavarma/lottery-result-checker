@@ -25,6 +25,7 @@ import {
   PwaInstallPromptIsland,
 } from '@/components/islands';
 import { ForegroundNotificationToastIsland } from '@/components/island/foreground-notification-toast';
+import { WhatsAppOfferPopupIsland } from '@/components/island/whatsapp-offer-popup';
 
 interface Props {
   /** Locale being rendered. English is the unprefixed canonical tree. */
@@ -228,6 +229,7 @@ const gaEvents = analyticsEvents
     {/* client:idle ensures neither prompt blocks the critical path or FCP/LCP */}
     <PwaInstallPromptIsland client:idle />
     <ForegroundNotificationToastIsland client:idle />
+    <WhatsAppOfferPopupIsland client:load locale={locale} pathname={pathname} />
 
     <slot name="chrome-bottom" />
   </body>

@@ -21,6 +21,7 @@ import {
 import { LanguageSelector } from './LanguageSelector';
 import { useLanguage } from '@/context/LanguageContext';
 import { withLocale } from '@/lib/i18n/client-path';
+import { WhatsAppLogo } from '@/components/WhatsAppLogo';
 
 const SearchModal = lazy(() => import('./SearchModal').then((mod) => mod.SearchModal));
 const NotificationModal = lazy(() =>
@@ -59,8 +60,9 @@ export function Navbar({
   const navLinks = [
     { label: t('nav.today', 'Today'), href: '/' },
     { label: t('nav.results', 'Results'), href: '/results' },
-    { label: t('nav.archive', 'Archive'), href: '/kerala-lottery-results' },
+    { label: t('nav.archive', 'Archive'), href: '/previous-results' },
     { label: t('nav.check_ticket', 'Check Ticket'), href: '/ticket-checker' },
+    { label: 'WhatsApp Alerts', href: '/checkout' },
     { label: t('nav.upcoming', 'Upcoming'), href: '/lottery-calendar' },
     { label: t('nav.news', 'News'), href: '/news' },
   ];
@@ -68,15 +70,18 @@ export function Navbar({
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E2E7E3] shadow-xs">
-        {/* Top Source Bar — cleaner, better readable */}
+        {/* Scrolling WhatsApp alert promotion in the top information bar. */}
         <div className="bg-[#0B3B32] text-white/90 text-[11px] py-1.5 px-4 font-medium">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#C8A45D]" />
-              <span className="tracking-wide text-[11px] font-semibold">
-                {t('ui.lotis_sync', 'LOTIS Synchronized • Kerala State Lotteries Information')}
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <a href={href('/checkout')} className="kd-alert-marquee group flex min-w-0 flex-1 items-center gap-2 sm:max-w-[65%]" aria-label="WhatsApp alerts: get lottery results and saved-ticket checks. View plans">
+              <WhatsAppLogo className="h-4 w-4 shrink-0" />
+              <span className="kd-alert-marquee-window min-w-0 flex-1">
+                <span className="kd-alert-marquee-track tracking-wide text-[11px] font-semibold group-hover:[animation-play-state:paused]">
+                  <span>WhatsApp Alerts · Get verified Kerala lottery results and saved-ticket checks · View plans</span>
+                  <span aria-hidden="true">WhatsApp Alerts · Get verified Kerala lottery results and saved-ticket checks · View plans</span>
+                </span>
               </span>
-            </div>
+            </a>
             <div className="hidden sm:flex items-center gap-4">
               <span className="flex items-center gap-1.5 text-white/80">
                 <Clock className="w-3.5 h-3.5 text-[#C8A45D]" />
@@ -131,12 +136,13 @@ export function Navbar({
                   <Link
                     key={item.href}
                     href={href(item.href)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                       isActive
                         ? 'bg-[#0B3B32] text-white shadow-xs'
                         : 'text-[#17201D] hover:text-[#0B3B32] hover:bg-[#F1F4F2]'
                     }`}
                   >
+                    {item.href === '/checkout' && <WhatsAppLogo className="h-4 w-4" />}
                     {item.label}
                   </Link>
                 );
@@ -231,7 +237,10 @@ export function Navbar({
                         : 'text-[#17201D] hover:bg-[#F7F7F4]'
                     }`}
                   >
-                    <span>{item.label}</span>
+                    <span className="inline-flex items-center gap-2">
+                      {item.href === '/checkout' && <WhatsAppLogo className="h-5 w-5" />}
+                      {item.label}
+                    </span>
                     <ChevronRight className="w-4 h-4 text-[#68736E]" />
                   </Link>
                 );

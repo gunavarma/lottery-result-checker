@@ -6,7 +6,6 @@ const STATIC_ASSETS = [
   '/live',
   '/kerala-lottery-result-today',
   '/ticket-checker',
-  '/kerala-lottery-results',
   '/my-lotteries',
   '/manifest.json',
   '/favicon.ico',

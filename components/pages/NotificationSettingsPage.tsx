@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, CheckCircle2, AlertCircle, ShieldCheck, Check, Trash2, ArrowLeft, Loader2 } from 'lucide-react';
+import { Bell, CheckCircle2, AlertCircle, ShieldCheck, Check, Trash2, Loader2, MessageCircle } from 'lucide-react';
 import Link from "@/components/Link";
 import { requestFcmToken } from '@/lib/firebase/client';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
@@ -12,6 +12,10 @@ export default function NotificationSettingsPage() {
   const [permissionState, setPermissionState] = useState<NotificationPermission>('default');
   const [fcmToken, setFcmToken] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+  const [whatsappPhone, setWhatsappPhone] = useState('');
+  const [whatsappConsent, setWhatsappConsent] = useState(false);
+  const [whatsappLoading, setWhatsappLoading] = useState(false);
+  const [whatsappStatus, setWhatsappStatus] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -125,6 +129,38 @@ export default function NotificationSettingsPage() {
       console.error('Error disabling notifications:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleWhatsAppSubscribe = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formElement = event.currentTarget;
+    setWhatsappLoading(true);
+    setWhatsappStatus(null);
+    try {
+      const form = new FormData(formElement);
+      const response = await fetch('/api/whatsapp/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: whatsappPhone,
+          consent: whatsappConsent,
+          website: String(form.get('website') || ''),
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || 'Could not save your WhatsApp subscription.');
+      setWhatsappStatus({ type: 'success', text: result.message });
+      setWhatsappPhone('');
+      setWhatsappConsent(false);
+      formElement.reset();
+    } catch (error) {
+      setWhatsappStatus({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Could not save your WhatsApp subscription. Please try again.',
+      });
+    } finally {
+      setWhatsappLoading(false);
     }
   };
 
@@ -288,6 +324,75 @@ export default function NotificationSettingsPage() {
           </button>
         </div>
       </div>
+
+      {/* WhatsApp opt-in */}
+      <form
+        onSubmit={handleWhatsAppSubscribe}
+        className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2E7E3] shadow-sm space-y-5"
+      >
+        <div className="flex items-start gap-3">
+          <div className="rounded-xl bg-[#EAF5EF] p-2 text-[#16845B]">
+            <MessageCircle className="w-5 h-5" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-lg font-extrabold text-[#17201D]">WhatsApp result alerts</h2>
+            <p className="text-sm text-[#68736E]">Get Kerala lottery result updates on WhatsApp. This is optional and only for result alerts.</p>
+          </div>
+        </div>
+
+        <label className="block space-y-2 text-xs font-bold text-[#17201D]">
+          <span>WhatsApp number with country code</span>
+          <input
+            type="tel"
+            name="whatsapp-phone"
+            autoComplete="tel"
+            inputMode="tel"
+            required
+            value={whatsappPhone}
+            onChange={(event) => setWhatsappPhone(event.target.value)}
+            placeholder="+91 98765 43210"
+            className="w-full rounded-xl border border-[#CBD5CE] bg-white px-4 py-3 text-sm font-normal text-[#17201D] outline-none focus:border-[#16845B] focus:ring-2 focus:ring-[#16845B]/15"
+          />
+        </label>
+
+        <input
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="absolute -left-[10000px] h-px w-px overflow-hidden"
+        />
+
+        <label className="flex items-start gap-3 text-xs leading-relaxed text-[#46514B]">
+          <input
+            type="checkbox"
+            required
+            checked={whatsappConsent}
+            onChange={(event) => setWhatsappConsent(event.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-[#0B3B32]"
+          />
+          <span>
+            I agree to receive Kerala lottery result alerts from KeralaDraws on WhatsApp at this number. I can unsubscribe by replying <strong>STOP</strong> at any time. See our{' '}
+            <Link href="/privacy-policy" className="font-bold text-[#0B3B32] underline">Privacy Policy</Link>.
+          </span>
+        </label>
+
+        {whatsappStatus && (
+          <p role="status" className={`rounded-xl border p-3 text-xs font-semibold ${whatsappStatus.type === 'success' ? 'border-[#16845B]/30 bg-[#16845B]/10 text-[#16845B]' : 'border-[#B54747]/30 bg-[#B54747]/10 text-[#B54747]'}`}>
+            {whatsappStatus.text}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={whatsappLoading || !whatsappConsent}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0B3B32] px-6 py-3 text-xs font-bold text-white transition-colors hover:bg-[#16845B] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {whatsappLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+          {whatsappLoading ? 'Saving…' : 'Subscribe to WhatsApp alerts'}
+        </button>
+      </form>
 
       {/* Privacy Guarantee */}
       <div className="bg-white rounded-3xl p-6 border border-[#E2E7E3] text-xs text-[#68736E] space-y-2">

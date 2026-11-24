@@ -48,7 +48,7 @@ Once domain ownership is verified:
    sitemap.xml
    ```
 3. Click **Submit**.
-4. Verify that the status shows **Success** and the detected URL count matches the total database records (landing pages, all active lottery schemes, historical draws, and news articles).
+4. Verify that the status shows **Success** and the discovered URL count is consistent with the site's canonical, indexable pages. Redirects, utility pages marked `noindex`, and provisional results should not be counted as sitemap URLs.
 
 ---
 
@@ -56,13 +56,13 @@ Once domain ownership is verified:
 
 To bootstrap crawling for core pages immediately:
 1. Use the **URL Inspection Tool** (top search bar in Search Console).
-2. Inspect the following high-priority URLs one by one:
+2. Inspect the following high-priority canonical URLs one by one:
    * `https://keraladraws.com/`
-   * `https://keraladraws.com/kerala-lottery-result-today`
+   * `https://keraladraws.com/kerala-lottery-result-today` (only when the result is gazette-confirmed and the page is indexable)
    * `https://keraladraws.com/results`
-   * `https://keraladraws.com/lotteries`
-   * `https://keraladraws.com/results/archive`
-   * `https://keraladraws.com/check-ticket`
+   * `https://keraladraws.com/previous-results`
+   * `https://keraladraws.com/ticket-checker`
+   * `https://keraladraws.com/kerala-lottery-results/2026`
    * `https://keraladraws.com/lottery-calendar`
    * `https://keraladraws.com/prize-structure`
    * `https://keraladraws.com/news`
@@ -71,8 +71,8 @@ To bootstrap crawling for core pages immediately:
    * `https://keraladraws.com/privacy-policy`
    * `https://keraladraws.com/terms`
    * `https://keraladraws.com/disclaimer`
-3. Click **Test Live URL** to confirm that Googlebot renders the server content with HTTP status `200 OK`.
-4. Click **Request Indexing**.
+3. Click **Test Live URL** to confirm that Googlebot renders the server content with HTTP status `200 OK` and the expected canonical and robots directives.
+4. Click **Request Indexing** only for canonical pages that are intended to be indexed. Do not request indexing for redirects, noindex pages, or provisional result pages.
 
 ---
 

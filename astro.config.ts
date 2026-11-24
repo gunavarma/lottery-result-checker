@@ -69,6 +69,11 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    resolve: {
+      alias: isCloudflareWorkersBuild
+        ? {}
+        : { 'cloudflare:workers': new URL('./lib/cloudflare-workers-node.ts', import.meta.url).pathname },
+    },
     // Freeze the resolved origin into both bundles. Reading it from the
     // environment cannot work in the browser, and falling back there produced a
     // different value than the server render — so the origin is computed once,

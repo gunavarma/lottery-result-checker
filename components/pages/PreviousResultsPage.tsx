@@ -5,6 +5,7 @@ import { PrizeTable } from '@/components/PrizeTable';
 import { OfficialSourceBadge } from '@/components/OfficialSourceBadge';
 import { ResultShareBar } from '@/components/ResultShareBar';
 import { formatINR } from '@/lib/format';
+import { formatDateOnly } from '@/lib/date';
 import {
   Calendar as CalendarIcon,
   ArrowRight,
@@ -334,6 +335,8 @@ export default function PreviousResultsPage({
         ) : (
           <div className="space-y-8">
             {filteredDraws.map((draw) => {
+              const drawDateSlug = formatDateOnly(draw.drawDate);
+              const localePrefix = locale && locale !== 'en' ? `/${locale}` : '';
               const firstPrize = draw.prizes?.find(
                 (p) => p.orderIndex === 0 || p.category.toLowerCase().includes('1st')
               );
@@ -399,7 +402,7 @@ export default function PreviousResultsPage({
 
                   <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[#E2E7E3]">
                     <Link
-                      href={`/results/date/${draw.drawDate}`}
+                      href={`${localePrefix}/kerala-lottery-result/${drawDateSlug}`}
                       className="inline-flex items-center gap-2 bg-[#0B3B32] hover:bg-[#16845B] text-white px-4 py-2 rounded-xl font-bold text-xs shadow-xs transition-colors"
                     >
                       <span>Permanent Date URL</span>
@@ -408,7 +411,7 @@ export default function PreviousResultsPage({
 
                     <ResultShareBar
                       title={`${draw.lottery.name} (${draw.drawNumber}) on ${draw.drawDate}`}
-                      url={`/results/date/${draw.drawDate}`}
+                      url={`${localePrefix}/kerala-lottery-result/${drawDateSlug}`}
                     />
                   </div>
                 </div>
@@ -426,7 +429,7 @@ export default function PreviousResultsPage({
           </span>
         </div>
         <Link
-          href="/check-ticket"
+          href="/ticket-checker"
           className="font-bold text-[#0B3B32] hover:underline shrink-0"
         >
           Check physical ticket numbers →

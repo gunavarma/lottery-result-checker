@@ -20,6 +20,7 @@ export interface GuideArticle {
     tips?: string[];
   }[];
   faqs: { question: string; answer: string }[];
+  sources?: { label: string; url: string }[];
 }
 
 export const GUIDES: GuideArticle[] = [
@@ -27,78 +28,77 @@ export const GUIDES: GuideArticle[] = [
     id: 'how-to-check-kerala-lottery-ticket',
     slug: 'how-to-check-kerala-lottery-ticket',
     category: 'Tools & Alerts',
-    title: 'How to Check Kerala Lottery Ticket Numbers Accurately',
-    subtitle: 'Step-by-step instructions for checking 2-letter series codes, 6-digit jackpot numbers, consolation series, and 4-digit lower-tier ending digits.',
-    excerpt: 'Learn the exact method to verify physical Kerala Lottery paper tickets against official published LOTIS result gazettes without missing consolation or lower prize tiers.',
+    title: 'How to Scan a Kerala Lottery Ticket and Check the Result',
+    subtitle: 'Use your phone camera or a ticket photo to read the number, review what the scanner detected, and compare it with the correct published draw.',
+    excerpt: 'A practical guide to scanning Kerala lottery tickets, checking the detected number against published results, and confirming a possible prize with the official LOTIS result.',
     publishedAt: '2026-08-20',
-    updatedAt: '2026-08-28',
-    author: 'KeralaDraws Verification Desk',
+    updatedAt: '2026-11-23',
+    author: 'KeralaDraws Editorial Desk',
     readTime: '5 min read',
     featured: true,
     tableOfContents: [
-      { id: 'anatomy-of-ticket', title: 'Anatomy of a Kerala Lottery Ticket' },
-      { id: 'checking-1st-prize', title: 'Checking 1st Prize & Consolation Series' },
-      { id: 'checking-lower-tiers', title: 'Checking 2nd to 8th Prize Ending Digits' },
-      { id: 'using-ticket-checker', title: 'Using the KeralaDraws Instant Ticket Checker' },
-      { id: 'verification-safety', title: 'Statutory Verification Safety Rules' },
+      { id: 'before-you-scan', title: 'Before You Scan a Ticket' },
+      { id: 'scan-ticket', title: 'Scan a Ticket with Your Phone' },
+      { id: 'check-detected-number', title: 'Review the Number and Check the Result' },
+      { id: 'verify-official-result', title: 'Verify a Possible Prize with the Official Result' },
+      { id: 'scanner-faq', title: 'Scanner Questions' },
     ],
     sections: [
       {
-        id: 'anatomy-of-ticket',
-        title: 'Anatomy of a Kerala Lottery Ticket',
+        id: 'before-you-scan',
+        title: 'Before You Scan a Ticket',
         paragraphs: [
-          'Every physical Kerala State Lottery ticket features a specific combination of alphanumeric codes printed on currency-grade paper. Understanding these components is essential before checking your ticket.',
-          'The first two letters represent the Ticket Series (for example, VA, VB, VC, PN, PS, or KN). The following six digits represent the unique Ticket Number (for example, 320327). In addition, the top banner prints the Draw Name (such as Suvarna Keralam or Karunya Plus) and the official Draw Number (such as SK-67 or KN-638).',
+          'Keep the paper ticket with you. Find the lottery scheme, draw number or date, series letters, and printed ticket number. These details help you choose the correct draw before checking.',
+          'Use a clear, well-lit image where the full ticket number is visible and in focus. Avoid glare, shadows, folds, or covering any digits. If the print is unclear, enter the number manually and compare it with the ticket.',
         ],
         tips: [
-          'Ensure the draw date and lottery scheme name on your paper ticket match the exact result draw you are evaluating.',
+          'A scanner reads text from an image; it does not establish that a ticket is genuine or that a prize claim will be accepted.',
         ],
       },
       {
-        id: 'checking-1st-prize',
-        title: 'Checking 1st Prize & Consolation Series',
+        id: 'scan-ticket',
+        title: 'Scan a Ticket with Your Phone',
         paragraphs: [
-          'The First Prize requires an exact match of both the series code and the entire 6-digit number. For example, if the certified 1st prize is PS 320327, only a ticket bearing the PS series and 320327 wins the top jackpot.',
-          'Consolation Prizes: If your ticket has the exact same 6 digits (320327) but belongs to any of the other 11 printed series for that draw (e.g., PN 320327, PO 320327, PR 320327), you win the statutory Consolation Prize (typically INR 8,000 per ticket). Many participants mistakenly discard consolation-winning tickets, so always check the 6-digit number even if the series letters differ.',
+          'Open the KeralaDraws Ticket Checker and select the scheme printed on your ticket. Choose Scan Tickets to use your camera or select a ticket photo from your device. You can also type the number manually.',
+          'For multiple tickets, scan or add each one, then review the detected numbers before running the check. Correct any misread digit or series letter first; characters such as 0 and 6 can be difficult to distinguish in a blurry image.',
         ],
       },
       {
-        id: 'checking-lower-tiers',
-        title: 'Checking 2nd to 8th Prize Ending Digits',
+        id: 'check-detected-number',
+        title: 'Review the Number and Check the Result',
         paragraphs: [
-          'For 2nd and 3rd prizes in certain weekly schemes, full 6-digit numbers with series are drawn. For 4th through 8th prize categories, winning numbers are awarded based on Ending Digits (last 4 digits, last 3 digits, or last 2 digits).',
-          'For example, if the 7th prize lists ending numbers such as 1234, 5678, and 9012, any ticket whose last 4 digits match any of those combinations wins the prize, regardless of the series letters or the first two digits.',
+          'Confirm the scheme and draw date match your paper ticket, then submit the number. KeralaDraws compares the entry with the published result data available for that draw and shows any matching prize information.',
+          'If no result is available yet, check again after publication. A “no match” result only describes the comparison against the data currently available; it is not a substitute for checking the complete official result.',
         ],
       },
       {
-        id: 'using-ticket-checker',
-        title: 'Using the KeralaDraws Instant Ticket Checker',
+        id: 'verify-official-result',
+        title: 'Verify a Possible Prize with the Official Result',
         paragraphs: [
-          'To avoid human oversight when scanning hundreds of 4-digit numbers, use the automated KeralaDraws Ticket Checker tool. Select your lottery scheme and enter your 6-digit ticket number (or enter multiple tickets in bulk mode).',
-          'The matching algorithm automatically checks your ticket against 1st prize, consolation series, and all lower ending digit tiers simultaneously, highlighting the exact prize tier and amount won.',
+          'Before relying on a possible match, open the Directorate of State Lotteries’ LOTIS result for the same draw. Check the ticket number, series, scheme, draw number, and prize category against the official result and any published gazette instructions.',
+          'Keep the original ticket safe. Follow the current claim procedure and deadline stated by the Directorate. The scanner is a reading and comparison aid; only the Directorate’s official records and claim process determine whether a prize is payable.',
         ],
-      },
-      {
-        id: 'verification-safety',
-        title: 'Statutory Verification Safety Rules',
-        paragraphs: [
-          'Always preserve winning tickets in clean, dry condition without cuts, tears, or overwriting. Cross-verify results with the published Kerala Government Gazette before surrendering tickets to claim counters.',
-          'Prizes up to INR 5,000 can be redeemed directly from authorized retailers across Kerala. Higher amounts require submission to District Lottery Offices or the Directorate of State Lotteries in Thiruvananthapuram within 90 days of the draw.',
-        ],
+        tips: ['Use the official LOTIS portal linked below to verify a potential win.'],
       },
     ],
     faqs: [
       {
-        question: 'What happens if my ticket matches the 6-digit number but has a different series code?',
-        answer: 'You win the Consolation Prize (typically INR 8,000 for weekly schemes). The consolation prize is awarded to all remaining series matching the first prize 6-digit number.',
+        question: 'Can I scan a Kerala lottery ticket with my phone?',
+        answer: 'Yes. On the KeralaDraws Ticket Checker, choose Scan Tickets and use your camera or select a ticket image. Review the detected number before checking it.',
       },
       {
-        question: 'Can I check multiple Kerala lottery tickets at once?',
-        answer: 'Yes, the KeralaDraws Ticket Checker features a Bulk Check mode where you can paste or type multiple ticket numbers separated by commas or new lines for instant multi-tier evaluation.',
+        question: 'What should I do if the scanner reads a number incorrectly?',
+        answer: 'Correct the detected digits or series manually, or type the number yourself. Always compare the displayed number with the printed ticket before submitting.',
       },
       {
-        question: 'What is the time limit to claim prize money for a winning ticket?',
-        answer: 'Under Kerala State Lottery rules, winning tickets must be surrendered within 90 days from the date of the draw.',
+        question: 'Does a scanner result confirm that I have won?',
+        answer: 'No. It is a comparison aid. Verify any possible match against the official LOTIS result and follow the Directorate’s current prize-claim instructions.',
+      },
+    ],
+    sources: [
+      {
+        label: 'Directorate of Kerala State Lotteries: official LOTIS results',
+        url: 'https://www.lotteryagent.kerala.gov.in/result/public/',
       },
     ],
   },

@@ -2,13 +2,13 @@ import Link from "@/components/Link";
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { StructuredData } from '@/components/StructuredData';
 import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
-import { ShieldCheck, Lock, Bell, Eye, Database } from 'lucide-react';
+import { ShieldCheck, Lock, Bell, Eye, Database, MessageCircle } from 'lucide-react';
 
 
 export const metadata = constructMetadata({
   title: 'Privacy Policy | KeralaDraws Data Protection',
   description:
-    'Read the KeralaDraws Privacy Policy. Understand our strict user data protections, Firebase Cloud Messaging (FCM) push notification tokens, and zero personal data retention policies.',
+    'Read how KeralaDraws handles website analytics, browser push tokens, and phone numbers used for WhatsApp lottery result alerts.',
   path: '/privacy-policy',
 });
 
@@ -37,7 +37,7 @@ export default function PrivacyPolicyPage() {
           KeralaDraws Privacy Policy
         </h1>
         <p className="text-xs sm:text-sm text-[#68736E]">
-          Last updated: August 2026. This policy outlines how KeralaDraws collects, protects, and utilizes technical data when you use our website.
+          Last updated: November 14, 2026. This policy explains what data KeralaDraws uses to operate the website and deliver notification services.
         </p>
       </div>
 
@@ -45,17 +45,32 @@ export default function PrivacyPolicyPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-extrabold text-[#17201D] flex items-center gap-2">
             <Lock className="w-5 h-5 text-[#0B3B32]" />
-            <span>1. Zero Personal Data Collection Policy</span>
+            <span>1. Data used by KeralaDraws</span>
           </h2>
           <p className="text-[#68736E]">
-            KeralaDraws is dedicated to open informational transparency. We <strong>do not require user registration, passwords, credit cards, or phone numbers</strong> to check lottery results, search historical archives, or calculate prize structures.
+            You can browse lottery results without creating an account. We do not ask for passwords, payment card details, or ticket numbers for notification subscriptions. If you choose WhatsApp alerts, we collect the phone number you submit and the consent choice and time needed to manage that subscription.
           </p>
         </section>
 
         <section className="space-y-3">
           <h2 className="text-lg font-extrabold text-[#17201D] flex items-center gap-2">
+            <MessageCircle className="w-5 h-5 text-[#0B3B32]" />
+            <span>2. WhatsApp result alerts</span>
+          </h2>
+          <p className="text-[#68736E]">
+            WhatsApp alerts are optional. We use your phone number only to manage your subscription and send the result updates you requested. Your number is encrypted before it is stored; a keyed, non-reversible digest is used to find the subscription and apply opt-outs. Meta/WhatsApp processes messages and delivery information to provide the service.
+          </p>
+          <ul className="list-disc pl-5 space-y-1.5 text-[#68736E]">
+            <li>We record when and how you opted in. We do not store the contents of your WhatsApp messages; the webhook reads supported subscription commands such as START, STOP, and DELETE DATA, then discards the message text.</li>
+            <li>Reply <strong>STOP</strong> to unsubscribe. We erase the encrypted phone number, clear the opt-in record, and retain the keyed opt-out digest and opt-out time so we can honor your request. Reply <strong>DELETE DATA</strong> to remove that suppression record too.</li>
+            <li>We retain an active subscription until you opt out. We do not sell or rent subscription information.</li>
+          </ul>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-lg font-extrabold text-[#17201D] flex items-center gap-2">
             <Bell className="w-5 h-5 text-[#0B3B32]" />
-            <span>2. Web Push Notifications (Firebase Cloud Messaging)</span>
+            <span>3. Browser push notifications</span>
           </h2>
           <p className="text-[#68736E]">
             If you explicitly grant browser notification permissions on KeralaDraws, we store an anonymous <strong>Firebase Cloud Messaging (FCM) registration token</strong>.
@@ -70,7 +85,7 @@ export default function PrivacyPolicyPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-extrabold text-[#17201D] flex items-center gap-2">
             <Eye className="w-5 h-5 text-[#0B3B32]" />
-            <span>3. Cookies & Analytical Data</span>
+            <span>4. Cookies and analytics</span>
           </h2>
           <p className="text-[#68736E]">
             We may use minimal local storage tokens to store your theme preferences and favourite lottery schemes locally on your device. We use privacy-respecting aggregated web analytics (e.g. Google Analytics 4) to monitor page load times, device screen compatibility, and core web vitals.
@@ -80,10 +95,13 @@ export default function PrivacyPolicyPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-extrabold text-[#17201D] flex items-center gap-2">
             <Database className="w-5 h-5 text-[#0B3B32]" />
-            <span>4. Third-Party Services</span>
+            <span>5. Service providers and security</span>
           </h2>
           <p className="text-[#68736E]">
-            Our infrastructure is hosted on secure Vercel and Supabase cloud facilities with strict SSL/TLS encryption. We do not sell, rent, or monetize personal user records to marketing agencies or third-party advertisers.
+            KeralaDraws uses Cloudflare to run the website and webhook, Supabase Postgres to store application records, Google Firebase for browser push, and Meta/WhatsApp to deliver WhatsApp messages. We use these providers only to operate the requested services and protect data in transit with HTTPS. We do not sell personal information to advertisers.
+          </p>
+          <p className="text-[#68736E]">
+            To ask about your information, use our <Link href="/contact" className="text-[#0B3B32] font-bold underline">Contact page</Link>. This policy may be updated when the service changes; the latest revision date appears above.
           </p>
         </section>
       </div>

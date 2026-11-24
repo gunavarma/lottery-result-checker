@@ -56,6 +56,7 @@ const STOP_LINE_PATTERNS: RegExp[] = [
   /previous results/i,
   /next .* lottery .* draw on/i,
   /kerala state lotteries results$/i,
+  /^[A-Z]{2}\s*\d{1,4}\s+Result\b/i,
 ];
 
 /** A tier header is only valid at the start of a short line. */
@@ -610,15 +611,6 @@ export function inspectKeralaLotteriesPage(
   // Only parse below the header, and stop at the footer/next-draw markers.
   const body = lines.slice(header.headerLineIndex + 1);
 
-  // The source has published the page but not the numbers yet.
-  //
-  // Checked *before* the lottery-name requirement on purpose: a pre-draw page
-  // often phrases its heading without the word "Lottery Result" (for example
-  // "...Samrudhi SM 72 Winners Numbers"), yet we already know exactly which
-  // draw this is from the validated date + draw number, so it must be reported
-  // as "not drawn yet" rather than as an unreadable page.
-  if (hasPreDrawPlaceholder(body)) return preDraw();
-
   const lotteryName = resolveLotteryName(header.lotteryName, header.lotteryCode);
   if (!lotteryName) {
     return { kind: 'UNIDENTIFIED', reason: 'no lottery name on page' };
@@ -664,6 +656,10 @@ export function inspectKeralaLotteriesPage(
     const line = body[index];
     if (STOP_LINE_PATTERNS.some((pattern) => pattern.test(line))) break;
     if (IGNORED_LINE_PATTERNS.some((pattern) => pattern.test(line))) continue;
+    if (PLACEHOLDER_LINE.test(line.replace(/\u00a0/g, ' ').trim())) {
+      current = null;
+      continue;
+    }
 
     const isShortLine = line.length <= MAX_TIER_HEADER_LENGTH;
     const isNoise = NOISE_SENTENCE_PATTERNS.some((pattern) => pattern.test(line));
@@ -727,7 +723,8 @@ export function inspectKeralaLotteriesPage(
     // the early tiers of older layouts that published the 3rd prize as 4-digit
     // endings — but only when the line is *exclusively* 4-digit groups, so a
     // stray year or count can never be captured.
-    const isEndingTier = current.tierNumber !== null && current.tierNumber >= 4;
+    const isEndingTier =
+      current.tierNumber !== null && current.tierNumber >= 4 && !/[a-z]/i.test(line);
     const isOldStyleEndingTier =
       current.tierNumber !== null && PURE_FOUR_DIGIT_LINE.test(line);
 

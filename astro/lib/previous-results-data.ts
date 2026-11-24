@@ -1,6 +1,7 @@
 import { prisma, serializeData } from '@/lib/prisma';
 import { getOrSetCache, PUBLISHED_DATA_STALE_IF_ERROR_MS } from '@/lib/cache';
 import { DRAW_FULL } from '@/lib/results/projections';
+import { formatDateOnly } from '@/lib/date';
 
 /**
  * Server-side loader for the previous-results page initial state.
@@ -11,18 +12,16 @@ export async function getPreviousResultsInitialData() {
   return getOrSetCache(
     'previous_results_initial',
     async () => {
-      // 1. Get all distinct published dates
+      // Only offer dates with gazette-verified draws. Provisional live rows
+      // must not create archive links that lead to non-indexable result pages.
       const datesResult = await prisma.draw.findMany({
-        where: { status: 'PUBLISHED' },
+        where: { status: 'PUBLISHED', verificationLevel: 'OFFICIAL' },
         select: { drawDate: true },
         distinct: ['drawDate'],
         orderBy: { drawDate: 'desc' },
       });
 
-      const availableDates = datesResult.map((d) => {
-        const dStr = d.drawDate instanceof Date ? d.drawDate.toISOString().slice(0, 10) : d.drawDate;
-        return dStr;
-      });
+      const availableDates = datesResult.map((d) => formatDateOnly(d.drawDate));
 
       // 2. Get draws for the most recent date (first in the list)
       const initialDate = availableDates[0] || '';
@@ -37,6 +36,7 @@ export async function getPreviousResultsInitialData() {
           where: {
             drawDate: { gte: targetDate, lt: dayAfter },
             status: 'PUBLISHED',
+            verificationLevel: 'OFFICIAL',
           },
           select: DRAW_FULL,
           orderBy: { createdAt: 'desc' },

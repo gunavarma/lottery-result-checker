@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { isServerlessRuntime, withConnectTimeout, withServerlessPoolLimits } from './db-url';
 
 // Two adjustments to the connection string, both applied from code so the
@@ -34,22 +35,18 @@ const poolMax =
         ? urlPoolLimit
         : 10;
 
-const prismaAdapter = new PrismaPg({
-  // The empty fallback lets non-database unit tests import the module without
-  // eagerly opening a connection. Actual queries still require DATABASE_URL.
-  connectionString: datasourceUrl || 'postgresql://localhost/postgres',
-  max: poolMax,
-  connectionTimeoutMillis: 15_000,
-  idleTimeoutMillis: 300_000,
-});
-
-// Prevent multiple instances of Prisma Client in development. The client is
-// built through a factory so the global's type is the *inferred* client type
-// (with its omit configuration) instead of the bare `PrismaClient`, which the
-// configured client is not assignable to.
-const createPrismaClient = () =>
+// Prevent multiple instances of Prisma Client in development. The factory
+// creates a fresh pg pool per request on Cloudflare; Hyperdrive pools the
+// remote connections and survives request boundaries safely.
+const createPrismaClient = (connectionString = datasourceUrl || 'postgresql://localhost/postgres') =>
   new PrismaClient({
-    adapter: prismaAdapter,
+    adapter: new PrismaPg({
+      // Cloudflare uses its Hyperdrive binding. Local runtimes use DATABASE_URL.
+      connectionString,
+      max: poolMax,
+      connectionTimeoutMillis: 15_000,
+      idleTimeoutMillis: 300_000,
+    }),
     omit: omitAuditColumns,
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });
@@ -59,6 +56,8 @@ type AppPrismaClient = ReturnType<typeof createPrismaClient>;
 const globalForPrisma = globalThis as unknown as {
   prisma: AppPrismaClient | undefined;
 };
+
+const requestPrisma = new AsyncLocalStorage<AppPrismaClient>();
 
 // 3. Global column omission — the single biggest egress fix in this file.
 //
@@ -88,9 +87,31 @@ const omitAuditColumns = {
   },
 } as const;
 
-export const prisma: AppPrismaClient = globalForPrisma.prisma ?? createPrismaClient();
+const sharedPrisma: AppPrismaClient = globalForPrisma.prisma ?? createPrismaClient();
 
-globalForPrisma.prisma = prisma;
+globalForPrisma.prisma = sharedPrisma;
+
+/** Run one Worker request on its own client; Hyperdrive owns cross-request pooling. */
+export async function withRequestPrisma<T>(connectionString: string, run: () => Promise<T>): Promise<T> {
+  const client = createPrismaClient(connectionString);
+  try {
+    return await requestPrisma.run(client, run);
+  } finally {
+    await client.$disconnect().catch((error) => {
+      console.warn('[Prisma] request client disconnect failed:', error?.message || error);
+    });
+  }
+}
+
+// Keep existing route call sites unchanged while directing them to the
+// request-scoped client when running inside Astro middleware.
+export const prisma: AppPrismaClient = new Proxy(sharedPrisma, {
+  get(_target, property) {
+    const client = requestPrisma.getStore() ?? sharedPrisma;
+    const value = Reflect.get(client, property, client);
+    return typeof value === 'function' ? value.bind(client) : value;
+  },
+});
 
 // The pure helpers now live in `lib/format.ts` and are re-exported here so
 // server-side imports of them keep working. They were moved because importing

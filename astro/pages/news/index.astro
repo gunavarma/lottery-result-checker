@@ -1,14 +1,21 @@
 ---
 /**
- * Presentational, ships no JS.
+ * News and Daily Live Video Results Page.
  *
- * `getAllNews()` is an in-memory read, so the component stays synchronous and
- * Astro can server-render it directly.
+ * Server-renders initial markup with daily YouTube draw videos and hydrates
+ * the interactive video player island on the client.
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import NewsIndexPage, { metadata } from '@/components/pages/NewsIndexPage';
+import { metadata } from '@/components/pages/NewsIndexPage';
+import { NewsIndexPageIsland } from '@/components/island/news-index-page';
+import { getDailyKeralaLotteryVideos } from '@/lib/news/youtube-news';
+import { REVALIDATE, setRevalidateHeaders } from '../../lib/cache-headers';
+
+setRevalidateHeaders(Astro, REVALIDATE.STATIC_PAGE);
+
+const videos = await getDailyKeralaLotteryVideos();
 ---
 
 <BaseLayout head={metadata} locale="en">
-  <NewsIndexPage />
+  <NewsIndexPageIsland client:load videos={videos} locale="en" />
 </BaseLayout>

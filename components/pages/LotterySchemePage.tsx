@@ -27,7 +27,7 @@ export default function LotterySchemePage({ lottery }: { lottery: any }) {
 
   const breadcrumbs = [
     { name: 'Home', url: SITE_URL },
-    { name: 'Kerala Lottery Results', url: `${SITE_URL}/kerala-lottery-results` },
+    { name: 'Previous Results', url: `${SITE_URL}/previous-results` },
     { name: lottery.name, url: `${SITE_URL}/lottery/${lottery.slug}` },
   ];
 
@@ -53,7 +53,7 @@ export default function LotterySchemePage({ lottery }: { lottery: any }) {
       <Breadcrumbs
         items={[
           { label: 'Home', href: '/' },
-          { label: 'Kerala Lottery Results', href: '/kerala-lottery-results' },
+          { label: 'Previous Results', href: '/previous-results' },
           { label: lottery.name },
         ]}
       />
@@ -129,7 +129,7 @@ export default function LotterySchemePage({ lottery }: { lottery: any }) {
             <span>Prize Breakdown</span>
           </Link>
           <Link
-            href="/kerala-lottery-results"
+            href="/previous-results"
             className="inline-flex items-center gap-2 bg-[#F1F4F2] hover:bg-[#E2E7E3] text-[#0B3B32] px-4 py-2.5 rounded-xl font-bold text-xs transition-colors"
           >
             <Calendar className="w-4 h-4" />
@@ -193,7 +193,7 @@ export default function LotterySchemePage({ lottery }: { lottery: any }) {
               </h2>
             </div>
             <Link
-              href={`/kerala-lottery-results?lottery=${lottery.slug}`}
+              href="/previous-results"
               className="text-xs font-bold text-[#0B3B32] hover:text-[#17201D] flex items-center gap-1"
             >
               <span>View All Past Draws</span>

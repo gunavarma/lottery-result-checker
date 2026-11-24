@@ -1,6 +1,10 @@
 /// <reference types="astro/client" />
 /// <reference types="@astrojs/vercel/client" />
 
+declare module 'cloudflare:workers' {
+  export const env: Record<string, unknown>;
+}
+
 /**
  * Public (browser-visible) environment variables.
  *

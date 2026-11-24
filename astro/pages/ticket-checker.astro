@@ -19,11 +19,14 @@ const breadcrumbs = [
 ];
 
 const head = constructMetadata({
-  title: 'Kerala Lottery Ticket Checker | Instant Winning Number Verification',
+  title: 'Kerala Lottery Scanner & Ticket Checker | KeralaDraws',
   description:
-    'Check your Kerala lottery ticket instantly against official LOTIS certified results. Paste your number or scan the ticket to see every prize tier you have won.',
+    'Scan or enter Kerala lottery tickets and check them against published results. Check one ticket or scan several to see matching prize tiers.',
   path: '/ticket-checker',
   keywords: [
+    'Kerala Lottery Scanner',
+    'Lottery Result Scanner',
+    'Lottery Ticket Scanner',
     'Kerala Lottery Ticket Checker',
     'Kerala Lottery Ticket Check',
     'Check Kerala Lottery Number',
@@ -42,6 +45,11 @@ const faqs = [
     question: 'Does KeralaDraws store the ticket numbers I check?',
     answer:
       'Tickets you save are stored only in your own browser. Un-saved numbers are used to run the comparison and are not retained as your personal data.',
+  },
+  {
+    question: 'Can I scan more than one Kerala lottery ticket at once?',
+    answer:
+      'Yes. Choose Scan Tickets to scan with your camera or select ticket images. Review the detected numbers, then check them together against published results.',
   },
 ];
 ---
@@ -63,11 +71,21 @@ const faqs = [
         Instant Verification
       </span>
       <h1 class="text-3xl sm:text-4xl font-extrabold text-[#17201D] tracking-tight">
-        Kerala Lottery Ticket Checker
+        Kerala Lottery Scanner &amp; Ticket Checker
       </h1>
       <p class="text-xs sm:text-sm text-[#68736E] max-w-3xl">
-        Paste your ticket number or scan the ticket to check every prize tier
-        against the official certified draw result.
+        Scan a ticket with your camera, upload a ticket photo, or enter its
+        number manually. Check one ticket or scan several against published
+        Kerala lottery results.
+      </p>
+      <p class="text-sm text-[#52605A]">
+        Looking for today's winning numbers?
+        <a
+          class="font-semibold text-[#0B3B32] underline underline-offset-2"
+          href="/"
+        >
+          View the latest Kerala lottery result.
+        </a>
       </p>
     </div>
 
@@ -79,5 +97,27 @@ const faqs = [
       locale="en"
       initialNumber={Astro.url.searchParams.get('number')?.slice(0, 20) ?? undefined}
     />
+
+    <section class="max-w-3xl space-y-3" aria-labelledby="scanner-guide-title">
+      <h2 id="scanner-guide-title" class="text-xl font-extrabold text-[#17201D]">
+        How to scan and check a Kerala lottery ticket
+      </h2>
+      <ol class="list-decimal pl-5 space-y-2 text-sm text-[#52605A]">
+        <li>Select the lottery scheme for your ticket.</li>
+        <li>Enter its number, or choose <strong>Scan Tickets</strong> to use your camera or select ticket photos. Review the numbers the scanner reads.</li>
+        <li>Check the ticket to compare its number with the published prize results.</li>
+      </ol>
+      <p class="text-sm text-[#68736E]">
+        The scanner helps read ticket numbers; check the printed number and draw details against the result before making a claim.
+      </p>
+      <p class="text-sm">
+        <a
+          class="font-semibold text-[#0B3B32] underline underline-offset-2"
+          href="/guides/how-to-check-kerala-lottery-ticket"
+        >
+          Read the step-by-step Kerala lottery ticket scanning guide.
+        </a>
+      </p>
+    </section>
   </div>
 </BaseLayout>

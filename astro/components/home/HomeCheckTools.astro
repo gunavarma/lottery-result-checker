@@ -13,10 +13,7 @@
  * The camera/QR scanner stays lazy inside the island — `html5-qrcode` and
  * `tesseract.js` are only pulled in when someone actually opens the scanner.
  */
-import { Ticket, QrCode, Camera, ShieldCheck, ArrowRight } from 'lucide-react';
 import { TicketCheckerIsland } from '@/components/island/ticket-checker';
-import { createTranslator } from '@/lib/i18n/server';
-import { withLocale } from '@/lib/i18n/client-path';
 
 interface Props {
   locale?: 'en' | 'ml' | 'ta' | 'hi';
@@ -25,66 +22,8 @@ interface Props {
 }
 
 const { locale = 'en', lotteries = [] } = Astro.props;
-const { t } = createTranslator(locale);
-const href = (path: string) => withLocale(path, locale);
 ---
 
-<section id="ticket-checker" class="scroll-mt-24 space-y-3">
-  <div class="rounded-xl border border-[#E2E7E3] bg-white p-4 sm:p-5">
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-      <div class="flex items-start gap-3">
-        <span
-          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E9F3EE] text-[#0B5D45]"
-        >
-          <Ticket className="h-4.5 w-4.5" />
-        </span>
-        <div>
-          <h2 class="text-base font-extrabold tracking-tight text-[#17201D]">
-            {t('home.tools.title')}
-          </h2>
-          <p class="mt-0.5 text-xs text-[#68736E]">
-            {t('home.tools.body')}
-          </p>
-        </div>
-      </div>
-
-      <a
-        href={href('/ticket-checker')}
-        class="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg bg-[#E9730C] px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-[#CF6408]"
-      >
-        <Camera className="h-3.5 w-3.5" />
-        <span>{t('home.tools.open')}</span>
-        <ArrowRight className="h-3.5 w-3.5" />
-      </a>
-    </div>
-
-    <div class="mt-4 border-t border-[#E2E7E3] pt-4">
-      <TicketCheckerIsland client:visible locale={locale} lotteries={lotteries} />
-    </div>
-  </div>
-
-  <div
-    class="flex flex-col gap-3 rounded-xl border border-[#E2E7E3] bg-[#F4F9F6] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-  >
-    <div class="flex items-start gap-3">
-      <span
-        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-[#0B5D45]"
-      >
-        <ShieldCheck className="h-4 w-4" />
-      </span>
-      <div class="text-xs">
-        <p class="font-bold text-[#17201D]">{t('home.tools.gazette_title')}</p>
-        <p class="mt-0.5 text-[#5F6B66]">
-          {t('home.tools.gazette_body')}
-        </p>
-      </div>
-    </div>
-    <a
-      href={href('/kerala-lottery-results')}
-      class="inline-flex shrink-0 items-center gap-1.5 text-xs font-bold text-[#0B5D45] hover:underline"
-    >
-      <QrCode className="h-3.5 w-3.5" />
-      <span>{t('home.tools.browse')}</span>
-    </a>
-  </div>
+<section id="ticket-checker" class="scroll-mt-24">
+  <TicketCheckerIsland client:visible locale={locale} lotteries={lotteries} compact />
 </section>

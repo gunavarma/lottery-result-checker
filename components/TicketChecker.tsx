@@ -52,6 +52,8 @@ interface TicketCheckerProps {
    * self-healing case (a failed first database read left the list empty).
    */
   lotteries?: Array<{ id: string; name: string; code: string }>;
+  /** Use tighter spacing for the homepage's single-card tool layout. */
+  compact?: boolean;
 }
 
 export function TicketChecker({
@@ -59,6 +61,7 @@ export function TicketChecker({
   initialDrawNumber,
   initialNumber,
   lotteries: serverLotteries,
+  compact = false,
 }: TicketCheckerProps) {
   const { t } = useLanguage();
   const [lotteries, setLotteries] = useState<any[]>(() => serverLotteries ?? []);
@@ -220,14 +223,14 @@ export function TicketChecker({
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-10 border border-[#E2E7E3] shadow-sm space-y-6">
+    <div className={`bg-white rounded-3xl ${compact ? 'p-4 sm:p-5 border border-[#E2E7E3] shadow-sm space-y-4' : 'p-6 sm:p-8 lg:p-10 border border-[#E2E7E3] shadow-sm space-y-6'}`}>
       {/* Any focus inside the tool (the scheme select or the number input) is
           the first genuine “the checker is open” signal. */}
-      <div onFocusCapture={markCheckerOpened} className="space-y-6">
+      <div onFocusCapture={markCheckerOpened} className={compact ? 'space-y-4' : 'space-y-6'}>
       {/* Header */}
-      <div className="border-b border-[#E2E7E3] pb-4 space-y-1">
+      <div className={`border-b border-[#E2E7E3] ${compact ? 'pb-3 space-y-1' : 'pb-4 space-y-1'}`}>
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <span className="text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular">
+          <span className={`text-[11px] font-bold text-[#0B3B32] uppercase tracking-wider block font-tabular ${compact ? 'sr-only' : ''}`}>
             {t('ticket.eyebrow', 'Financial Lookup Tool')}
           </span>
 
@@ -256,8 +259,8 @@ export function TicketChecker({
       </div>
 
       {/* Lookup Form */}
-      <form onSubmit={handleSingleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+      <form onSubmit={handleSingleSubmit} className={compact ? 'space-y-3' : 'space-y-4'}>
+        <div className={`grid grid-cols-1 sm:grid-cols-12 ${compact ? 'gap-3' : 'gap-4'}`}>
           {/* Scheme Selection */}
           <div className="sm:col-span-4 space-y-1.5">
             <label htmlFor="lottery-scheme-select" className="block text-xs font-bold text-[#17201D] uppercase tracking-wide">

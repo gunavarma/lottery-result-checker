@@ -5,9 +5,11 @@ import { DRAW_FULL, drawCardView, LOTTERY_DIRECTORY } from '@/lib/results/projec
 import { constructMetadata } from '@/lib/seo';
 import { format } from 'date-fns';
 import { addDays, startOfDay, endOfDay } from 'date-fns';
-import { isValidDateFormat, parseDateOnlyUtc, getIstDateRange, getTodayIstStr } from '@/lib/date';
+import { isValidDateFormat, parseDateOnlyUtc, getIstDateRange, getTodayIstStr, formatIstDate } from '@/lib/date';
 import { getAdjacentAvailableDates } from '@/lib/results/adjacent-dates';
 import { formatINR } from '@/lib/format';
+import { withDbRetry } from '@/lib/db-retry';
+import { LIVE_DATA_STALE_IF_ERROR_MS } from '@/lib/cache';
 
 export async function getCalendarDraws() {
   try {
@@ -48,49 +50,45 @@ export async function generateTodayMetadata() {
 }
 
 export async function getTodayResultData() {
+  const todayStr = getTodayIstStr();
+  const { istStartUtc, istEndUtc } = getIstDateRange(todayStr);
   return getOrSetCache(
-    'today_result_data',
+    `today_result_data_${todayStr}_v2`,
     async () => {
-      try {
-        const now = new Date();
-        const todayStart = startOfDay(now);
-        const todayEnd = endOfDay(now);
-
-        let draw = await prisma.draw.findFirst({
+      const now = new Date();
+      let draw = await withDbRetry(() =>
+        prisma.draw.findFirst({
           where: {
-            drawDate: {
-              gte: todayStart,
-              lte: todayEnd,
-            },
+            drawDate: { gte: istStartUtc, lte: istEndUtc },
+            status: 'PUBLISHED',
           },
           select: DRAW_FULL,
-        });
+          orderBy: { updatedAt: 'desc' },
+        })
+      );
 
-        let isFromToday = true;
-        if (!draw) {
-          isFromToday = false;
-          draw = await prisma.draw.findFirst({
+      const isFromToday = Boolean(draw);
+      if (!draw) {
+        draw = await withDbRetry(() =>
+          prisma.draw.findFirst({
             where: { status: 'PUBLISHED' },
             orderBy: { drawDate: 'desc' },
             select: DRAW_FULL,
-          });
-        }
-
-        return {
-          isFromToday,
-          draw: draw ? serializeData(draw) : null,
-          dateFormatted: format(now, 'dd MMMM yyyy (EEEE)'),
-        };
-      } catch (error) {
-        console.error('Error in getTodayResultData:', error);
-        return {
-          isFromToday: false,
-          draw: null,
-          dateFormatted: format(new Date(), 'dd MMMM yyyy (EEEE)'),
-        };
+          })
+        );
       }
+
+      return {
+        isFromToday,
+        draw: draw ? serializeData(draw) : null,
+        dateFormatted: formatIstDate(now),
+      };
     },
-    { ttlMs: 30_000, swrMs: 300_000 }
+    {
+      ttlMs: 10_000,
+      swrMs: 30_000,
+      staleIfErrorMs: LIVE_DATA_STALE_IF_ERROR_MS,
+    }
   );
 }
 

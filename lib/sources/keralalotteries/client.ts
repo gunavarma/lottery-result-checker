@@ -56,12 +56,14 @@ export function toDrawPageRef(candidate: string): DrawPageRef | null {
   const match = path.match(DRAW_PAGE_PATH);
   if (!match) return null;
 
-  const [, , , code, number, day, month, year] = match;
+  const [, pathYear, pathMonth, code, number, day, month, year] = match;
   const codeUpper = code.toUpperCase();
+  const effectiveYear = pathYear || year;
+  const effectiveMonth = pathMonth || month;
 
   return {
     url: path.split(/[?#]/)[0],
-    dateStr: `${year}-${month}-${day}`,
+    dateStr: `${effectiveYear}-${effectiveMonth}-${day}`,
     code: codeUpper,
     drawNumber: `${codeUpper}-${number}`,
   };

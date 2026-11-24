@@ -114,7 +114,7 @@ export async function checkTicketsHandler(params: {
   const { lotteryId, drawId, drawNumber, tickets } = params;
 
   // 1. Locate Target Draw or Recent Published Draws (identity only — no prizes)
-  const drawQuery: any = { status: 'PUBLISHED' };
+  const drawQuery: any = { status: 'PUBLISHED', verificationLevel: 'OFFICIAL' };
   if (drawId) {
     drawQuery.id = drawId;
   } else if (drawNumber) {

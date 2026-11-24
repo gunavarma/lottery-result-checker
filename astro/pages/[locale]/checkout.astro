@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { RazorpayMembershipCheckoutIsland } from '@/components/island/razorpay-membership-checkout';
+import { constructMetadata, getBreadcrumbSchema } from '@/lib/seo';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { isLocale } from '@/lib/i18n/config';
+import { mirrorMetadata } from '@/lib/i18n/mirror';
+import type { Language } from '@/lib/translations';
+import { isRazorpayTestMode } from '@/lib/razorpay';
+import { WhatsAppLogo } from '@/components/WhatsAppLogo';
+
+export const prerender = false;
+
+const locale = Astro.params.locale as Language;
+if (!isLocale(locale) || locale === 'en') {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+
+const breadcrumbs = [
+  { name: 'Home', url: '/' },
+  { name: 'WhatsApp subscription', url: '/checkout' },
+];
+const enHead = constructMetadata({
+  title: 'WhatsApp Result Alerts Subscription | KeralaDraws',
+  description: 'Choose a monthly or annual KeralaDraws plan for lottery result updates and ticket-checking alerts on WhatsApp.',
+  path: '/checkout',
+});
+const head = mirrorMetadata(locale, '/checkout', enHead);
+---
+
+<BaseLayout head={head} locale={locale} jsonLd={[getBreadcrumbSchema(breadcrumbs)]}>
+  <main class="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6 sm:py-12">
+    <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'WhatsApp subscription' }]} />
+    <header class="mx-auto max-w-3xl space-y-3 text-center">
+      <p class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#0B5D45]"><WhatsAppLogo className="h-5 w-5" /> KeralaDraws WhatsApp</p>
+      <h1 class="text-3xl font-extrabold tracking-tight text-[#10201D] sm:text-4xl">Lottery results, delivered to you</h1>
+      <p class="text-base leading-7 text-[#5F6B66]">Choose monthly billing or save with the annual plan. KeralaDraws shares published lottery information and checks tickets you provide; it does not sell tickets or accept bets.</p>
+    </header>
+    <RazorpayMembershipCheckoutIsland client:load locale={locale} testMode={isRazorpayTestMode()} liveMode={!isRazorpayTestMode()} />
+    <section class="mx-auto max-w-3xl rounded-2xl border border-[#E2E7E3] bg-[#F7F8F6] p-5 text-sm leading-6 text-[#5F6B66]">
+      <h2 class="mb-2 font-semibold text-[#24332D]">How recurring payments work</h2>
+      <p>Razorpay shows the mandate amount and frequency during checkout. Your plan starts only after you approve the mandate. Future renewals are collected automatically according to the plan frequency. You can stop future renewals through your UPI app or bank mandate settings, or contact KeralaDraws support.</p>
+      <p class="mt-2">WhatsApp alerts require your separate consent above. Message frequency depends on published results and your selected ticket checks. You can opt out of WhatsApp messages at any time.</p>
+    </section>
+  </main>
+</BaseLayout>

@@ -84,6 +84,16 @@ export const GET: APIRoute = async ({ request }) => {
             { number: numericOnly },
             { displayNumber: { contains: cleanQuery.toUpperCase(), mode: 'insensitive' } },
           ],
+          // A ticket check must never report a match from a draft or an
+          // unverified live feed. The checker advertises official LOTIS
+          // results, so constrain the winning-number lookup to certified draws.
+          prize: {
+            is: {
+              draw: {
+                is: { status: 'PUBLISHED', verificationLevel: 'OFFICIAL' },
+              },
+            },
+          },
         },
         take: 10,
         include: {

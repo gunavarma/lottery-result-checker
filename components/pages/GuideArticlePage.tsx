@@ -188,7 +188,7 @@ export default function GuideDetailPage({ slug }: { slug: string }) {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Link
-            href="/check-ticket"
+            href="/ticket-checker"
             className="inline-flex items-center gap-2 bg-[#0B3B32] hover:bg-[#10201D] text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-xs transition-colors"
           >
             <Ticket className="w-4 h-4 text-[#C8A45D]" />
@@ -203,9 +203,26 @@ export default function GuideDetailPage({ slug }: { slug: string }) {
         </div>
       </div>
 
+      {guide.sources && guide.sources.length > 0 && (
+        <section className="bg-[#F7F7F4] rounded-2xl p-5 border border-[#E2E7E3] space-y-2" aria-labelledby="guide-sources-title">
+          <h3 id="guide-sources-title" className="text-sm font-bold text-[#17201D]">
+            Official source
+          </h3>
+          <ul className="space-y-1 text-sm">
+            {guide.sources.map((source) => (
+              <li key={source.url}>
+                <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-[#0B3B32] underline underline-offset-2">
+                  {source.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Frequently Asked Questions */}
       {guide.faqs && guide.faqs.length > 0 && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2E7E3] space-y-6">
+        <div id="scanner-faq" className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2E7E3] space-y-6 scroll-mt-24">
           <div className="flex items-center gap-2">
             <HelpCircle className="w-5 h-5 text-[#0B3B32]" />
             <h3 className="text-lg sm:text-xl font-extrabold text-[#17201D]">

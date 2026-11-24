@@ -6,6 +6,7 @@ import { getTranslation, SUPPORTED_LANGUAGES, type Language } from '@/lib/transl
 import { switchLocalePath } from '@/lib/i18n/config';
 import { withLocale } from '@/lib/i18n/client-path';
 import { weekdayNameForIndex } from '@/lib/i18n/server';
+import { WhatsAppLogo } from '@/components/WhatsAppLogo';
 
 const WEEKLY = [
   { slug: 'bhagya-thara', name: 'Bhagya Thara', dow: 1 },
@@ -54,10 +55,9 @@ export function Footer({
 
   const tools = [
     { path: '/kerala-lottery-result-today', label: t('footer.today_result') },
-    { path: '/kerala-lottery-results', label: t('footer.results_archive') },
     { path: '/previous-results', label: t('chrome.footer_previous_results') },
     { path: '/ticket-checker', label: t('footer.ticket_checker') },
-    { path: '/checkout', label: 'Razorpay Checkout' },
+    { path: '/checkout', label: 'WhatsApp Result Alerts' },
     { path: '/guides', label: t('footer.guides') },
     { path: '/lottery-calendar', label: t('chrome.footer_timetable') },
     { path: '/prize-structure', label: t('chrome.footer_prize_breakdown') },
@@ -163,8 +163,9 @@ export function Footer({
                 <li key={item.path}>
                   <Link
                     href={href(item.path)}
-                    className="text-slate-300 hover:text-white transition-colors"
+                    className="inline-flex items-center gap-1.5 text-slate-300 hover:text-white transition-colors"
                   >
+                    {item.path === '/checkout' && <WhatsAppLogo className="h-4 w-4" />}
                     {item.label}
                   </Link>
                 </li>

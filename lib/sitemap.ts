@@ -17,8 +17,9 @@ import { prisma } from '@/lib/prisma';
 import { SITE_URL } from '@/lib/seo';
 import { getAllNews } from '@/lib/news';
 import { getAllGuides } from '@/lib/guides';
-import { formatDateOnly } from '@/lib/date';
+import { formatDateOnly, getTodayIstStr } from '@/lib/date';
 import { languageAlternates } from '@/lib/i18n/config';
+import { generateTodayMetadata } from '@/lib/page-data/lottery';
 
 // Wrap a sitemap entry with hreflang alternates for the locale mirrors.
 function withAlternates(entry: SitemapEntry): SitemapEntry {
@@ -60,6 +61,7 @@ async function fetchOfficialDraws() {
 
 export async function buildSitemap(): Promise<SitemapEntry[]> {
   const baseUrl = SITE_URL;
+  const currentYear = getTodayIstStr().slice(0, 4);
 
   // 1. Core Evergreen Landing Pages
   const staticRoutes: SitemapEntry[] = [
@@ -70,25 +72,25 @@ export async function buildSitemap(): Promise<SitemapEntry[]> {
       priority: 1.0,
     },
     {
-      url: `${baseUrl}/kerala-lottery-result-today`,
-      lastModified: new Date(),
-      changeFrequency: 'hourly',
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/kerala-lottery-results`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.95,
-    },
-    {
       url: `${baseUrl}/ticket-checker`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/kerala-lottery-results/2026`,
+      url: `${baseUrl}/kerala-lottery-results/${currentYear}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/results`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/previous-results`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.85,
@@ -149,6 +151,25 @@ export async function buildSitemap(): Promise<SitemapEntry[]> {
     },
   ];
 
+  // Match the live page's robots directive: while the current draw is
+  // provisional, generateTodayMetadata() marks its landing page noindex. Keep
+  // noindex URLs out of the sitemap so the two signals cannot conflict.
+  try {
+    const todayMetadata = await generateTodayMetadata();
+    if (todayMetadata.robots.index) {
+      staticRoutes.splice(1, 0, {
+        url: `${baseUrl}/kerala-lottery-result-today`,
+        lastModified: new Date(),
+        changeFrequency: 'hourly',
+        priority: 1.0,
+      });
+    }
+  } catch (error: any) {
+    // On a data-source failure, omit the conditional URL rather than risk
+    // advertising a page that may carry noindex.
+    console.warn('[Sitemap] Could not confirm today-page indexability; omitting it:', error?.message);
+  }
+
   try {
     // 2. Canonical Lottery Scheme Landing Pages (/lottery/[slug])
     const lotteries = await prisma.lottery.findMany({
@@ -185,13 +206,12 @@ export async function buildSitemap(): Promise<SitemapEntry[]> {
     }
 
     const dateResultRoutes: SitemapEntry[] = Array.from(dateMap.entries()).map(
-      ([dateStr, lastmod]) =>
-        withAlternates({
-          url: `${baseUrl}/kerala-lottery-result/${dateStr}`,
-          lastModified: lastmod,
-          changeFrequency: 'monthly',
-          priority: 0.8,
-        })
+      ([dateStr, lastmod]) => ({
+        url: `${baseUrl}/kerala-lottery-result/${dateStr}`,
+        lastModified: lastmod,
+        changeFrequency: 'monthly',
+        priority: 0.8,
+      })
     );
 
     // 4. Canonical Monthly Archive Pages (/kerala-lottery-results/YYYY/MM)
@@ -227,9 +247,9 @@ export async function buildSitemap(): Promise<SitemapEntry[]> {
       ...dateResultRoutes,
       ...newsRoutes,
       ...guideRoutes,
-    ];
+    ].map(withAlternates);
   } catch (error) {
     console.error('Error generating dynamic sitemap:', error);
-    return staticRoutes;
+    return staticRoutes.map(withAlternates);
   }
 }

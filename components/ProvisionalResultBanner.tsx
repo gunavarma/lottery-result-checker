@@ -38,7 +38,7 @@ function relativeTime(value?: string | Date | null): string | null {
  */
 export function ProvisionalResultBanner({
   sourceUrl,
-  providerLabel = 'keralalotteries.net',
+  providerLabel = 'Live Public Source',
   updatedAt,
   tierCount,
   isComplete,
@@ -46,6 +46,8 @@ export function ProvisionalResultBanner({
   className = '',
 }: ProvisionalResultBannerProps) {
   const age = relativeTime(updatedAt);
+  const safeSourceUrl = sourceUrl && !sourceUrl.includes('keralalotteries.net') ? sourceUrl : null;
+  const displayLabel = providerLabel.includes('keralalotteries.net') ? 'Live Public Source' : providerLabel;
 
   return (
     <div
@@ -78,19 +80,17 @@ export function ProvisionalResultBanner({
         <p className="text-[11px] sm:text-xs text-[#5B4A1F] leading-relaxed flex items-start gap-1.5">
           <ShieldAlert className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[#8A6A24]" />
           <span>
-            These winning numbers are published from the third-party live source{' '}
-            {sourceUrl ? (
+            These winning numbers are published from public live announcements{' '}
+            {safeSourceUrl ? (
               <a
-                href={sourceUrl}
+                href={safeSourceUrl}
                 target="_blank"
                 rel="noopener noreferrer nofollow"
                 className="font-bold underline decoration-dotted"
               >
-                {providerLabel}
+                ({displayLabel})
               </a>
-            ) : (
-              <strong>{providerLabel}</strong>
-            )}{' '}
+            ) : null}{' '}
             as soon as they are announced, <strong>before</strong> the Government gazette is released.
             They are not yet officially verified and may change. Confirm with the official Kerala State
             Lotteries gazette before claiming any prize.

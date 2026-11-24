@@ -64,8 +64,9 @@ export function startBackgroundScheduler(): void {
   setInterval(async () => {
     try {
       const { syncRealLotteryNews } = await import('./news/news-engine');
-      console.log('[Scheduler] Running hourly news sync...');
-      await syncRealLotteryNews();
+      const { refreshYouTubeLotteryVideos } = await import('./news/youtube-news');
+      console.log('[Scheduler] Running hourly news and video sync...');
+      await Promise.all([syncRealLotteryNews(), refreshYouTubeLotteryVideos()]);
     } catch (err) {
       console.warn('[Scheduler] Hourly news sync error:', err);
     }

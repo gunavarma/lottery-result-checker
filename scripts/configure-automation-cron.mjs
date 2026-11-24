@@ -7,12 +7,19 @@
  */
 import crypto from 'node:crypto';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 const APP_URL = process.env.CRON_APP_URL || 'https://www.keraladraws.com';
 const CRON_SECRET = process.env.CRON_SECRET;
+const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!CRON_SECRET) {
   console.error('CRON_SECRET is not set in the environment; refusing to configure jobs.');
+  process.exit(1);
+}
+
+if (!DATABASE_URL) {
+  console.error('DATABASE_URL is not set in the environment; refusing to configure jobs.');
   process.exit(1);
 }
 
@@ -43,7 +50,7 @@ function quote(value) {
 
 const JOB_SQL = {
   official: scheduleSql('keraladraws-sync-results-15m', '*/15 * * * *', '/api/cron/sync-results', 60000),
-  live: scheduleSql('keraladraws-sync-live-1m', '*/1 9-12 * * *', '/api/cron/sync-live', 25000),
+  live: scheduleSql('keraladraws-sync-live-2m', '*/2 9-11 * * *', '/api/cron/sync-live', 25000),
 };
 
 const RETIRE = [
@@ -51,16 +58,17 @@ const RETIRE = [
   'check-lottery-results-15m',
   'keraladraws-sync-results-15m',
   'keraladraws-sync-live-1m',
+  'keraladraws-sync-live-2m',
 ];
 
 async function main() {
-  const client = new PrismaClient();
+  const client = new PrismaClient({ adapter: new PrismaPg({ connectionString: DATABASE_URL, max: 1 }) });
   try {
     const who = await client.$queryRawUnsafe(
       'SELECT current_user::text AS role, current_database()::text AS db'
     );
     console.log('connected as', JSON.stringify(who));
-    console.log('target origin', APP_URL, '| secret length', CRON_SECRET.length);
+    console.log('target origin', APP_URL);
 
     for (const jobName of RETIRE) {
       const existing = await client.$queryRawUnsafe(
@@ -96,12 +104,12 @@ async function main() {
       `cred_cron_${hash.slice(0, 16)}`,
       hash
     );
-    console.log('stored cron credential hash (sha256):', hash.slice(0, 12) + '…');
+    console.log('stored cron credential hash');
 
     await client.$executeRawUnsafe(JOB_SQL.official);
     console.log('scheduled: keraladraws-sync-results-15m (*/15 * * * *)');
     await client.$executeRawUnsafe(JOB_SQL.live);
-    console.log('scheduled: keraladraws-sync-live-1m (*/1 9-12 * * *)');
+    console.log('scheduled: keraladraws-sync-live-2m (*/2 9-11 * * *)');
 
     const jobs = await client.$queryRawUnsafe(
       'SELECT jobname, schedule, active FROM cron.job ORDER BY jobname'
@@ -109,7 +117,7 @@ async function main() {
     console.log('CRON JOBS NOW:', JSON.stringify(jobs));
 
     const preview = await client.$queryRawUnsafe(
-      "SELECT command FROM cron.job WHERE jobname = 'keraladraws-sync-live-1m'"
+      "SELECT command FROM cron.job WHERE jobname = 'keraladraws-sync-live-2m'"
     );
     console.log(
       'live job targets the right endpoint:',

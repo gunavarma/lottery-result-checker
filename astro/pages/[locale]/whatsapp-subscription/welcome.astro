@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import WhatsAppSubscriptionWelcome from '../../../components/WhatsAppSubscriptionWelcome.astro';
+import { constructMetadata } from '@/lib/seo';
+import { isLocale } from '@/lib/i18n/config';
+import { mirrorMetadata } from '@/lib/i18n/mirror';
+import type { Language } from '@/lib/translations';
+import { setNoStoreHeaders } from '../../../lib/cache-headers';
+
+setNoStoreHeaders(Astro);
+const locale = Astro.params.locale as Language;
+if (!isLocale(locale) || locale === 'en') {
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
+}
+const enHead = constructMetadata({
+  title: 'WhatsApp Alerts Setup | KeralaDraws',
+  description: 'Finish setting up KeralaDraws WhatsApp result alerts by saving your tickets.',
+  path: '/whatsapp-subscription/welcome',
+  noIndex: true,
+});
+const head = mirrorMetadata(locale, '/whatsapp-subscription/welcome', enHead);
+---
+
+<BaseLayout head={head} locale={locale}>
+  <WhatsAppSubscriptionWelcome locale={locale} />
+</BaseLayout>

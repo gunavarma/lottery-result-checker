@@ -16,6 +16,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { formatINR } from '@/lib/format';
+import { getOrCreateWatchlistDeviceId } from '@/lib/watchlist/device-id';
 export default function MyTicketsPage() {
   const [lotteries, setLotteries] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
@@ -30,13 +31,7 @@ export default function MyTicketsPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const getDeviceId = () => {
-    if (typeof window === 'undefined') return 'anonymous-device';
-    let id = localStorage.getItem('kd_device_id');
-    if (!id) {
-      id = 'dev_' + Math.random().toString(36).substring(2, 15);
-      localStorage.setItem('kd_device_id', id);
-    }
-    return id;
+    return getOrCreateWatchlistDeviceId() || 'anonymous-device';
   };
 
   const loadData = useCallback(async () => {
