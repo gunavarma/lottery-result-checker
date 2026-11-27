@@ -101,11 +101,11 @@ export function Navbar({
 
         {/* Main Header */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14 sm:h-16">
+          <div className="flex items-center justify-between h-14 sm:h-16 gap-2 xl:gap-4">
             {/* Brand — smaller logo, tighter layout. `min-w-0` lets the text
                 truncate on a narrow phone instead of pushing the icon cluster
                 past the viewport edge. */}
-            <Link href={href('/')} className="group flex min-w-0 items-center gap-2.5">
+            <Link href={href('/')} className="group flex min-w-0 items-center gap-2.5 shrink-0">
               <div className="w-9 h-9 flex items-center justify-center p-0.5 rounded-xl bg-[#0B3B32] ring-1 ring-[#C8A45D]/30">
                 <Image
                   src="/logo.svg"
@@ -127,46 +127,56 @@ export function Navbar({
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-0.5">
+            <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1">
               {navLinks.map((item) => {
                 const isActive =
                   pathForActive === item.href ||
                   (item.href !== '/' && pathForActive.startsWith(item.href));
+                const isWhatsApp = item.href === '/checkout';
+
                 return (
                   <Link
                     key={item.href}
                     href={href(item.href)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                    className={`h-9 inline-flex items-center gap-1.5 px-2.5 xl:px-3 rounded-xl text-xs font-bold transition-colors whitespace-nowrap shrink-0 ${
                       isActive
                         ? 'bg-[#0B3B32] text-white shadow-xs'
                         : 'text-[#17201D] hover:text-[#0B3B32] hover:bg-[#F1F4F2]'
                     }`}
                   >
-                    {item.href === '/checkout' && <WhatsAppLogo className="h-4 w-4" />}
-                    {item.label}
+                    {isWhatsApp && <WhatsAppLogo className="h-4 w-4 shrink-0" />}
+                    <span>
+                      {isWhatsApp ? (
+                        <>
+                          WhatsApp <span className="hidden xl:inline">Alerts</span>
+                        </>
+                      ) : (
+                        item.label
+                      )}
+                    </span>
                   </Link>
                 );
               })}
             </nav>
 
             {/* Right Actions */}
-            <div className="hidden lg:flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-1.5 xl:gap-2 shrink-0">
               <Link
                 href={href('/ticket-checker')}
-                className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F59E0B] to-[#E9730C] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-opacity hover:opacity-90"
+                className="h-9 inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#F59E0B] to-[#E9730C] px-3 xl:px-3.5 text-xs font-bold text-white shadow-xs transition-opacity hover:opacity-95 whitespace-nowrap shrink-0"
               >
-                <ScanLine className="w-3.5 h-3.5" />
+                <ScanLine className="w-3.5 h-3.5 shrink-0" />
                 <span>{t('chrome.scan_ticket')}</span>
               </Link>
 
               <button
                 onClick={() => setSearchModalOpen(true)}
                 aria-label="Search database"
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[#68736E] hover:text-[#17201D] bg-[#F7F7F4] hover:bg-[#F1F4F2] border border-[#E2E7E3] transition-colors"
+                className="h-9 inline-flex items-center gap-1.5 xl:gap-2 px-2.5 xl:px-3 rounded-xl text-xs font-semibold text-[#68736E] hover:text-[#17201D] bg-[#F7F7F4] hover:bg-[#F1F4F2] border border-[#E2E7E3] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
               >
-                <Search className="w-3.5 h-3.5 text-[#68736E]" />
+                <Search className="w-3.5 h-3.5 text-[#68736E] shrink-0" />
                 <span>{t('nav.search', 'Search')}</span>
-                <kbd className="text-[10px] font-mono text-[#68736E] bg-white px-1.5 py-0.5 rounded border border-[#E2E7E3]">
+                <kbd className="hidden xl:inline text-[10px] font-mono text-[#68736E] bg-white px-1.5 py-0.5 rounded border border-[#E2E7E3]">
                   ⌘K
                 </kbd>
               </button>
@@ -176,10 +186,10 @@ export function Navbar({
               <button
                 onClick={() => setNotificationModalOpen(true)}
                 aria-label="Notification Preferences"
-                className="p-2 rounded-xl text-[#17201D] hover:text-[#0B3B32] hover:bg-[#F7F7F4] transition-colors relative"
+                className="h-9 w-9 inline-flex items-center justify-center rounded-xl text-[#17201D] hover:text-[#0B3B32] hover:bg-[#F7F7F4] transition-colors shrink-0 cursor-pointer"
                 title="Notifications"
               >
-                <Bell className="w-4.5 h-4.5" />
+                <Bell className="w-4 h-4" />
               </button>
             </div>
 

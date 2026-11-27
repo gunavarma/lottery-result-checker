@@ -171,13 +171,13 @@ export function LanguageSelector({ variant = 'header', className = '' }: Languag
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-label="Language selector"
-        className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-[#17201D] hover:text-[#0B3B32] bg-[#F7F7F4] hover:bg-[#F1F4F2] border border-[#E2E7E3] transition-colors shadow-2xs"
+        className="h-9 inline-flex items-center gap-1.5 px-2.5 xl:px-3 rounded-xl text-xs font-bold text-[#17201D] hover:text-[#0B3B32] bg-[#F7F7F4] hover:bg-[#F1F4F2] border border-[#E2E7E3] transition-colors whitespace-nowrap shrink-0 shadow-2xs cursor-pointer"
       >
-        <Globe className="w-3.5 h-3.5 text-[#0B3B32]" />
-        <span className="text-sm leading-none">{currentOption.flag}</span>
-        <span className="hidden sm:inline-block font-semibold">{currentOption.nativeName}</span>
+        <Globe className="w-3.5 h-3.5 text-[#0B3B32] shrink-0" />
+        <span className="text-sm leading-none shrink-0">{currentOption.flag}</span>
+        <span className="hidden xl:inline-block font-semibold">{currentOption.nativeName}</span>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-[#68736E] transition-transform ${
+          className={`w-3.5 h-3.5 text-[#68736E] shrink-0 transition-transform ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
